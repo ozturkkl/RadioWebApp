@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base scrollbar styles */
+* {
+	scrollbar-width: unset !important;
+	scrollbar-color: unset !important;
+}
+
+/* Prevent hover effects from changing scrollbar colors */
+*:hover {
+	scrollbar-color: unset !important;
+}
+
+/* Webkit scrollbar styling for Chrome, Safari, and Edge */
+*::-webkit-scrollbar {
+	width: 10px !important;
+}
+
+*::-webkit-scrollbar-thumb {
+	background-color: rgba(128, 128, 128, 0.5) !important;
+	border-radius: 50px !important;
+}
+
+*::-webkit-scrollbar-track {
+	background-color: transparent !important;
+	border-radius: 50px !important;
+}
+
+/* Browsers without `::-webkit-scrollbar-*` support */
+@supports not selector(::-webkit-scrollbar) {
+	html {
+		scrollbar-width: thin;
+		scrollbar-color: rgba(128, 128, 128, 0.5) transparent;
+	}
+}

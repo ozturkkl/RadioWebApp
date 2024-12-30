@@ -1,0 +1,80 @@
+<script lang="ts">
+	import { settings } from '$lib/stores/settings';
+	import type { Theme } from '$lib/stores/settings';
+	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
+
+	const themes: Theme[] = [
+		'light',
+		'dark',
+		'cupcake',
+		'bumblebee',
+		'emerald',
+		'corporate',
+		'synthwave',
+		'retro',
+		'cyberpunk',
+		'night'
+	];
+
+	const themeOptions = themes.map(theme => ({ value: theme, label: theme }));
+	const skipOptions = [5, 10, 15, 30].map(seconds => ({ 
+		value: seconds, 
+		label: `${seconds} seconds` 
+	}));
+</script>
+
+<div class="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+	<h1 class="mb-4 sm:mb-6 text-2xl font-bold">Settings</h1>
+
+	<div class="space-y-4 sm:space-y-6 rounded-lg bg-base-200 p-3 sm:p-6 shadow-md">
+		<!-- Theme Selector -->
+		<div class="flex items-center justify-between">
+			<div>
+				<h3 class="text-lg font-medium">Theme</h3>
+				<p class="text-base-content/70">Choose your preferred theme</p>
+			</div>
+			<DropdownSelect
+				bind:value={$settings.theme}
+				options={themeOptions}
+			/>
+		</div>
+
+		<!-- Autoplay -->
+		<div class="flex items-center justify-between">
+			<div>
+				<h3 class="text-lg font-medium">Autoplay</h3>
+				<p class="text-base-content/70">Automatically play next episode</p>
+			</div>
+			<label class="relative inline-flex cursor-pointer items-center">
+				<input type="checkbox" bind:checked={$settings.autoplay} class="toggle toggle-primary" />
+			</label>
+		</div>
+
+		<!-- Auto-close Collapse -->
+		<div class="flex items-center justify-between">
+			<div>
+				<h3 class="text-lg font-medium">Auto-close Podcasts</h3>
+				<p class="text-base-content/70">Automatically close other podcasts when expanding one</p>
+			</div>
+			<label class="relative inline-flex cursor-pointer items-center">
+				<input
+					type="checkbox"
+					bind:checked={$settings.autoCollapse}
+					class="toggle toggle-primary"
+				/>
+			</label>
+		</div>
+
+		<!-- Skip Seconds -->
+		<div class="flex items-center justify-between">
+			<div>
+				<h3 class="text-lg font-medium">Skip Duration</h3>
+				<p class="text-base-content/70">Amount of seconds to skip when using the skip buttons</p>
+			</div>
+			<DropdownSelect
+				bind:value={$settings.skipSeconds}
+				options={skipOptions}
+			/>
+		</div>
+	</div>
+</div>
