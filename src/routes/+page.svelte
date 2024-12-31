@@ -59,10 +59,10 @@
 		<section>
 			<h2 class={headerClasses}>Favorites</h2>
 			<div class={sectionClasses}>
-				{#each favoriteRadios as radio}
+				{#each favoriteRadios as radio (radio.title)}
 					<RadioCard {radio} />
 				{/each}
-				{#each favoritePodcasts as podcast}
+				{#each favoritePodcasts as podcast (podcast.id)}
 					<PodcastCard
 						{podcast}
 						expanded={expandedPodcasts.has(podcast.id)}
@@ -82,7 +82,7 @@
 			{:else if otherRadios.length === 0}
 				<p class="text-base-content-secondary">All stations are in favorites</p>
 			{:else}
-				{#each otherRadios as radio}
+				{#each otherRadios as radio (radio.title)}
 					<RadioCard {radio} />
 				{/each}
 			{/if}
@@ -99,7 +99,7 @@
 			{:else if otherPodcasts.length === 0}
 				<p class="text-base-content-secondary">All podcasts are in favorites</p>
 			{:else}
-				{#each otherPodcasts as podcast}
+				{#each otherPodcasts as podcast (podcast.id)}
 					<PodcastCard
 						{podcast}
 						expanded={expandedPodcasts.has(podcast.id)}
