@@ -5,6 +5,7 @@
 	import { playerStore } from '$lib/stores/player';
 	import { cardStyles } from './RadioCard.svelte';
 	import FavoriteButton from './FavoriteButton.svelte';
+	import { formatTime } from '$lib/util/time';
 
 	export let podcast: Podcast;
 	export let expanded = false;
@@ -59,7 +60,7 @@
 					>
 						<div class="flex justify-between">
 							<span class="font-medium">{episode.title}</span>
-							<span class="text-base-content-secondary text-sm">{episode.duration}</span>
+							<span class="text-base-content-secondary text-sm">{formatTime(Number(episode.duration))}</span>
 						</div>
 						{#if episode.description}
 							<p class="text-base-content-secondary mt-1 line-clamp-2 text-sm">

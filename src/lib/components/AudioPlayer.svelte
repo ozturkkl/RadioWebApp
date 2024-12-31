@@ -15,14 +15,9 @@
 	} from '$lib/stores/player';
 	import { settings } from '$lib/stores/settings';
 	import TouchableButton from './TouchableButton.svelte';
+	import { formatTime } from '$lib/util/time';
 
 	const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
-
-	function formatTime(seconds: number): string {
-		const mins = Math.floor(seconds / 60);
-		const secs = Math.floor(seconds % 60);
-		return `${mins}:${secs.toString().padStart(2, '0')}`;
-	}
 </script>
 
 {#if $playerStore.type}
