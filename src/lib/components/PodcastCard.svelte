@@ -16,7 +16,7 @@
 			$playerStore.currentEpisode?.id === episode.id &&
 			$playerStore.currentPodcast?.id === podcast.id;
 		const baseClasses =
-			'w-full rounded-lg border border-base-300 p-2 text-left shadow hover:shadow-xl';
+			'w-full rounded-lg border border-base-300 p-2 text-left shadow hover:shadow-xl mr-2';
 		return `${baseClasses} ${isActive ? 'bg-base-300 shadow-xl outline outline-2 outline-offset-1 outline-primary' : 'bg-base-100 hover:bg-base-300'}`;
 	}
 </script>
@@ -50,7 +50,7 @@
 		</div>
 		<div class="collapse-content relative">
 			<div
-				class="-mx-3 flex max-h-96 flex-col gap-1 overflow-y-auto border-t border-base-300 p-1 pt-3"
+				class="-mx-3 flex max-h-80 sm:max-h-96 flex-col gap-1 overflow-y-auto border-t border-base-300 p-1 pt-3"
 			>
 				{#each podcast.items as episode}
 					<button

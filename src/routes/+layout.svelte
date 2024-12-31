@@ -20,7 +20,7 @@
 
 <div class="flex h-screen select-none flex-col bg-base-100">
 	<nav class="flex-none bg-base-200 shadow-md">
-		<div class="container mx-auto flex items-center justify-between px-4 py-4">
+		<div class="container mx-auto flex items-center justify-between px-4 py-2 sm:py-4">
 			{#if $showBackButton}
 				<button
 					onclick={() => window.history.back()}
@@ -73,7 +73,7 @@
 		</div>
 	</nav>
 
-	<div class="flex-1 overflow-y-auto {$playerStore.type ? 'mb-32' : ''}">
+	<div class="flex-1 overflow-y-auto {$playerStore.type ? 'mb-40' : ''}">
 		<slot></slot>
 	</div>
 
