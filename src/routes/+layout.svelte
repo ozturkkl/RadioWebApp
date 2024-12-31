@@ -18,13 +18,14 @@
 	});
 </script>
 
-<div class="flex h-screen flex-col bg-base-100 select-none">
+<div class="flex h-screen select-none flex-col bg-base-100">
 	<nav class="flex-none bg-base-200 shadow-md">
 		<div class="container mx-auto flex items-center justify-between px-4 py-4">
 			{#if $showBackButton}
 				<button
 					onclick={() => window.history.back()}
 					class="text-base-content-secondary hover:text-base-content"
+					aria-label="Go back"
 				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"

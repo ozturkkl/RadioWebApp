@@ -35,3 +35,12 @@
 		scrollbar-color: rgba(128, 128, 128, 0.5) transparent;
 	}
 }
+
+.overflow-y-auto {
+	scrollbar-gutter: stable both-edges;
+}
+
+.collapse-arrow>.collapse-title:after {
+	top: 1.2rem;
+	right: 1rem;
+}
