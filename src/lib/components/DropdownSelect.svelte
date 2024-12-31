@@ -1,7 +1,7 @@
 <script lang="ts">
 	export let value: string | number;
 	export let options: Array<{ value: string | number; label: string }>;
-	export let width = 'w-52';
+	export let width = 'w-40 sm:w-52';
 
 	function handleSelect(newValue: string | number) {
 		value = newValue;

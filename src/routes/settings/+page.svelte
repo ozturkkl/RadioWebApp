@@ -28,7 +28,7 @@
 
 	<div class="space-y-4 sm:space-y-6 rounded-lg bg-base-200 p-3 sm:p-6 shadow-md">
 		<!-- Theme Selector -->
-		<div class="flex items-center justify-between">
+		<label class="flex items-center justify-between cursor-pointer">
 			<div>
 				<h3 class="text-lg font-medium">Theme</h3>
 				<p class="text-base-content/70">Choose your preferred theme</p>
@@ -37,36 +37,32 @@
 				bind:value={$settings.theme}
 				options={themeOptions}
 			/>
-		</div>
+		</label>
 
 		<!-- Autoplay -->
-		<div class="flex items-center justify-between">
+		<label class="flex items-center justify-between cursor-pointer">
 			<div>
 				<h3 class="text-lg font-medium">Autoplay</h3>
 				<p class="text-base-content/70">Automatically play next episode</p>
 			</div>
-			<label class="relative inline-flex cursor-pointer items-center">
-				<input type="checkbox" bind:checked={$settings.autoplay} class="toggle toggle-primary" />
-			</label>
-		</div>
+			<input type="checkbox" bind:checked={$settings.autoplay} class="toggle toggle-primary" />
+		</label>
 
 		<!-- Auto-close Collapse -->
-		<div class="flex items-center justify-between">
+		<label class="flex items-center justify-between cursor-pointer">
 			<div>
 				<h3 class="text-lg font-medium">Auto-close Podcasts</h3>
 				<p class="text-base-content/70">Automatically close other podcasts when expanding one</p>
 			</div>
-			<label class="relative inline-flex cursor-pointer items-center">
-				<input
-					type="checkbox"
-					bind:checked={$settings.autoCollapse}
-					class="toggle toggle-primary"
-				/>
-			</label>
-		</div>
+			<input
+				type="checkbox"
+				bind:checked={$settings.autoCollapse}
+				class="toggle toggle-primary"
+			/>
+		</label>
 
 		<!-- Skip Seconds -->
-		<div class="flex items-center justify-between">
+		<label class="flex items-center justify-between cursor-pointer">
 			<div>
 				<h3 class="text-lg font-medium">Skip Duration</h3>
 				<p class="text-base-content/70">Amount of seconds to skip when using the skip buttons</p>
@@ -75,6 +71,6 @@
 				bind:value={$settings.skipSeconds}
 				options={skipOptions}
 			/>
-		</div>
+		</label>
 	</div>
 </div>
