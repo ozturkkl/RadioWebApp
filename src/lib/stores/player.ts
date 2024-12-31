@@ -137,6 +137,17 @@ export function togglePlaylist() {
                 }
             }
         });
+    } else if (state.type === 'radio' && state.currentRadio) {
+        // Navigate to main page using SvelteKit's goto
+        goto('/').then(() => {
+            // Find the radio card by title
+            const radioCard = Array.from(document.querySelectorAll('[role="button"]')).find(
+                element => element.querySelector('h3')?.textContent === state.currentRadio?.title
+            );
+            if (radioCard) {
+                radioCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
     }
 }
 
@@ -329,4 +340,16 @@ export function skipBackward() {
     const newTime = Math.max(audio.currentTime - skipAmount, 0);
     audio.currentTime = newTime;
     updateTime(newTime);
+}
+
+export function restartRadio() {
+    const state = get(playerStore);
+    if (state.type === 'radio' && state.currentRadio && audio) {
+        const currentUrl = state.currentRadio.streamUrl;
+        audio.src = currentUrl;
+        audio.load();
+        if (state.isPlaying) {
+            audio.play();
+        }
+    }
 } 

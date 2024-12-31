@@ -8,7 +8,7 @@
 			image: 'h-24 w-24 rounded-lg object-cover',
 			textContainer: 'w-0 flex-1',
 			title: 'truncate text-lg font-bold text-base-content pr-5 mt-1',
-			description: 'text-base-content-secondary line-clamp-2 pr-2',
+			description: 'text-base-content-secondary line-clamp-2 pr-2'
 		}
 	} as const;
 </script>
@@ -30,8 +30,12 @@
 <div
 	class="{cardStyles.container} {cardStyles.hoverScale}"
 	on:click={() => playRadio(radio)}
-	on:keydown|preventDefault|stopPropagation={(e) =>
-		(e.key === 'Enter' || e.key === ' ') && playRadio(radio)}
+	on:keydown={(e) => {
+		if (e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();
+			playRadio(radio);
+		}
+	}}
 	role="button"
 	tabindex="0"
 >
