@@ -22,3 +22,4 @@ vite.config.ts.timestamp-*
 
 # Static Images
 static/images/*
+static/public/*
