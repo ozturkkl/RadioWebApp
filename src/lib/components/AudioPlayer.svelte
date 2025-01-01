@@ -7,8 +7,6 @@
 		nextTrack,
 		previousTrack,
 		togglePlaylist,
-		playPodcast,
-		setSeekingState,
 		seekTo,
 		skipForward,
 		skipBackward,
@@ -328,10 +326,6 @@
 							max={$playerStore.duration || 100}
 							value={$playerStore.currentTime}
 							class="range range-xs flex-1"
-							on:touchstart|stopPropagation={() => setSeekingState(true)}
-							on:touchend|stopPropagation={() => setSeekingState(false)}
-							on:mousedown|stopPropagation={() => setSeekingState(true)}
-							on:mouseup|stopPropagation={() => setSeekingState(false)}
 							on:input|stopPropagation={(e) => seekTo(parseFloat(e.currentTarget.value))}
 						/>
 						<span class="w-10">{formatTime($playerStore.duration)}</span>

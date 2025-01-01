@@ -4,6 +4,7 @@
 	export let ariaLabel: string;
 	export let size: 'sm' | 'md' = 'md';
 	export let className = '';
+	export let buttonClassName = '';
 
 	let isPressed = false;
 	let animationTimeout: NodeJS.Timeout;
@@ -50,7 +51,9 @@
 >
 	<button
 		tabindex="-1"
-		class="btn {size === 'sm' ? 'btn-circle btn-sm' : 'btn-circle'} bg-base-100 pointer-events-none border border-base-content/10 shadow-md hover:shadow-lg"
+		class="btn {size === 'sm'
+			? 'btn-circle btn-sm'
+			: 'btn-circle'} pointer-events-none border border-base-content/10 bg-base-100 shadow-md hover:shadow-lg {buttonClassName}"
 		aria-hidden="true"
 	>
 		<slot />

@@ -2,6 +2,7 @@
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
 	import PodcastCard from '$lib/components/PodcastCard.svelte';
 	import RadioCard from '$lib/components/RadioCard.svelte';
+	import ContinueListening from '$lib/components/ContinueListening.svelte';
 	import { onMount } from 'svelte';
 	import { fetchPodcastsFromRssFeeds } from '$lib/util/fetchPodcasts';
 	import { fetchRadios } from '$lib/util/fetchRadios';
@@ -49,12 +50,13 @@
 		} else {
 			expandedPodcasts.delete(podcastId);
 		}
-		// Force Svelte reactivity
-		expandedPodcasts = expandedPodcasts;
+		expandedPodcasts = expandedPodcasts; // Trigger reactivity
 	}
 </script>
 
-<main class="container mx-auto space-y-4 px-2 py-4 sm:space-y-6 sm:px-4 sm:py-8">
+<main class="container mx-auto space-y-1 px-1 py-2 sm:space-y-2 sm:px-4 sm:py-3">
+	<ContinueListening {podcasts} />
+
 	{#if favoriteRadios.length > 0 || favoritePodcasts.length > 0}
 		<section>
 			<h2 class={headerClasses}>Favorites</h2>
@@ -100,7 +102,7 @@
 				<p class="text-base-content-secondary">All podcasts are in favorites</p>
 			{:else}
 				{#each otherPodcasts as podcast (podcast.id)}
-					<PodcastCard
+					<PodcastCard 
 						{podcast}
 						expanded={expandedPodcasts.has(podcast.id)}
 						onExpand={handlePodcastExpand}
