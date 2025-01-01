@@ -10,7 +10,7 @@ interface PodcastProgress {
     [podcastId: string]: EpisodeProgress;
 }
 
-const storedProgress = typeof localStorage !== 'undefined' 
+const storedProgress = typeof localStorage !== 'undefined'
     ? JSON.parse(localStorage.getItem('podcastProgress') || '{}')
     : {};
 
@@ -27,7 +27,6 @@ export const updatePodcastProgress = (
     episodeId: string,
     timestamp: number
 ) => {
-    console.log('updating podcast progress', podcastId, episodeId, timestamp);
     podcastProgress.update((progress) => ({
         ...progress,
         [podcastId]: {
