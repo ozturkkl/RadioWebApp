@@ -94,7 +94,8 @@
 									size="sm"
 									className="h-full"
 								>
-									<span class="text-xs font-bold sm:text-sm">{$playerStore.playbackRate}x</span>
+									<span class="text-xs font-bold sm:text-sm">{$playerStore.playbackRate ?? 1}x</span
+									>
 								</TouchableButton>
 								<div class="dropdown-content z-[1] rounded-box bg-base-200 p-2 shadow-lg">
 									{#each speedOptions as speed}

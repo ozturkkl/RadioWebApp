@@ -17,6 +17,7 @@ interface Settings {
 	autoplay: boolean;
 	autoCollapse: boolean;
 	skipSeconds: number;
+	playbackRate: number;
 }
 
 // Initialize settings from localStorage if available
@@ -24,9 +25,10 @@ const getInitialSettings = (): Settings => {
 	if (typeof window === 'undefined') {
 		return {
 			theme: 'light',
-			autoplay: false,
-			autoCollapse: false,
-			skipSeconds: 5
+			autoplay: true,
+			autoCollapse: true,
+			skipSeconds: 5,
+			playbackRate: 1.0
 		};
 	}
 
@@ -39,9 +41,10 @@ const getInitialSettings = (): Settings => {
 	const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 	return {
 		theme: prefersDark ? 'dark' : 'light',
-		autoplay: false,
-		autoCollapse: false,
-		skipSeconds: 5
+		autoplay: true,
+		autoCollapse: true,
+		skipSeconds: 5,
+		playbackRate: 1.0
 	};
 };
 

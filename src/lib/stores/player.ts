@@ -124,7 +124,7 @@ playerStore.subscribe(state => {
 
     // Always update volume and playback rate
     audio.volume = state.volume;
-    if (state.type === 'podcast') {
+    if (state.type === 'podcast' && state.playbackRate) {
         audio.playbackRate = state.playbackRate;
     }
 });
@@ -132,7 +132,7 @@ playerStore.subscribe(state => {
 export function playRadio(radio: Radio): void {
     playerStore.update((state): RadioPlayerState => ({
         type: 'radio',
-        isPlaying: false,
+        isPlaying: !(audio?.paused ?? true),
         currentTime: 0,
         duration: 0,
         volume: state.volume,
@@ -151,10 +151,10 @@ export function playPodcast(podcast: Podcast, startWithEpisode?: Episode, startW
 
     playerStore.update((state): PodcastPlayerState => ({
         type: 'podcast',
-        isPlaying: false,
+        isPlaying: !(audio?.paused ?? true),
         currentTime: startWithTime,
         volume: state.volume,
-        playbackRate: state.playbackRate,
+        playbackRate: get(settings).playbackRate,
         currentRadio: null,
         currentPodcast: podcast,
         currentEpisode: episodeToPlay,
@@ -215,6 +215,7 @@ export function updateVolume(volume: number) {
 export function updatePlaybackRate(rate: number) {
     playerStore.update((state): PlayerState => {
         if (state.type === 'podcast') {
+            settings.update(s => ({ ...s, playbackRate: rate }));
             return { ...state, playbackRate: rate };
         }
         return { ...state, playbackRate: 1 };
@@ -231,7 +232,7 @@ export function nextTrack(autoPlay: boolean = true) {
                 currentEpisode: nextEpisode,
                 duration: Number(nextEpisode.duration),
                 currentTime: 0,
-                isPlaying: false,
+                isPlaying: !(audio?.paused ?? true),
             };
         }
         return state;
@@ -251,7 +252,7 @@ export function previousTrack() {
                 currentEpisode: prevEpisode,
                 duration: Number(prevEpisode.duration),
                 currentTime: 0,
-                isPlaying: true,
+                isPlaying: !(audio?.paused ?? true),
             };
         }
         return state;
