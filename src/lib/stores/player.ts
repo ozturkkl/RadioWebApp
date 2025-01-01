@@ -135,7 +135,7 @@ export function playRadio(radio: Radio): void {
         isPlaying: !(audio?.paused ?? true),
         currentTime: 0,
         duration: 0,
-        volume: state.volume,
+        volume: get(settings).volume ?? 1,
         playbackRate: 1,
         currentRadio: radio,
         currentPodcast: null,
@@ -153,8 +153,8 @@ export function playPodcast(podcast: Podcast, startWithEpisode?: Episode, startW
         type: 'podcast',
         isPlaying: !(audio?.paused ?? true),
         currentTime: startWithTime,
-        volume: state.volume,
-        playbackRate: get(settings).playbackRate,
+        volume: get(settings).volume ?? 1,
+        playbackRate: get(settings).playbackRate ?? 1,
         currentRadio: null,
         currentPodcast: podcast,
         currentEpisode: episodeToPlay,
@@ -207,9 +207,11 @@ export function restartRadio() {
 
 // Player controls for playerStore
 export function updateVolume(volume: number) {
+    const normalizedVolume = Math.max(0, Math.min(1, volume));
+    settings.update(s => ({ ...s, volume: normalizedVolume }));
     playerStore.update((state) => ({
         ...state,
-        volume: Math.max(0, Math.min(1, volume)),
+        volume: normalizedVolume,
     }));
 }
 export function updatePlaybackRate(rate: number) {

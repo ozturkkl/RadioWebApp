@@ -18,6 +18,7 @@ interface Settings {
 	autoCollapse: boolean;
 	skipSeconds: number;
 	playbackRate: number;
+	volume: number;
 }
 
 // Initialize settings from localStorage if available
@@ -28,7 +29,8 @@ const getInitialSettings = (): Settings => {
 			autoplay: true,
 			autoCollapse: true,
 			skipSeconds: 5,
-			playbackRate: 1.0
+			playbackRate: 1.0,
+			volume: 1.0
 		};
 	}
 
@@ -44,7 +46,8 @@ const getInitialSettings = (): Settings => {
 		autoplay: true,
 		autoCollapse: true,
 		skipSeconds: 5,
-		playbackRate: 1.0
+		playbackRate: 1.0,
+		volume: 1.0
 	};
 };
 
