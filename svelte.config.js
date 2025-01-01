@@ -24,9 +24,6 @@ const config = {
 		prerender: {
 			entries: ['*']
 		},
-		paths: {
-			base: '/public/web-app'
-		}
 	}
 };
 
