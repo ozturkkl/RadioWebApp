@@ -35,9 +35,8 @@
 			showRightArrow = false;
 			return;
 		}
-		showLeftArrow = scrollContainer.scrollLeft > 0;
-		showRightArrow =
-			scrollContainer.scrollLeft < scrollContainer.scrollWidth - scrollContainer.clientWidth;
+		showLeftArrow = scrollContainer.scrollLeft > 10;
+		showRightArrow = scrollContainer.scrollLeft < scrollContainer.scrollWidth - scrollContainer.clientWidth - 10;
 	}
 
 	function scroll(direction: 'left' | 'right') {
@@ -57,6 +56,8 @@
 			.sort((a, b) => {
 				return $podcastProgress[b.id].lastPlayed - $podcastProgress[a.id].lastPlayed;
 			});
+		// Run checkArrows when inProgressPodcasts changes
+		setTimeout(checkArrows, 0);
 	}
 
 	function handlePodcastClick(podcast: Podcast & { episodeId: string; timestamp: number }) {
