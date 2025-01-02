@@ -10,17 +10,39 @@
 	import type { Podcast } from '$lib/util/fetchPodcasts';
 	import { settings } from '$lib/stores/settings';
 	import { favorites } from '$lib/stores/favorites';
+	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
+	import config from '$lib/config';
 
 	let podcasts: Podcast[] = [];
 	let radios: Radio[] = [];
 	let expandedPodcasts = new Set<string>();
 	let headerClasses = 'mb-2 text-2xl font-bold sm:mb-4';
 	let sectionClasses = 'grid grid-cols-1 items-start gap-2 sm:gap-4 lg:grid-cols-2 2xl:grid-cols-3';
+	let filteredPodcasts: Podcast[] = [];
 
+	$: {
+		filteredPodcasts = podcasts.filter((podcast) => !$favorites.podcasts.has(podcast.id));
+		if (selectedCategory !== 'All') {
+			filteredPodcasts = filteredPodcasts.filter((podcast) => {
+				return podcast.categories.includes(selectedCategory);
+			});
+		}
+	}
+
+	$: selectedCategory = $settings.selectedCategory;
+	$: allCategories = [
+		'All',
+		...new Set(
+			podcasts.flatMap((p) =>
+				p.categories.filter((cat) => !config.podcast.bypassCategories.includes(cat))
+			)
+		)
+	].sort();
+	$: categoryOptions = allCategories.map((cat) => ({ value: cat, label: cat }));
 	$: favoriteRadios = radios.filter((radio) => $favorites.radios.has(radio.title));
 	$: otherRadios = radios.filter((radio) => !$favorites.radios.has(radio.title));
 	$: favoritePodcasts = podcasts.filter((podcast) => $favorites.podcasts.has(podcast.id));
-	$: otherPodcasts = podcasts.filter((podcast) => !$favorites.podcasts.has(podcast.id));
+	$: otherPodcasts = filteredPodcasts;
 
 	onMount(async () => {
 		podcasts = await fetchPodcastsFromRssFeeds();
@@ -94,7 +116,14 @@
 	<div class="divider"></div>
 
 	<section>
-		<h2 class={headerClasses}>Podcast Feed</h2>
+		<div class="flex items-start items-center justify-between {headerClasses}">
+			<h2>Podcast Feed</h2>
+			<DropdownSelect
+				bind:value={$settings.selectedCategory}
+				options={categoryOptions}
+				classes="bg-base-200 w-48 sm:w-64 border border-1 border-base-300"
+			/>
+		</div>
 		<div class={sectionClasses}>
 			{#if podcasts.length === 0}
 				<p class="text-base-content-secondary">Loading podcasts...</p>
@@ -102,7 +131,7 @@
 				<p class="text-base-content-secondary">All podcasts are in favorites</p>
 			{:else}
 				{#each otherPodcasts as podcast (podcast.id)}
-					<PodcastCard 
+					<PodcastCard
 						{podcast}
 						expanded={expandedPodcasts.has(podcast.id)}
 						onExpand={handlePodcastExpand}

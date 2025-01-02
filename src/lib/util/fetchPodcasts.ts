@@ -8,6 +8,7 @@ export interface Podcast {
 	description: string;
 	imageUrl: string;
 	items: Episode[];
+	categories: string[];
 }
 
 export interface Episode {
@@ -70,7 +71,8 @@ async function fetchFreshPodcasts(): Promise<Podcast[]> {
 						description: item.description || item['itunes:summary']
 					};
 					return episode;
-				})
+				}),
+				categories: Array.isArray(channel.category) ? channel.category : channel.category ? [channel.category] : []
 			};
 			podcasts.push(podcast);
 		} catch (error) {

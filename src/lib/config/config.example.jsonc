@@ -1,10 +1,18 @@
 {
 	"website": {
-		"title": "My Podcast & Radio Website"
+		"title": "My Podcast & Radio Website",
+		"links": [
+			{
+				"iconLabel": "github",
+				"url": "https://github.com/yourusername"
+			}
+		]
 	},
 	"podcast": {
 		// RSS urls should be separated by new lines
-		"feedUrlsEndpoint": "https://example.com/feed_urls.txt"
+		"feedUrlsEndpoint": "https://example.com/feed_urls.txt",
+		// Categories to exclude from the dropdown menu in the podcast feed page
+		"bypassCategories": ["News", "Technology"]
 	},
 	"radios": [
 		{

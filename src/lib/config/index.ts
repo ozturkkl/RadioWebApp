@@ -3,9 +3,14 @@ import config from './config.json';
 export interface Config {
 	website: {
 		title: string;
+		links: Array<{
+			iconLabel: string;
+			url: string;
+		}>;
 	};
 	podcast: {
 		feedUrlsEndpoint: string;
+		bypassCategories: string[];
 	};
 	radios: Array<{
 		title: string;
