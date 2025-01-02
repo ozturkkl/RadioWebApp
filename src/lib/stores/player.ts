@@ -308,6 +308,17 @@ export function togglePlaylist() {
                     // If already expanded, just scroll to episode
                     scrollToEpisode();
                 }
+            } else {
+                // If podcast is not found, check if it exists and if current category doesn't include it
+                const settingsStore = get(settings);
+                if (settingsStore.selectedCategory !== 'All' && state.currentPodcast.categories &&
+                    !state.currentPodcast.categories.includes(settingsStore.selectedCategory)) {
+                    settings.update(s => ({ ...s, selectedCategory: 'All' }));
+                    // Wait for the next tick to let the UI update
+                    setTimeout(() => {
+                        return togglePlaylist();
+                    }, 0);
+                }
             }
         });
     } else if (state.type === 'radio' && state.currentRadio) {
