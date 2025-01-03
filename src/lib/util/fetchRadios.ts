@@ -1,10 +1,15 @@
 import { withCorsProxy } from './corsProxy';
 import { config } from '../config';
+import * as Icons from 'lucide-svelte';
 
 export interface Radio {
 	title: string;
 	image: string;
 	streamUrl: string;
+	links?: {
+		iconLabel: keyof typeof Icons;
+		url: string;
+	}[];
 	trackInfo: {
 		cover: string;
 		artist: string;
@@ -67,6 +72,7 @@ async function fetchFreshRadios(): Promise<Radio[]> {
 			title: radio.title,
 			image: radio.image,
 			streamUrl: radio.streamUrl,
+			links: radio.links,
 			trackInfo: trackInfoData
 		});
 	}

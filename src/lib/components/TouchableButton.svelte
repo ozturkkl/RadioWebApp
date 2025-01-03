@@ -53,8 +53,8 @@
 	<button
 		tabindex="-1"
 		class="btn {small ? 'btn-sm' : ''} {circle
-			? 'btn-circle'
-			: ''} pointer-events-none border border-base-content/10 bg-base-100 shadow-md hover:shadow-lg {buttonClassName}"
+			? 'btn-circle border border-base-content/10 bg-base-100 shadow-md hover:shadow-lg'
+			: ''} pointer-events-none {buttonClassName}"
 		aria-hidden="true"
 	>
 		<slot />

@@ -36,11 +36,11 @@
 	}
 }
 
-.overflow-y-auto {
+.overflow-y-auto:not(.no-stable-gutter) {
 	scrollbar-gutter: stable both-edges;
 }
 
-.collapse-arrow>.collapse-title:after {
+.collapse-arrow > .collapse-title:after {
 	top: 1.2rem;
 	right: 1rem;
 }

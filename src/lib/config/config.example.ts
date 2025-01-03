@@ -8,6 +8,13 @@ export const exampleConfig: Config = {
 				iconLabel: 'Github',
 				url: 'https://github.com/yourusername'
 			}
+		],
+		externalLinks: [
+			{
+				label: 'Youtube',
+				iconLabel: 'Youtube',
+				url: 'https://youtube.com/c/example'
+			}
 		]
 	},
 	podcast: {
@@ -21,6 +28,16 @@ export const exampleConfig: Config = {
 			title: 'Radio 1',
 			image: '/radio1.png',
 			streamUrl: 'https://example.com/radio1/stream',
+			links: [
+				{
+					iconLabel: 'Globe',
+					url: 'https://example.com/radio1'
+				},
+				{
+					iconLabel: 'Facebook',
+					url: 'https://facebook.com/radio1'
+				}
+			],
 			trackInfo: 'https://example.com/radio1/track/current'
 		},
 		{

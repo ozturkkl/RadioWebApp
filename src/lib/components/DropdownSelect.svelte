@@ -70,7 +70,7 @@
 	</button>
 	<div role="button" class="dropdown-content z-[100]">
 		<ul
-			class="menu {classes} flex max-h-[40vh] flex-col flex-nowrap overflow-y-auto rounded-box border border-base-content/10 shadow-xl p-0"
+			class="menu {classes} flex max-h-[40vh] flex-col flex-nowrap overflow-y-auto no-stable-gutter rounded-box border border-base-content/10 shadow-xl p-0"
 		>
 			{#each options as option}
 				<li>

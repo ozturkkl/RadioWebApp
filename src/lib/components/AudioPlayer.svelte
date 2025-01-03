@@ -88,7 +88,7 @@
 									<span class="text-xs font-bold sm:text-sm">{$playerStore.playbackRate ?? 1}x</span
 									>
 								</TouchableButton>
-								<div class="dropdown-content z-[1] rounded-box bg-base-200 p-2 shadow-lg">
+								<div class="dropdown-content z-[1] rounded-box bg-base-200 shadow-lg">
 									{#each speedOptions as speed}
 										<button
 											class="block w-full rounded px-6 py-3 text-base hover:bg-base-300 {speed ===

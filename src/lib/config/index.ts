@@ -6,6 +6,11 @@ export interface WebsiteConfig {
 		iconLabel: keyof typeof Icons;
 		url: string;
 	}[];
+	externalLinks: {
+		label: string;
+		iconLabel: keyof typeof Icons;
+		url: string;
+	}[];
 }
 
 export interface PodcastConfig {
@@ -17,6 +22,10 @@ export interface RadioConfig {
 	title: string;
 	image: string;
 	streamUrl: string;
+	links?: {
+		iconLabel: keyof typeof Icons;
+		url: string;
+	}[];
 	trackInfo:
 		| string
 		| {

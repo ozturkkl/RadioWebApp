@@ -18,6 +18,7 @@
 	import { favorites } from '$lib/stores/favorites';
 	import { playRadio } from '$lib/stores/player';
 	import FavoriteButton from './FavoriteButton.svelte';
+	import { getIconComponent } from '$lib/util/getIconComponent';
 
 	export let radio: Radio;
 
@@ -51,6 +52,26 @@
 				<p class={cardStyles.content.description}>
 					{trackDescription}
 				</p>
+			{/if}
+		</div>
+		<div class="flex items-center">
+			{#if radio.links && radio.links.length > 0}
+				<div class="divider divider-horizontal m-0 w-1 p-0"></div>
+
+				<div class="my-auto flex flex-col items-center">
+					{#each radio.links as link}
+						<a
+							href={link.url}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="flex items-center px-2 py-1 text-base-content/50 hover:text-base-content"
+							on:click|stopPropagation={() => {}}
+							aria-label="Visit {link.iconLabel.toLowerCase()} link"
+						>
+							<svelte:component this={getIconComponent(link.iconLabel)} class="h-5 w-5" />
+						</a>
+					{/each}
+				</div>
 			{/if}
 		</div>
 	</div>
