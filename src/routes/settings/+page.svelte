@@ -1,20 +1,6 @@
 <script lang="ts">
-	import { settings } from '$lib/stores/settings';
-	import type { Theme } from '$lib/stores/settings';
+	import { settings, themes } from '$lib/stores/settings';
 	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
-
-	const themes: Theme[] = [
-		'light',
-		'dark',
-		'cupcake',
-		'bumblebee',
-		'emerald',
-		'corporate',
-		'synthwave',
-		'retro',
-		'cyberpunk',
-		'night'
-	];
 
 	const themeOptions = themes.map(theme => ({ value: theme, label: theme }));
 	const skipOptions = [5, 10, 15, 30].map(seconds => ({ 

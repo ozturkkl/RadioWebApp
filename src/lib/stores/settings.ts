@@ -1,16 +1,41 @@
 import { writable } from 'svelte/store';
 
-export type Theme =
-	| 'light'
-	| 'dark'
-	| 'cupcake'
-	| 'bumblebee'
-	| 'emerald'
-	| 'corporate'
-	| 'synthwave'
-	| 'retro'
-	| 'cyberpunk'
-	| 'night';
+export type Theme = (typeof themes)[number];
+export const themes = [
+	'system',
+	'light',
+	'dark',
+	'cupcake',
+	'bumblebee',
+	'emerald',
+	'corporate',
+	'synthwave',
+	'retro',
+	'cyberpunk',
+	'valentine',
+	'halloween',
+	'garden',
+	'forest',
+	'aqua',
+	'lofi',
+	'pastel',
+	'fantasy',
+	'wireframe',
+	'black',
+	'luxury',
+	'dracula',
+	'cmyk',
+	'autumn',
+	'business',
+	'acid',
+	'lemonade',
+	'night',
+	'coffee',
+	'winter',
+	'dim',
+	'nord',
+	'sunset'
+];
 
 interface Settings {
 	theme: Theme;
@@ -26,7 +51,7 @@ interface Settings {
 const getInitialSettings = (): Settings => {
 	if (typeof window === 'undefined') {
 		return {
-			theme: 'light',
+			theme: 'system',
 			autoplay: true,
 			autoCollapse: true,
 			skipSeconds: 5,
@@ -41,10 +66,8 @@ const getInitialSettings = (): Settings => {
 		return JSON.parse(savedSettings);
 	}
 
-	// Check system preference for theme
-	const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 	return {
-		theme: prefersDark ? 'dark' : 'light',
+		theme: 'system',
 		autoplay: true,
 		autoCollapse: true,
 		skipSeconds: 5,
@@ -62,15 +85,22 @@ if (typeof window !== 'undefined') {
 	settings.subscribe((value) => {
 		localStorage.setItem('app-settings', JSON.stringify(value));
 
-		// Apply theme using daisyUI
-		document.documentElement.setAttribute('data-theme', value.theme);
+		// Apply theme using daisyUI, handling system theme
+		const theme =
+			value.theme === 'system'
+				? window.matchMedia('(prefers-color-scheme: dark)').matches
+					? 'dark'
+					: 'light'
+				: value.theme;
+		document.documentElement.setAttribute('data-theme', theme);
 	});
 
 	// Listen for system theme changes
 	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-		settings.update((s) => ({
-			...s,
-			theme: e.matches ? 'dark' : 'light'
-		}));
+		settings.subscribe((s) => {
+			if (s.theme === 'system') {
+				document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+			}
+		});
 	});
 }

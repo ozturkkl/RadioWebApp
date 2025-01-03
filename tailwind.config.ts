@@ -1,23 +1,13 @@
 import type { Config } from 'tailwindcss';
 import daisyui from 'daisyui';
+import { themes } from './src/lib/stores/settings';
 
 export default {
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 	theme: {},
 	plugins: [daisyui],
 	daisyui: {
-		themes: [
-			'light',
-			'dark',
-			'cupcake',
-			'bumblebee',
-			'emerald',
-			'corporate',
-			'synthwave',
-			'retro',
-			'cyberpunk',
-			'night'
-		],
+		themes,
 		darkTheme: 'dark',
 		base: true,
 		styled: true,
