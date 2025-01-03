@@ -77,7 +77,7 @@
 </script>
 
 <main class="container mx-auto space-y-1 px-1 py-2 sm:space-y-2 sm:px-4 sm:py-3">
-	<ContinueListening {podcasts} />
+	<ContinueListening {podcasts} {radios} />
 
 	{#if favoriteRadios.length > 0 || favoritePodcasts.length > 0}
 		<section>

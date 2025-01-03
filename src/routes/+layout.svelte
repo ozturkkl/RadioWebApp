@@ -9,7 +9,7 @@
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import ExternalLinksModal from '$lib/components/ExternalLinksModal.svelte';
-	import { ChevronLeft, Settings, ExternalLink } from 'lucide-svelte';
+	import { ChevronLeft, Settings, SquareArrowOutUpRight } from 'lucide-svelte';
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import Logo from '$lib/components/Logo.svelte';
 
@@ -71,7 +71,7 @@
 					circle={false}
 					small
 				>
-					<ExternalLink class="h-5 w-5 sm:h-6 sm:w-6" />
+					<SquareArrowOutUpRight class="h-5 w-5 sm:h-6 sm:w-6" />
 				</TouchableButton>
 
 				<TouchableButton

@@ -5,6 +5,7 @@ import { settings } from './settings';
 import { updatePodcastProgress } from './podcastProgress';
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
+import { updateRadioProgress } from './radioProgress';
 
 export type PlayerType = 'radio' | 'podcast';
 
@@ -113,6 +114,7 @@ playerStore.subscribe(state => {
             console.log('playing radio', state.currentRadio.streamUrl);
             audio.src = state.currentRadio.streamUrl;
             audio.playbackRate = 1;
+            updateRadioProgress(state.currentRadio.id);
         } else if (state.type === 'podcast') {
             console.log('playing podcast', state.currentEpisode.url);
             audio.src = state.currentEpisode.url;

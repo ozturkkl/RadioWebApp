@@ -3,6 +3,7 @@ import { config } from '../config';
 import * as Icons from 'lucide-svelte';
 
 export interface Radio {
+	id: string;
 	title: string;
 	image: string;
 	streamUrl: string;
@@ -69,6 +70,7 @@ async function fetchFreshRadios(): Promise<Radio[]> {
 		}
 
 		radioList.push({
+			id: radio.title.toLowerCase().replace(/\s+/g, '-'),
 			title: radio.title,
 			image: radio.image,
 			streamUrl: radio.streamUrl,
