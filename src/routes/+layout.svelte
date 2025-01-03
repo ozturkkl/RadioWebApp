@@ -11,7 +11,8 @@
 	import ExternalLinksModal from '$lib/components/ExternalLinksModal.svelte';
 	import { ChevronLeft, Settings, ExternalLink } from 'lucide-svelte';
 	import { getIconComponent } from '$lib/util/getIconComponent';
-	
+	import Logo from '$lib/components/Logo.svelte';
+
 	const showBackButton = writable(false);
 	let externalLinksModal: ExternalLinksModal;
 
@@ -28,21 +29,20 @@
 	<nav class="flex-none bg-base-200 shadow-md">
 		<div class="container mx-auto flex items-center justify-between overflow-hidden">
 			<div class="flex items-center">
-				{#if $showBackButton}
-					<TouchableButton
-						onClick={() => window.history.back()}
-						ariaLabel="Go back"
-						circle={false}
-						buttonClassName="shadow-none"
-						small
-					>
-						<ChevronLeft class="h-5 w-5 sm:h-6 sm:w-6" />
-					</TouchableButton>
-				{/if}
-				<a
-					href="/"
-					class={`${!$showBackButton ? 'pl-4' : 'pl-0 sm:pl-2'} text-l font-bold text-base-content sm:text-2xl`}
+				<TouchableButton
+					onClick={() => ($showBackButton ? window.history.back() : goto('/'))}
+					ariaLabel="Go back"
+					circle={false}
+					buttonClassName="shadow-none"
+					small
 				>
+					{#if $showBackButton}
+						<ChevronLeft class="w-[32px]" />
+					{:else}
+						<Logo className="h-full w-[32px] text-base-content" />
+					{/if}
+				</TouchableButton>
+				<a href="/" class={`text-l mx-[-4px] z-10 pl-0 font-bold text-base-content sm:text-2xl`}>
 					{config.website.title}
 				</a>
 			</div>
