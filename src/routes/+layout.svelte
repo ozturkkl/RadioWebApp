@@ -1,11 +1,13 @@
 <script lang="ts">
 	import '../app.css';
 	import { onNavigate } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { config } from '$lib/config';
 	import { playerStore } from '$lib/stores/player';
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
+	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { ChevronLeft, Settings, type Icon } from 'lucide-svelte';
 	import * as Icons from 'lucide-svelte';
 
@@ -27,41 +29,31 @@
 
 <div class="flex h-screen select-none flex-col bg-base-100">
 	<nav class="flex-none bg-base-200 shadow-md">
-		<div class="container mx-auto flex items-center justify-between px-4 py-2 sm:py-4">
+		<div class="container mx-auto flex items-center justify-between overflow-hidden">
 			<div class="flex items-center gap-4">
 				{#if $showBackButton}
-					<button
-						onclick={() => window.history.back()}
-						class="text-base-content-secondary hover:text-base-content"
-						aria-label="Go back"
-					>
+					<TouchableButton onClick={() => window.history.back()} ariaLabel="Go back" circle={false}>
 						<ChevronLeft class="h-6 w-6" />
-					</button>
+					</TouchableButton>
 				{/if}
-				<a href="/" class="text-2xl font-bold text-base-content">{config.website.title}</a>
+				<a href="/" class="text-2xl font-bold text-base-content pl-4">{config.website.title}</a>
 			</div>
 
 			<!-- Social Links -->
-			<div class="flex items-center gap-4">
+			<div class="flex items-center">
 				{#each config.website.links as link}
-					<a
-						href={link.url}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="text-base-content-secondary hover:text-base-content"
+					<TouchableButton
+						onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
+						ariaLabel={link.iconLabel}
+						circle={false}
 					>
-						<span class="sr-only">{link.iconLabel}</span>
 						<svelte:component this={getIconComponent(link.iconLabel)} class="h-6 w-6" />
-					</a>
+					</TouchableButton>
 				{/each}
-				
-				<a
-					href="/settings"
-					class="text-base-content-secondary hover:text-base-content"
-					aria-label="Settings"
-				>
+
+				<TouchableButton onClick={() => goto('/settings')} ariaLabel="Settings" circle={false}>
 					<Settings class="h-6 w-6" />
-				</a>
+				</TouchableButton>
 			</div>
 		</div>
 	</nav>

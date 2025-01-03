@@ -16,13 +16,13 @@
 	onMount(() => {
 		// Check if device supports touch
 		isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-		
+
 		// Initial check after a small delay to ensure content is rendered
 		setTimeout(checkArrows, 100);
-		
+
 		// Add resize listener
 		window.addEventListener('resize', checkArrows);
-		
+
 		return () => {
 			window.removeEventListener('resize', checkArrows);
 		};
@@ -37,7 +37,8 @@
 			return;
 		}
 		showLeftArrow = scrollContainer.scrollLeft > 10;
-		showRightArrow = scrollContainer.scrollLeft < scrollContainer.scrollWidth - scrollContainer.clientWidth - 10;
+		showRightArrow =
+			scrollContainer.scrollLeft < scrollContainer.scrollWidth - scrollContainer.clientWidth - 10;
 	}
 
 	function scroll(direction: 'left' | 'right') {
@@ -86,22 +87,14 @@
 	<div class="relative">
 		{#if showLeftArrow}
 			<div class="absolute left-[-4px] top-1/2 z-10 -translate-y-1/2">
-				<TouchableButton
-					buttonClassName="border-2 border-base-content/20 bg-base-300"
-					onClick={() => scroll('left')}
-					ariaLabel="Scroll left"
-				>
+				<TouchableButton onClick={() => scroll('left')} ariaLabel="Scroll left">
 					<ChevronLeft class="h-5 w-5" />
 				</TouchableButton>
 			</div>
 		{/if}
 		{#if showRightArrow}
 			<div class="absolute right-[-4px] top-1/2 z-10 -translate-y-1/2">
-				<TouchableButton
-					buttonClassName="border-2 border-base-content/20 bg-base-300"
-					onClick={() => scroll('right')}
-					ariaLabel="Scroll right"
-				>
+				<TouchableButton onClick={() => scroll('right')} ariaLabel="Scroll right">
 					<ChevronRight class="h-5 w-5" />
 				</TouchableButton>
 			</div>
@@ -113,7 +106,7 @@
 		>
 			{#each inProgressPodcasts as podcast}
 				<button
-					class="group flex min-w-fit items-center rounded-full bg-accent/15 border-2 border-base-content/20 p-0 transition-colors hover:brightness-120
+					class="hover:brightness-120 group flex min-w-fit items-center rounded-full border-2 border-base-content/20 bg-accent/15 p-0 transition-colors
                     hover:scale-105"
 					on:click={() => handlePodcastClick(podcast)}
 				>

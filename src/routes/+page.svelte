@@ -99,7 +99,7 @@
 	{/if}
 
 	<section>
-		<h2 class={headerClasses}>Radio Stations</h2>
+		<h2 class={headerClasses}>Radio</h2>
 		<div class={sectionClasses}>
 			{#if radios.length === 0}
 				<p class="text-base-content-secondary">Loading stations...</p>
@@ -117,7 +117,7 @@
 
 	<section>
 		<div class="flex items-start items-center justify-between {headerClasses}">
-			<h2>Podcast Feed</h2>
+			<h2>Archive</h2>
 			<DropdownSelect
 				bind:value={$settings.selectedCategory}
 				options={categoryOptions}
@@ -126,9 +126,9 @@
 		</div>
 		<div class={sectionClasses}>
 			{#if podcasts.length === 0}
-				<p class="text-base-content-secondary">Loading podcasts...</p>
+				<p class="text-base-content-secondary">Loading archive...</p>
 			{:else if otherPodcasts.length === 0}
-				<p class="text-base-content-secondary">All podcasts are in favorites</p>
+				<p class="text-base-content-secondary">All of this archive is in favorites</p>
 			{:else}
 				{#each otherPodcasts as podcast (podcast.id)}
 					<PodcastCard

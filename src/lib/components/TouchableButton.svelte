@@ -2,7 +2,8 @@
 	export let onClick: () => void;
 	export let disabled = false;
 	export let ariaLabel: string;
-	export let size: 'sm' | 'md' = 'md';
+	export let small = false;
+	export let circle = true;
 	export let className = '';
 	export let buttonClassName = '';
 
@@ -51,9 +52,9 @@
 >
 	<button
 		tabindex="-1"
-		class="btn {size === 'sm'
-			? 'btn-circle btn-sm'
-			: 'btn-circle'} pointer-events-none border border-base-content/10 bg-base-100 shadow-md hover:shadow-lg {buttonClassName}"
+		class="btn {small ? 'btn-sm' : ''} {circle
+			? 'btn-circle'
+			: ''} pointer-events-none border border-base-content/10 bg-base-100 shadow-md hover:shadow-lg {buttonClassName}"
 		aria-hidden="true"
 	>
 		<slot />

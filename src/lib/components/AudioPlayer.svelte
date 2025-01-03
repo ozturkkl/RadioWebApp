@@ -65,7 +65,6 @@
 				<TouchableButton
 					onClick={togglePlaylist}
 					ariaLabel={$playerStore.type === 'radio' ? 'Go to radio' : 'Go to podcast'}
-					size="md"
 				>
 					<List class="h-6 w-6" />
 				</TouchableButton>
@@ -83,7 +82,7 @@
 								<TouchableButton
 									onClick={() => {}}
 									ariaLabel="Playback speed"
-									size="sm"
+									small
 									className="h-full"
 								>
 									<span class="text-xs font-bold sm:text-sm">{$playerStore.playbackRate ?? 1}x</span
@@ -107,7 +106,7 @@
 								</div>
 							</div>
 						{:else if $playerStore.type === 'radio'}
-							<TouchableButton onClick={restartRadio} ariaLabel="Refresh radio stream" size="sm">
+							<TouchableButton onClick={restartRadio} ariaLabel="Refresh radio stream" small>
 								<RotateCcw class="h-6 w-6" />
 							</TouchableButton>
 						{/if}
@@ -124,7 +123,7 @@
 											(ep) => ep.id === $playerStore.currentEpisode?.id
 										) === 0}
 									ariaLabel="Previous track"
-									size="sm"
+									small
 								>
 									<SkipBack class="h-6 w-6" />
 								</TouchableButton>
@@ -134,7 +133,7 @@
 								onClick={skipBackward}
 								disabled={$playerStore.currentTime === 0 && $playerStore.duration !== 0}
 								ariaLabel="Skip backward {$settings.skipSeconds} seconds"
-								size="sm"
+								small
 							>
 								<div class="relative">
 									<RotateCcw class="h-6 w-6" />
@@ -149,7 +148,6 @@
 							<TouchableButton
 								onClick={togglePlayPause}
 								ariaLabel={$playerStore.isPlaying ? 'Pause' : 'Play'}
-								size="md"
 							>
 								{#if $playerStore.isPlaying}
 									<Pause class="h-8 w-8" />
@@ -163,7 +161,7 @@
 								disabled={$playerStore.duration === $playerStore.currentTime &&
 									$playerStore.duration !== 0}
 								ariaLabel="Skip forward {$settings.skipSeconds} seconds"
-								size="sm"
+								small
 							>
 								<div class="relative">
 									<RotateCcw class="h-6 w-6" style="transform: scaleX(-1)" />
@@ -184,7 +182,7 @@
 										) ===
 											$playerStore.playlist.length - 1}
 									ariaLabel="Next track"
-									size="sm"
+									small
 								>
 									<SkipForward class="h-6 w-6" />
 								</TouchableButton>
@@ -199,7 +197,7 @@
 							<TouchableButton
 								onClick={() => {}}
 								ariaLabel="Volume control"
-								size="sm"
+								small
 								className="h-full"
 							>
 								<Volume2 class="h-6 w-6" />
