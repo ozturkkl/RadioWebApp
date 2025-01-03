@@ -1,6 +1,6 @@
 import { XMLParser } from 'fast-xml-parser';
 import { withCorsProxy } from './corsProxy';
-import config from '../config';
+import { config } from '../config';
 
 export interface Podcast {
 	id: string;
@@ -72,7 +72,11 @@ async function fetchFreshPodcasts(): Promise<Podcast[]> {
 					};
 					return episode;
 				}),
-				categories: Array.isArray(channel.category) ? channel.category : channel.category ? [channel.category] : []
+				categories: Array.isArray(channel.category)
+					? channel.category
+					: channel.category
+						? [channel.category]
+						: []
 			};
 			podcasts.push(podcast);
 		} catch (error) {

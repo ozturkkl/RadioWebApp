@@ -11,7 +11,7 @@
 	import { settings } from '$lib/stores/settings';
 	import { favorites } from '$lib/stores/favorites';
 	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
-	import config from '$lib/config';
+	import { config } from '$lib/config';
 
 	let podcasts: Podcast[] = [];
 	let radios: Radio[] = [];

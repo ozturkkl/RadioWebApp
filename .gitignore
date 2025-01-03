@@ -13,8 +13,8 @@ node_modules
 Thumbs.db
 
 # Config
-src/lib/config/config.json
-!src/lib/config/config.example.json
+src/lib/config/config.ts
+!src/lib/config/config.example.ts
 
 # Vite
 vite.config.js.timestamp-*

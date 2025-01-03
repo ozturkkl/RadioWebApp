@@ -1,5 +1,5 @@
 import { withCorsProxy } from './corsProxy';
-import config from '../config';
+import { config } from '../config';
 
 export interface Radio {
 	title: string;

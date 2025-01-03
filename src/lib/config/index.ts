@@ -1,29 +1,34 @@
-import config from './config.json';
+import * as Icons from 'lucide-svelte';
 
-export interface Config {
-	website: {
-		title: string;
-		links: Array<{
-			iconLabel: string;
-			url: string;
-		}>;
-	};
-	podcast: {
-		feedUrlsEndpoint: string;
-		bypassCategories: string[];
-	};
-	radios: Array<{
-		title: string;
-		image: string;
-		streamUrl: string;
-		trackInfo:
-			| string
-			| {
-					cover: string;
-					artist: string;
-					title: string;
-			  };
-	}>;
+export interface WebsiteConfig {
+	title: string;
+	links: {
+		iconLabel: keyof typeof Icons;
+		url: string;
+	}[];
 }
 
-export default config as Config;
+export interface PodcastConfig {
+	feedUrlsEndpoint: string;
+	bypassCategories: string[];
+}
+
+export interface RadioConfig {
+	title: string;
+	image: string;
+	streamUrl: string;
+	trackInfo:
+		| string
+		| {
+				cover: string;
+				artist: string;
+				title: string;
+		  };
+}
+
+export interface Config {
+	website: WebsiteConfig;
+	podcast: PodcastConfig;
+	radios: RadioConfig[];
+}
+export * from './config';
