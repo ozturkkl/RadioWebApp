@@ -6,11 +6,12 @@
 	import { config } from '$lib/config';
 	import { playerStore } from '$lib/stores/player';
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
+	import { ChevronLeft, Settings, type Icon } from 'lucide-svelte';
 	import * as Icons from 'lucide-svelte';
 
 	type IconName = keyof typeof Icons;
 	const getIconComponent = (name: IconName) => {
-		return Icons[name] as unknown as typeof Icons.Icon;
+		return Icons[name] as unknown as typeof Icon;
 	};
 
 	const showBackButton = writable(false);
@@ -34,20 +35,7 @@
 						class="text-base-content-secondary hover:text-base-content"
 						aria-label="Go back"
 					>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							class="h-6 w-6"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke="currentColor"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M15 19l-7-7 7-7"
-							/>
-						</svg>
+						<ChevronLeft class="h-6 w-6" />
 					</button>
 				{/if}
 				<a href="/" class="text-2xl font-bold text-base-content">{config.website.title}</a>
@@ -72,7 +60,7 @@
 					class="text-base-content-secondary hover:text-base-content"
 					aria-label="Settings"
 				>
-					<Icons.Settings class="h-6 w-6" />
+					<Settings class="h-6 w-6" />
 				</a>
 			</div>
 		</div>
