@@ -34,6 +34,15 @@
 			<input type="checkbox" bind:checked={$settings.autoplay} class="toggle toggle-primary" />
 		</label>
 
+		<!-- Autoplay Last Content -->
+		<label class="flex items-center justify-between cursor-pointer">
+			<div>
+				<h3 class="text-lg font-medium">Resume Last Content</h3>
+				<p class="text-base-content/70">Automatically play your last played radio or podcast when opening the app</p>
+			</div>
+			<input type="checkbox" bind:checked={$settings.autoplayLastContent} class="toggle toggle-primary" />
+		</label>
+
 		<!-- Auto-close Collapse -->
 		<label class="flex items-center justify-between cursor-pointer">
 			<div>

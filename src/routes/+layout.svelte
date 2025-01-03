@@ -12,6 +12,7 @@
 	import { ChevronLeft, Settings, SquareArrowOutUpRight } from 'lucide-svelte';
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import Logo from '$lib/components/Logo.svelte';
+	import AutoplayLastContent from '$lib/components/AutoplayLastContent.svelte';
 
 	const showBackButton = writable(false);
 	let externalLinksModal: ExternalLinksModal;
@@ -24,6 +25,8 @@
 		showBackButton.set(navigation.to?.url.pathname !== '/');
 	});
 </script>
+
+<AutoplayLastContent />
 
 <div class="flex h-screen select-none flex-col bg-base-100">
 	<nav class="flex-none bg-base-200 shadow-md">

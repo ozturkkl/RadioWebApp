@@ -45,6 +45,7 @@ interface Settings {
 	playbackRate: number;
 	volume: number;
 	selectedCategory: string;
+	autoplayLastContent: boolean;
 }
 
 // Initialize settings from localStorage if available
@@ -57,7 +58,8 @@ const getInitialSettings = (): Settings => {
 			skipSeconds: 5,
 			playbackRate: 1.0,
 			volume: 1.0,
-			selectedCategory: 'All'
+			selectedCategory: 'All',
+			autoplayLastContent: false
 		};
 	}
 
@@ -73,7 +75,8 @@ const getInitialSettings = (): Settings => {
 		skipSeconds: 5,
 		playbackRate: 1.0,
 		volume: 1.0,
-		selectedCategory: 'All'
+		selectedCategory: 'All',
+		autoplayLastContent: false
 	};
 };
 
