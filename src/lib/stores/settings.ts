@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { updatePWAThemeColor } from './pwa';
 
 export type Theme = (typeof themes)[number];
 export const themes = [
@@ -96,6 +97,9 @@ if (typeof window !== 'undefined') {
 					: 'light'
 				: value.theme;
 		document.documentElement.setAttribute('data-theme', theme);
+
+		// Update PWA theme color with the current theme's background color
+		updatePWAThemeColor();
 	});
 
 	// Listen for system theme changes
@@ -103,6 +107,8 @@ if (typeof window !== 'undefined') {
 		settings.subscribe((s) => {
 			if (s.theme === 'system') {
 				document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+
+				updatePWAThemeColor();
 			}
 		});
 	});
