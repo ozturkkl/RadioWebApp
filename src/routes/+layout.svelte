@@ -14,17 +14,67 @@
 	import Logo from '$lib/components/Logo.svelte';
 	import AutoplayLastContent from '$lib/components/AutoplayLastContent.svelte';
 
+	import { pwaInfo } from 'virtual:pwa-info';
+	import { deferredInstallPrompt, isInstalled } from '$lib/stores/pwa';
+	import type { BeforeInstallPromptEvent } from '$lib/stores/pwa';
+
+	$: webManifestLink = pwaInfo ? pwaInfo.webManifest.linkTag : '';
+
 	const showBackButton = writable(false);
 	let externalLinksModal: ExternalLinksModal;
 
-	onMount(() => {
+	// Set up PWA install prompt listener before mount
+	if (typeof window !== 'undefined') {
+		window.addEventListener('beforeinstallprompt', ((e: Event) => {
+			e.preventDefault();
+			deferredInstallPrompt.set(e as BeforeInstallPromptEvent);
+		}) as EventListener);
+
+		window.addEventListener('appinstalled', () => {
+			deferredInstallPrompt.set(null);
+			isInstalled.set(true);
+		});
+
+		// Check if the app is installed previously
+		if (window.matchMedia('(display-mode: standalone)').matches) {
+			isInstalled.set(true);
+		}
+	}
+
+	onMount(async () => {
 		showBackButton.set(window.location.pathname !== '/');
+
+		if (pwaInfo) {
+			const { registerSW } = await import('virtual:pwa-register');
+			registerSW({
+				immediate: true,
+				onRegistered(swUrl) {
+					console.log('SW registered:', swUrl);
+
+					// uncomment following code if you want check for updates
+					// r && setInterval(() => {
+					//    console.log('Checking for sw update')
+					//    r.update()
+					// }, 20000 /* 20s for testing purposes */)
+				}
+				// onNeedRefresh() {
+				// 	console.log('SW update available');
+				// },
+				// onOfflineReady() {
+				// 	console.log('SW ready to work offline');
+				// }
+			});
+		}
 	});
 
 	onNavigate((navigation) => {
 		showBackButton.set(navigation.to?.url.pathname !== '/');
 	});
 </script>
+
+<svelte:head>
+	{@html webManifestLink}
+</svelte:head>
 
 <AutoplayLastContent />
 
@@ -45,7 +95,7 @@
 						<Logo className="h-full w-[32px] text-base-content" />
 					{/if}
 				</TouchableButton>
-				<a href="/" class={`text-l mx-[-4px] z-10 pl-0 font-bold text-base-content sm:text-2xl`}>
+				<a href="/" class={`text-l z-10 mx-[-4px] pl-0 font-bold text-base-content sm:text-2xl`}>
 					{config.website.title}
 				</a>
 			</div>
