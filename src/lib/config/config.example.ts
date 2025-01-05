@@ -3,6 +3,8 @@ import type { Config } from '.';
 export const exampleConfig: Config = {
 	website: {
 		title: 'My Podcast & Radio Website',
+		description: 'My Podcast & Radio Website',
+		url: 'https://mywebsite.com',
 		links: [
 			{
 				iconLabel: 'Github',

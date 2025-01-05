@@ -2,6 +2,8 @@ import * as Icons from 'lucide-svelte';
 
 export interface WebsiteConfig {
 	title: string;
+	description: string;
+	url: string;
 	links: {
 		iconLabel: keyof typeof Icons;
 		url: string;

@@ -30,6 +30,11 @@
 			deferredInstallPrompt.set(e as BeforeInstallPromptEvent);
 		}) as EventListener);
 
+		// check if the app is installed previously
+		if (window.matchMedia('(display-mode: standalone)').matches) {
+			isInstalled.set(true);
+		}
+
 		window.addEventListener('appinstalled', () => {
 			deferredInstallPrompt.set(null);
 			isInstalled.set(true);
@@ -38,6 +43,16 @@
 		// Check if the app is installed previously
 		if (window.matchMedia('(display-mode: standalone)').matches) {
 			isInstalled.set(true);
+		}
+
+		// check if the app is installed previously
+		if (typeof window !== 'undefined' && 'getInstalledRelatedApps' in window.navigator) {
+			(window.navigator.getInstalledRelatedApps as () => Promise<any>)().then((apps) => {
+				const PWAisInstalled = apps.length > 0;
+				if (PWAisInstalled) {
+					isInstalled.set(true);
+				}
+			});
 		}
 	}
 

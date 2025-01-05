@@ -15,15 +15,7 @@
 
 	<div class="space-y-4 rounded-lg bg-base-200 p-3 shadow-md sm:space-y-6 sm:p-6">
 		<!-- Install App Button -->
-		<div class="flex items-center justify-between">
-			<div class="flex-shrink">
-				<h3 class="text-lg font-medium">Install App</h3>
-				<p class="text-base-content/70">Install this app on your device for easier access</p>
-			</div>
-			<div class="flex-shrink-0">
-				<PWAInstallButton />
-			</div>
-		</div>
+		<PWAInstallButton />
 
 		<!-- Theme Selector -->
 		<label class="flex cursor-pointer items-center justify-between">

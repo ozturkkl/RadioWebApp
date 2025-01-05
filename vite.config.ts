@@ -1,6 +1,7 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
+import { config } from './src/lib/config/config';
 
 export default defineConfig({
 	plugins: [
@@ -8,15 +9,21 @@ export default defineConfig({
 		SvelteKitPWA({
 			registerType: 'autoUpdate',
 			strategies: 'generateSW',
+			manifestFilename: 'manifest.json',
 			manifest: {
-				name: 'Radio Web App',
-				short_name: 'Radio App',
+				name: config.website.title,
+				short_name: config.website.title,
 				start_url: '/',
-				scope: '/',
 				display: 'standalone',
-				description: 'Your favorite radio and podcast player',
+				description: config.website.description,
 				theme_color: '#262626',
 				background_color: '#262626',
+				related_applications: [
+					{
+						platform: 'webapp',
+						url: config.website.url + '/manifest.json'
+					}
+				],
 				icons: [
 					{
 						src: 'pwa-192x192.png',

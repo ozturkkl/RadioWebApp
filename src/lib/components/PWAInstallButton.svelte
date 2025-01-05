@@ -17,31 +17,39 @@
 	}
 </script>
 
-{#if $deferredInstallPrompt}
-	<TouchableButton onClick={installPWA} ariaLabel="Install as app" circle={false}>
-		<Download class="mr-2 h-5 w-5" />
-		Install
-	</TouchableButton>
-{:else if $isInstalled}
-	<TouchableButton
-		buttonClassName="text-success"
-		onClick={() => {}}
-		circle={false}
-		ariaLabel="App already installed"
-	>
-		<Check class="mr-2 h-5 w-5" />
-		Installed</TouchableButton
-	>
-{:else if isIOS}
-	<TouchableButton
-		buttonClassName="text-info"
-		onClick={() => {}}
-		circle={false}
-		ariaLabel="iOS install instructions"
-	>
-		<Share class="mr-2 h-5 w-5" />
-		Tap Share then 'Add to Home Screen'</TouchableButton
-	>
-{:else}
-	<p class="text-info">Can't automatically install in current browser</p>
+{#if $deferredInstallPrompt || $isInstalled}
+	<div class="flex items-center justify-between">
+		<div class="flex-shrink">
+			<h3 class="text-lg font-medium">Install App</h3>
+			<p class="text-base-content/70">Install this app on your device for easier access</p>
+		</div>
+		<div class="flex-shrink-0">
+			{#if $deferredInstallPrompt}
+				<TouchableButton onClick={installPWA} ariaLabel="Install as app" circle={false}>
+					<Download class="mr-2 h-5 w-5" />
+					Install
+				</TouchableButton>
+			{:else if $isInstalled}
+				<TouchableButton
+					buttonClassName="text-success"
+					onClick={() => {}}
+					circle={false}
+					ariaLabel="App already installed"
+				>
+					<Check class="mr-2 h-5 w-5" />
+					Installed</TouchableButton
+				>
+			{:else if isIOS}
+				<TouchableButton
+					buttonClassName="text-info"
+					onClick={() => {}}
+					circle={false}
+					ariaLabel="iOS install instructions"
+				>
+					<Share class="mr-2 h-5 w-5" />
+					Tap Share then 'Add to Home Screen'</TouchableButton
+				>
+			{/if}
+		</div>
+	</div>
 {/if}
