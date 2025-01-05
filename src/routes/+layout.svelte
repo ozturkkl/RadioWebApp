@@ -156,9 +156,9 @@
 
 	<div
 		class="flex-1 overflow-y-auto {$playerStore.type === 'podcast'
-			? 'mb-40'
+			? 'mb-[178px]'
 			: $playerStore.type === 'radio'
-				? 'mb-32'
+				? 'mb-[142px]'
 				: ''}"
 	>
 		<slot></slot>

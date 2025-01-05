@@ -26,10 +26,10 @@
 		role="presentation"
 		on:click|stopPropagation|preventDefault
 	>
-		<div class="container mx-auto">
+		<div class="container mx-auto pb-3">
 			<!-- Now Playing Info Row -->
 			<div
-				class="flex items-center justify-between gap-2 border-b border-base-200"
+				class="flex items-center justify-between gap-2 border-t border-base-200"
 				role="presentation"
 			>
 				<div class="flex min-w-0 flex-1 items-center gap-2 px-3 py-2">
@@ -69,13 +69,28 @@
 					<List class="h-6 w-6" />
 				</TouchableButton>
 			</div>
-
 			<!-- Controls Row -->
-			<div class="flex flex-col">
+			<div class="flex flex-col border-t border-base-200">
+				<!-- Seek Bar (only for podcasts) -->
+				{#if $playerStore.type === 'podcast'}
+					<div class="mb-1 mt-4 flex items-center gap-2 text-xs" role="presentation">
+						<span class="w-10 text-right">{formatTime($playerStore.currentTime)}</span>
+						<input
+							type="range"
+							min="0"
+							max={$playerStore.duration || 100}
+							value={$playerStore.currentTime}
+							class="range range-xs flex-1"
+							on:input|stopPropagation={(e) => seekTo(parseFloat(e.currentTarget.value))}
+						/>
+						<span class="w-10">{formatTime($playerStore.duration)}</span>
+					</div>
+				{/if}
+
 				<!-- All Controls in One Row -->
 				<div class="flex items-stretch justify-between" role="presentation">
 					<!-- Left Side Controls -->
-					<div class="flex items-stretch pl-1">
+					<div class="flex items-stretch">
 						{#if $playerStore.type === 'podcast'}
 							<!-- Playback Speed -->
 							<div class="dropdown dropdown-top" on:click|stopPropagation role="presentation">
@@ -83,7 +98,7 @@
 									onClick={() => {}}
 									ariaLabel="Playback speed"
 									small
-									className="h-full"
+									className="h-full pl-3"
 								>
 									<span class="text-xs font-bold sm:text-sm">{$playerStore.playbackRate ?? 1}x</span
 									>
@@ -191,14 +206,14 @@
 					</div>
 
 					<!-- Right Side Controls -->
-					<div class="flex items-stretch pr-1">
+					<div class="flex items-stretch">
 						<!-- Volume Control -->
 						<div class="dropdown dropdown-top" on:click|stopPropagation role="presentation">
 							<TouchableButton
 								onClick={() => {}}
 								ariaLabel="Volume control"
 								small
-								className="h-full"
+								className="h-full pr-3"
 							>
 								<Volume2 class="h-6 w-6" />
 							</TouchableButton>
@@ -222,22 +237,6 @@
 						</div>
 					</div>
 				</div>
-
-				<!-- Seek Bar (only for podcasts) -->
-				{#if $playerStore.type === 'podcast'}
-					<div class="mb-3 mt-1 flex items-center gap-2 text-xs" role="presentation">
-						<span class="w-10 text-right">{formatTime($playerStore.currentTime)}</span>
-						<input
-							type="range"
-							min="0"
-							max={$playerStore.duration || 100}
-							value={$playerStore.currentTime}
-							class="range range-xs flex-1"
-							on:input|stopPropagation={(e) => seekTo(parseFloat(e.currentTarget.value))}
-						/>
-						<span class="w-10">{formatTime($playerStore.duration)}</span>
-					</div>
-				{/if}
 			</div>
 		</div>
 	</div>
