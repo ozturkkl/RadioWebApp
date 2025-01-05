@@ -25,13 +25,18 @@
 		</div>
 		<div class="flex-shrink-0">
 			{#if $deferredInstallPrompt}
-				<TouchableButton onClick={installPWA} ariaLabel="Install as app" circle={false}>
+				<TouchableButton
+					onClick={installPWA}
+					ariaLabel="Install as app"
+					circle={false}
+					buttonClassName="bg-base-100"
+				>
 					<Download class="mr-2 h-5 w-5" />
 					Install
 				</TouchableButton>
 			{:else if $isInstalled}
 				<TouchableButton
-					buttonClassName="text-success"
+					buttonClassName="text-success shadow-none"
 					onClick={() => {}}
 					circle={false}
 					ariaLabel="App already installed"

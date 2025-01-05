@@ -26,7 +26,6 @@
 	// Set up PWA install prompt listener before mount
 	if (typeof window !== 'undefined') {
 		window.addEventListener('beforeinstallprompt', ((e: Event) => {
-			e.preventDefault();
 			deferredInstallPrompt.set(e as BeforeInstallPromptEvent);
 		}) as EventListener);
 
