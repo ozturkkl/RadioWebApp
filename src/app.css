@@ -8,6 +8,11 @@
 	scrollbar-color: unset !important;
 }
 
+html,
+body {
+	overscroll-behavior: none;
+}
+
 /* Prevent hover effects from changing scrollbar colors */
 *:hover {
 	scrollbar-color: unset !important;
