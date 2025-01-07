@@ -14,14 +14,8 @@ Thumbs.db
 
 # Config
 src/lib/config/config.ts
-!src/lib/config/config.example.ts
+.env
 
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
-
-# Static Images
-static/images/*
-static/public/*
-
-scripts/**
