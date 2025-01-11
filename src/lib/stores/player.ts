@@ -150,7 +150,7 @@ export function playRadio(radio: Radio): void {
 		})
 	);
 
-	playAudioWhenReady();
+	toggleAudioWhenReady(true);
 }
 export function playPodcast(
 	podcast: Podcast,
@@ -176,18 +176,12 @@ export function playPodcast(
 	);
 
 	seekTo(startWithTime);
-	playAudioWhenReady();
+	toggleAudioWhenReady(true);
 }
 
 // Player controls for AUDIO element
 export function togglePlayPause() {
-	if (audio) {
-		if (audio.paused) {
-			audio.play();
-		} else {
-			audio.pause();
-		}
-	}
+	toggleAudioWhenReady();
 }
 export function seekTo(time: number) {
 	if (audio) {
@@ -212,17 +206,26 @@ export function restartRadio() {
 		const currentUrl = state.currentRadio.streamUrl;
 		audio.src = currentUrl;
 		audio.load();
-		audio.play();
+		toggleAudioWhenReady(true);
 	}
 }
-function playAudioWhenReady(retries: number = 0) {
-	if (retries > 10) return;
-	if (!audio) {
-		return setTimeout(() => playAudioWhenReady(retries + 1), 100);
-	}
-	if (audio) {
-		audio.play();
-	}
+function toggleAudioWhenReady(value?: boolean, retries: number = 0) {
+	setTimeout(() => {
+		if (retries > 10) return;
+		if (!audio) {
+			return setTimeout(() => toggleAudioWhenReady(value, retries + 1), 100);
+		}
+		if (audio) {
+			if (value === undefined) {
+				value = audio.paused;
+			}
+			if (value) {
+				audio.play();
+			} else {
+				audio.pause();
+			}
+		}
+	}, 0);
 }
 
 // Player controls for playerStore
@@ -249,6 +252,10 @@ export function nextTrack(autoPlay: boolean = true) {
 		const currentIndex = state.playlist.findIndex((ep) => ep.id === state.currentEpisode?.id);
 		if (currentIndex < state.playlist.length - 1) {
 			const nextEpisode = state.playlist[currentIndex + 1];
+
+			if (autoPlay) {
+				toggleAudioWhenReady(true);
+			}
 			return {
 				...state,
 				currentEpisode: nextEpisode,
@@ -256,12 +263,11 @@ export function nextTrack(autoPlay: boolean = true) {
 				currentTime: 0,
 				isPlaying: !(audio?.paused ?? true)
 			};
+		} else {
+			toggleAudioWhenReady(false);
 		}
 		return state;
 	});
-	if (autoPlay) {
-		playAudioWhenReady();
-	}
 }
 export function previousTrack() {
 	playerStore.update((state) => {
@@ -279,7 +285,7 @@ export function previousTrack() {
 		}
 		return state;
 	});
-	playAudioWhenReady();
+	toggleAudioWhenReady(true);
 }
 
 // UI related functions
