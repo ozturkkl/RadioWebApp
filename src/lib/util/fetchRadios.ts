@@ -1,6 +1,7 @@
 import { withCorsProxy } from './corsProxy';
 import { config } from '../config';
 import * as Icons from 'lucide-svelte';
+import { radios } from '../stores/radios';
 
 export interface Radio {
 	id: string;
@@ -18,7 +19,7 @@ export interface Radio {
 	};
 }
 
-const radios = config.radios;
+const radioConfigs = config.radios;
 
 function getCachedRadios(): Radio[] | null {
 	if (typeof window === 'undefined') return null;
@@ -28,28 +29,43 @@ function getCachedRadios(): Radio[] | null {
 
 function setCachedRadios(radios: Radio[]) {
 	if (typeof window === 'undefined') return;
-	localStorage.setItem('cached-radios', JSON.stringify(radios));
+	// Strip out the trackInfo when caching
+	const cachedRadios = radios.map((radio) => ({
+		...radio,
+		trackInfo: {
+			cover: radio.image,
+			artist: '',
+			title: ''
+		}
+	}));
+	localStorage.setItem('cached-radios', JSON.stringify(cachedRadios));
 }
 
 export async function fetchRadios() {
 	// Return cached data immediately if available
 	const cached = getCachedRadios();
 	if (cached) {
+		// Set initial state from cache
+		radios.set(cached);
 		// Fetch fresh data in the background
-		fetchFreshRadios().then(setCachedRadios);
+		fetchFreshRadios().then((freshData) => {
+			setCachedRadios(freshData);
+			radios.set(freshData);
+		});
 		return cached;
 	}
 
 	// If no cache, fetch fresh data
 	const freshData = await fetchFreshRadios();
 	setCachedRadios(freshData);
+	radios.set(freshData);
 	return freshData;
 }
 
 async function fetchFreshRadios(): Promise<Radio[]> {
 	const radioList: Radio[] = [];
 
-	for (const radio of radios) {
+	for (const radio of radioConfigs) {
 		let trackInfoData =
 			typeof radio.trackInfo === 'string'
 				? { cover: radio.image, artist: '', title: '' }

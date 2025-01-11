@@ -10,11 +10,11 @@
 	import type { Podcast } from '$lib/util/fetchPodcasts';
 	import { settings } from '$lib/stores/settings';
 	import { favorites } from '$lib/stores/favorites';
+	import { radios } from '$lib/stores/radios';
 	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
 	import { config } from '$lib/config';
 
 	let podcasts: Podcast[] = [];
-	let radios: Radio[] = [];
 	let expandedPodcasts = new Set<string>();
 	let headerClasses = 'mb-2 text-2xl font-bold sm:mb-4';
 	let sectionClasses = 'grid grid-cols-1 items-start gap-2 sm:gap-4 lg:grid-cols-2 2xl:grid-cols-3';
@@ -39,14 +39,14 @@
 		)
 	].sort();
 	$: categoryOptions = allCategories.map((cat) => ({ value: cat, label: cat }));
-	$: favoriteRadios = radios.filter((radio) => $favorites.radios.has(radio.title));
-	$: otherRadios = radios.filter((radio) => !$favorites.radios.has(radio.title));
+	$: favoriteRadios = $radios.filter((radio) => $favorites.radios.has(radio.title));
+	$: otherRadios = $radios.filter((radio) => !$favorites.radios.has(radio.title));
 	$: favoritePodcasts = podcasts.filter((podcast) => $favorites.podcasts.has(podcast.id));
 	$: otherPodcasts = filteredPodcasts;
 
 	onMount(async () => {
 		podcasts = await fetchPodcastsFromRssFeeds();
-		radios = await fetchRadios();
+		await fetchRadios(); // This will initialize the radios store
 	});
 
 	function handlePodcastExpand(podcastId: string, isExpanded: boolean) {
@@ -77,7 +77,7 @@
 </script>
 
 <main class="container mx-auto space-y-1 px-1 py-2 sm:space-y-2 sm:px-4 sm:py-3">
-	<ContinueListening {podcasts} {radios} />
+	<ContinueListening {podcasts} radios={$radios} />
 
 	{#if favoriteRadios.length > 0 || favoritePodcasts.length > 0}
 		<section>
@@ -101,7 +101,7 @@
 	<section>
 		<h2 class={headerClasses}>Radio</h2>
 		<div class={sectionClasses}>
-			{#if radios.length === 0}
+			{#if $radios.length === 0}
 				<p class="text-base-content-secondary">Loading stations...</p>
 			{:else if otherRadios.length === 0}
 				<p class="text-base-content-secondary">All stations are in favorites</p>

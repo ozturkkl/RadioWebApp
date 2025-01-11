@@ -13,11 +13,18 @@
 		restartRadio
 	} from '$lib/stores/player';
 	import { settings } from '$lib/stores/settings';
+	import { radios } from '$lib/stores/radios';
 	import TouchableButton from './TouchableButton.svelte';
 	import { formatTime } from '$lib/util/time';
 	import { List, RotateCcw, SkipBack, SkipForward, Pause, Play, Volume2 } from 'lucide-svelte';
 
 	const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
+
+	// Get current radio with updated track info
+	$: currentRadio =
+		$playerStore.type === 'radio' && $playerStore.currentRadio
+			? $radios.find((r) => r.id === $playerStore.currentRadio.id)
+			: null;
 </script>
 
 {#if $playerStore.type}
@@ -33,18 +40,19 @@
 				role="presentation"
 			>
 				<div class="flex min-w-0 flex-1 items-center gap-2 px-3 py-2">
-					{#if $playerStore.type === 'radio' && $playerStore.currentRadio}
+					{#if $playerStore.type === 'radio' && currentRadio}
 						<img
-							src={$playerStore.currentRadio.image}
-							alt={$playerStore.currentRadio.title}
+							src={currentRadio.trackInfo?.cover ?? currentRadio.image}
+							alt={currentRadio.title}
 							class="h-8 w-8 rounded object-cover"
 						/>
 						<div class="min-w-0 flex-1">
-							<h3 class="truncate text-sm font-medium">{$playerStore.currentRadio.title}</h3>
-							{#if $playerStore.currentRadio.trackInfo.artist || $playerStore.currentRadio.trackInfo.title}
+							<h3 class="truncate text-sm font-medium">{currentRadio.title}</h3>
+							{#if currentRadio.trackInfo.artist || currentRadio.trackInfo.title}
 								<p class="truncate text-xs opacity-75">
-									{$playerStore.currentRadio.trackInfo.artist} - {$playerStore.currentRadio
-										.trackInfo.title}
+									{currentRadio.trackInfo.artist
+										? currentRadio.trackInfo.artist + ' - '
+										: ''}{currentRadio.trackInfo.title}
 								</p>
 							{/if}
 						</div>
