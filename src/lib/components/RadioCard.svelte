@@ -24,7 +24,7 @@
 
 	$: trackDescription =
 		radio.trackInfo.artist || radio.trackInfo.title
-			? `${radio.trackInfo.artist} - ${radio.trackInfo.title}`
+			? `${radio.trackInfo.artist ? radio.trackInfo.artist + ' - ' : ''}${radio.trackInfo.title}`
 			: undefined;
 </script>
 
