@@ -32,9 +32,11 @@
 		e.stopPropagation();
 		// e.preventDefault();
 		console.log(e.type);
-		if (e.type === 'click' || e.type === 'contextmenu') {
+		if (e.type === 'click') {
 			isClicked = true;
 			onClick();
+		}
+		if (e.type === 'contextmenu') {
 			e.preventDefault();
 		}
 		if (e.type === 'pointerenter') {

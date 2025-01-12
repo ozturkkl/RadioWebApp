@@ -4,6 +4,8 @@
 	export let options: Array<{ value: string | number; label: string }>;
 	export let classes = 'w-40 sm:w-52 bg-base-100';
 
+	let dropdownRef: HTMLElement | null = null;
+
 	function handleSelect(newValue: string | number) {
 		value = newValue;
 		// Close dropdown by removing focus from the button
@@ -57,9 +59,21 @@
 	}
 </script>
 
-<div class="dropdown dropdown-end">
+<div class="dropdown">
 	<button
+		tabindex="-1"
+		aria-hidden="true"
+		style="display: none;"
+		on:click|stopPropagation|preventDefault={() => {
+			dropdownRef?.focus();
+		}}
+	></button>
+	<div
+		bind:this={dropdownRef}
+		role="button"
+		tabindex="0"
 		class="btn {classes} flex-nowrap justify-between"
+		aria-label={`Select ${options.find((opt) => opt.value === value)?.label}`}
 		on:keydown={handleKeydown}
 		on:focus={scrollToSelected}
 	>
@@ -67,23 +81,24 @@
 			{options.find((opt) => opt.value === value)?.label}
 		</span>
 		<ChevronDown class="ml-2 h-4 w-4 shrink-0" />
-	</button>
-	<div role="button" class="dropdown-content z-[100]">
-		<ul
-			class="menu {classes} flex max-h-[40vh] flex-col flex-nowrap overflow-y-auto rounded-box border border-base-content/10 p-0 shadow-xl"
-		>
-			{#each options as option}
-				<li>
-					<button
-						class="py-3 hover:bg-base-200 {option.value === value ? 'active bg-primary' : ''}"
-						on:click={() => handleSelect(option.value)}
-						data-value={option.value}
-						tabindex={-1}
-					>
-						{option.label}
-					</button>
-				</li>
-			{/each}
-		</ul>
+	</div>
+	<div
+		class="menu dropdown-content z-[100] flex max-h-[40vh] flex-col flex-nowrap overflow-y-auto border border-base-content/10 p-0 shadow-xl {classes}"
+		style="border-radius: var(--rounded-btn, 0.5rem);"
+	>
+		{#each options as option}
+			<div
+				class="p-3 hover:bg-base-200 {option.value === value ? 'bg-base-300' : ''}"
+				style="border-radius: var(--rounded-btn, 0.5rem);"
+				on:click|stopPropagation|preventDefault={() => handleSelect(option.value)}
+				on:keydown={handleKeydown}
+				role="option"
+				aria-selected={option.value === value}
+				data-value={option.value}
+				tabindex={-1}
+			>
+				{option.label}
+			</div>
+		{/each}
 	</div>
 </div>
