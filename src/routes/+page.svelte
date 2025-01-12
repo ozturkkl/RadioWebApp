@@ -16,7 +16,7 @@
 
 	let podcasts: Podcast[] = [];
 	let expandedPodcasts = new Set<string>();
-	let headerClasses = 'mb-2 mt-1 text-2xl font-bold sm:mb-4';
+	let headerClasses = 'mb-2 text-2xl font-bold sm:mb-4';
 	let sectionClasses = 'grid grid-cols-1 items-start gap-2 sm:gap-4 lg:grid-cols-2 2xl:grid-cols-3';
 	let filteredPodcasts: Podcast[] = [];
 
@@ -76,9 +76,6 @@
 	}
 </script>
 
-<ContinueListening {podcasts} radios={$radios} />
-
-
 {#if favoriteRadios.length > 0 || favoritePodcasts.length > 0}
 	<h2 class={headerClasses}>Favorites</h2>
 	<div class={sectionClasses}>
@@ -134,13 +131,3 @@
 		{/each}
 	{/if}
 </div>
-
-<style>
-	.show-if-not-first-child {
-		display: none;
-		position: absolute;
-	}
-	.show-if-not-first-child:not(:first-child) {
-		display: flex;
-	}
-</style>

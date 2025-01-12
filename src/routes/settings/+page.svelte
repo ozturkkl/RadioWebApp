@@ -10,7 +10,7 @@
 	}));
 </script>
 
-<h1 class="mb-4 mt-1 text-2xl font-bold sm:mb-6">Settings</h1>
+<h1 class="mb-4 text-2xl font-bold sm:mb-6">Settings</h1>
 
 <div class="space-y-4 rounded-lg bg-base-200 p-3 shadow-md sm:space-y-6 sm:p-6">
 	<!-- Install App Button -->

@@ -17,6 +17,7 @@
 	import { pwaInfo } from 'virtual:pwa-info';
 	import { deferredInstallPrompt, isInstalled } from '$lib/stores/pwa';
 	import type { BeforeInstallPromptEvent } from '$lib/stores/pwa';
+	import ContinueListening from '$lib/components/ContinueListening.svelte';
 
 	$: webManifestLink = pwaInfo ? pwaInfo.webManifest.linkTag : '';
 
@@ -155,6 +156,10 @@
 		</div>
 	</nav>
 
+	<div class="container mx-auto w-screen overflow-hidden">
+		<ContinueListening />
+	</div>
+
 	<div
 		class="flex-1 overflow-y-auto px-4 sm:px-6 {$playerStore.type === 'podcast'
 			? 'mb-[178px]'
@@ -162,7 +167,7 @@
 				? 'mb-[142px]'
 				: ''}"
 	>
-		<main class="container mx-auto space-y-1 py-2 sm:space-y-3 sm:py-4">
+		<main class="container mx-auto space-y-3 py-2 sm:py-3 sm:py-5">
 			<slot></slot>
 		</main>
 	</div>

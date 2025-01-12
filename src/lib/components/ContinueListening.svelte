@@ -2,14 +2,14 @@
 	import podcastProgress from '$lib/stores/podcastProgress';
 	import radioProgress from '$lib/stores/radioProgress';
 	import { playPodcast, playRadio } from '$lib/stores/player';
-	import type { Podcast, Episode } from '$lib/util/fetchPodcasts';
+	import { type Podcast, type Episode, fetchPodcastsFromRssFeeds } from '$lib/util/fetchPodcasts';
 	import type { Radio } from '$lib/util/fetchRadios';
 	import { onMount } from 'svelte';
 	import TouchableButton from './TouchableButton.svelte';
 	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import { radios } from '$lib/stores/radios';
 
-	export let podcasts: Podcast[];
-	export let radios: Radio[];
+	let podcasts: Podcast[] = [];
 
 	type ContinueListeningItem =
 		| {
@@ -30,6 +30,7 @@
 	let isTouchDevice = false;
 
 	onMount(() => {
+		fetchPodcastsFromRssFeeds().then((p) => (podcasts = p));
 		isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 		setTimeout(checkArrows, 100);
 		window.addEventListener('resize', checkArrows);
@@ -69,7 +70,7 @@
 				lastPlayed: $podcastProgress[podcast.id].lastPlayed
 			}));
 
-		const radioItems = radios
+		const radioItems = $radios
 			.filter((radio) => $radioProgress[radio.id])
 			.map((radio) => ({
 				type: 'radio' as const,
@@ -110,7 +111,7 @@
 </script>
 
 {#if continueListeningItems.length > 0}
-	<div class="container relative -mx-4 w-screen sm:mx-0 sm:w-auto">
+	<div class="relative border-b border-base-300 py-2">
 		{#if showLeftArrow}
 			<div class="absolute left-[-4px] top-1/2 z-10 -translate-y-1/2 pl-3 sm:pl-0">
 				<TouchableButton onClick={() => scroll('left')} ariaLabel="Scroll left">
@@ -153,6 +154,4 @@
 			{/each}
 		</div>
 	</div>
-
-	<div class="divider"></div>
 {/if}
