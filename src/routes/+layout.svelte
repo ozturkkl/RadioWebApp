@@ -91,6 +91,7 @@
 </svelte:head>
 
 <AutoplayLastContent />
+<ExternalLinksModal bind:this={externalLinksModal} />
 
 <div class="flex h-screen select-none flex-col bg-base-100">
 	<nav class="flex-none bg-base-200 shadow-md">
@@ -155,18 +156,18 @@
 	</nav>
 
 	<div
-		class="flex-1 overflow-y-auto {$playerStore.type === 'podcast'
+		class="flex-1 overflow-y-auto px-4 sm:px-6 {$playerStore.type === 'podcast'
 			? 'mb-[178px]'
 			: $playerStore.type === 'radio'
 				? 'mb-[142px]'
 				: ''}"
 	>
-		<slot></slot>
+		<main class="container mx-auto space-y-1 py-2 sm:space-y-3 sm:py-4">
+			<slot></slot>
+		</main>
 	</div>
 
 	<div class="flex-none">
 		<AudioPlayer></AudioPlayer>
 	</div>
 </div>
-
-<ExternalLinksModal bind:this={externalLinksModal} />

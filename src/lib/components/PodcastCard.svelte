@@ -5,7 +5,7 @@
 	import { playerStore } from '$lib/stores/player';
 	import { cardStyles } from './RadioCard.svelte';
 	import FavoriteButton from './FavoriteButton.svelte';
-	import { formatTime } from '$lib/util/time';
+	import { formatTime, formatDate } from '$lib/util/time';
 
 	export let podcast: Podcast;
 	export let expanded = false;
@@ -51,22 +51,31 @@
 		</div>
 		<div class="collapse-content relative">
 			<div
-				class="-mx-3 flex max-h-80 sm:max-h-96 flex-col gap-1 overflow-y-auto border-t border-base-300 p-1 pt-3"
+				class="-mx-3 flex max-h-80 flex-col gap-1 overflow-y-auto stable-gutter overflow-x-hidden border-t border-base-300 p-1 pt-3 sm:max-h-96"
 			>
 				{#each podcast.items as episode}
 					<button
 						class={getEpisodeClasses(episode, podcast)}
 						on:click={() => playPodcast(podcast, episode)}
 					>
-						<div class="flex justify-between">
-							<span class="font-medium">{episode.title}</span>
-							<span class="text-base-content-secondary text-sm">{formatTime(Number(episode.duration))}</span>
+						<div class="grid grid-cols-[1fr_auto] gap-x-0 gap-y-2">
+							<span class="line-clamp-2 font-medium">{episode.title}</span>
+							{#if episode.duration}
+								<div class="text-base-content-secondary text-right text-sm">
+									{formatTime(Number(episode.duration))}
+								</div>
+							{/if}
+							{#if episode.description}
+								<p class="text-base-content-secondary line-clamp-2 text-sm">
+									{episode.description}
+								</p>
+							{/if}
+							{#if episode.pubDate}
+								<div class="text-base-content-secondary text-right text-sm">
+									{formatDate(episode.pubDate)}
+								</div>
+							{/if}
 						</div>
-						{#if episode.description}
-							<p class="text-base-content-secondary mt-1 line-clamp-2 text-sm">
-								{episode.description}
-							</p>
-						{/if}
 					</button>
 				{/each}
 			</div>

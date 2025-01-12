@@ -15,9 +15,10 @@ export interface Episode {
 	id: string;
 	title: string;
 	url: string;
-	duration: string;
+	duration?: string;
 	image?: string;
 	description?: string;
+	pubDate?: string;
 }
 
 function getCachedPodcasts(): Podcast[] | null {
@@ -61,6 +62,7 @@ async function fetchFreshPodcasts(): Promise<Podcast[]> {
 				imageUrl: channel['itunes:image']?.href || channel.image?.url,
 				description: channel['itunes:summary'] || channel.description,
 				id: channel['podcast:guid'],
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				items: channel.item.map((item: any) => {
 					const episode: Episode = {
 						id: item.guid,
@@ -68,7 +70,8 @@ async function fetchFreshPodcasts(): Promise<Podcast[]> {
 						url: item.enclosure?.url || item.link,
 						duration: item['itunes:duration'],
 						image: item['itunes:image']?.href || item.image?.url,
-						description: item.description || item['itunes:summary']
+						description: item.description || item['itunes:summary'],
+						pubDate: item.pubDate
 					};
 					return episode;
 				}),

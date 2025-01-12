@@ -10,16 +10,18 @@
 
 	export let podcasts: Podcast[];
 	export let radios: Radio[];
-	
-	type ContinueListeningItem = {
-		type: 'podcast';
-		item: Podcast & { episodeId: string; timestamp: number };
-		lastPlayed: number;
-	} | {
-		type: 'radio';
-		item: Radio;
-		lastPlayed: number;
-	};
+
+	type ContinueListeningItem =
+		| {
+				type: 'podcast';
+				item: Podcast & { episodeId: string; timestamp: number };
+				lastPlayed: number;
+		  }
+		| {
+				type: 'radio';
+				item: Radio;
+				lastPlayed: number;
+		  };
 
 	let continueListeningItems: ContinueListeningItem[] = [];
 	let scrollContainer: HTMLElement;
@@ -108,16 +110,16 @@
 </script>
 
 {#if continueListeningItems.length > 0}
-	<div class="relative">
+	<div class="container relative -mx-4 w-screen sm:mx-0 sm:w-auto">
 		{#if showLeftArrow}
-			<div class="absolute left-[-4px] top-1/2 z-10 -translate-y-1/2">
+			<div class="absolute left-[-4px] top-1/2 z-10 -translate-y-1/2 pl-3 sm:pl-0">
 				<TouchableButton onClick={() => scroll('left')} ariaLabel="Scroll left">
 					<ChevronLeft class="h-5 w-5" />
 				</TouchableButton>
 			</div>
 		{/if}
 		{#if showRightArrow}
-			<div class="absolute right-[-4px] top-1/2 z-10 -translate-y-1/2">
+			<div class="absolute right-[-4px] top-1/2 z-10 -translate-y-1/2 pr-3 sm:pr-0">
 				<TouchableButton onClick={() => scroll('right')} ariaLabel="Scroll right">
 					<ChevronRight class="h-5 w-5" />
 				</TouchableButton>
@@ -128,10 +130,12 @@
 			class="no-scrollbar flex gap-1 overflow-x-auto p-1"
 			on:scroll={checkArrows}
 		>
-			{#each continueListeningItems as item}
+			{#each continueListeningItems as item, index}
 				<button
 					class="hover:brightness-120 group flex min-w-fit items-center rounded-full border-2 border-base-content/20 bg-accent/15 p-0 transition-colors
-                    hover:scale-105"
+                    transition-transform hover:scale-105 {index === 0
+						? 'ml-3 sm:ml-0'
+						: ''} {index === continueListeningItems.length - 1 ? 'mr-3 sm:mr-0' : ''}"
 					on:click={() => handleItemClick(item)}
 				>
 					<img
@@ -150,15 +154,5 @@
 		</div>
 	</div>
 
-	<div class="divider !mt-0"></div>
+	<div class="divider"></div>
 {/if}
-
-<style>
-	.no-scrollbar {
-		-ms-overflow-style: none;
-		scrollbar-width: none;
-	}
-	.no-scrollbar::-webkit-scrollbar {
-		display: none;
-	}
-</style>

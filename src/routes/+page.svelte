@@ -16,7 +16,7 @@
 
 	let podcasts: Podcast[] = [];
 	let expandedPodcasts = new Set<string>();
-	let headerClasses = 'mb-2 text-2xl font-bold sm:mb-4';
+	let headerClasses = 'mb-2 mt-1 text-2xl font-bold sm:mb-4';
 	let sectionClasses = 'grid grid-cols-1 items-start gap-2 sm:gap-4 lg:grid-cols-2 2xl:grid-cols-3';
 	let filteredPodcasts: Podcast[] = [];
 
@@ -76,68 +76,71 @@
 	}
 </script>
 
-<main class="container mx-auto space-y-1 px-1 py-2 sm:space-y-2 sm:px-4 sm:py-3">
-	<ContinueListening {podcasts} radios={$radios} />
+<ContinueListening {podcasts} radios={$radios} />
 
-	{#if favoriteRadios.length > 0 || favoritePodcasts.length > 0}
-		<section>
-			<h2 class={headerClasses}>Favorites</h2>
-			<div class={sectionClasses}>
-				{#each favoriteRadios as radio (radio.title)}
-					<RadioCard {radio} />
-				{/each}
-				{#each favoritePodcasts as podcast (podcast.id)}
-					<PodcastCard
-						{podcast}
-						expanded={expandedPodcasts.has(podcast.id)}
-						onExpand={handlePodcastExpand}
-					/>
-				{/each}
-			</div>
-		</section>
-		<div class="divider"></div>
-	{/if}
 
-	<section>
-		<h2 class={headerClasses}>Radio</h2>
-		<div class={sectionClasses}>
-			{#if $radios.length === 0}
-				<p class="text-base-content-secondary">Loading stations...</p>
-			{:else if otherRadios.length === 0}
-				<p class="text-base-content-secondary">All stations are in favorites</p>
-			{:else}
-				{#each otherRadios as radio (radio.title)}
-					<RadioCard {radio} />
-				{/each}
-			{/if}
-		</div>
-	</section>
-
-	<div class="divider"></div>
-
-	<section>
-		<div class="flex items-start items-center justify-between {headerClasses}">
-			<h2>Archive</h2>
-			<DropdownSelect
-				bind:value={$settings.selectedCategory}
-				options={categoryOptions}
-				classes="bg-base-200 w-48 sm:w-64 border border-1 border-base-300"
+{#if favoriteRadios.length > 0 || favoritePodcasts.length > 0}
+	<h2 class={headerClasses}>Favorites</h2>
+	<div class={sectionClasses}>
+		{#each favoriteRadios as radio (radio.title)}
+			<RadioCard {radio} />
+		{/each}
+		{#each favoritePodcasts as podcast (podcast.id)}
+			<PodcastCard
+				{podcast}
+				expanded={expandedPodcasts.has(podcast.id)}
+				onExpand={handlePodcastExpand}
 			/>
-		</div>
-		<div class={sectionClasses}>
-			{#if podcasts.length === 0}
-				<p class="text-base-content-secondary">Loading archive...</p>
-			{:else if otherPodcasts.length === 0}
-				<p class="text-base-content-secondary">All of this archive is in favorites</p>
-			{:else}
-				{#each otherPodcasts as podcast (podcast.id)}
-					<PodcastCard
-						{podcast}
-						expanded={expandedPodcasts.has(podcast.id)}
-						onExpand={handlePodcastExpand}
-					/>
-				{/each}
-			{/if}
-		</div>
-	</section>
-</main>
+		{/each}
+	</div>
+	<div class="divider"></div>
+{/if}
+
+<h2 class={headerClasses}>Radio</h2>
+<div class={sectionClasses}>
+	{#if $radios.length === 0}
+		<p class="text-base-content-secondary">Loading stations...</p>
+	{:else if otherRadios.length === 0}
+		<p class="text-base-content-secondary">All stations are in favorites</p>
+	{:else}
+		{#each otherRadios as radio (radio.title)}
+			<RadioCard {radio} />
+		{/each}
+	{/if}
+</div>
+
+<div class="divider"></div>
+
+<div class="flex items-start items-center justify-between {headerClasses}">
+	<h2>Archive</h2>
+	<DropdownSelect
+		bind:value={$settings.selectedCategory}
+		options={categoryOptions}
+		classes="bg-base-200 w-48 sm:w-64 border border-1 border-base-300"
+	/>
+</div>
+<div class={sectionClasses}>
+	{#if podcasts.length === 0}
+		<p class="text-base-content-secondary">Loading archive...</p>
+	{:else if otherPodcasts.length === 0}
+		<p class="text-base-content-secondary">All of this archive is in favorites</p>
+	{:else}
+		{#each otherPodcasts as podcast (podcast.id)}
+			<PodcastCard
+				{podcast}
+				expanded={expandedPodcasts.has(podcast.id)}
+				onExpand={handlePodcastExpand}
+			/>
+		{/each}
+	{/if}
+</div>
+
+<style>
+	.show-if-not-first-child {
+		display: none;
+		position: absolute;
+	}
+	.show-if-not-first-child:not(:first-child) {
+		display: flex;
+	}
+</style>

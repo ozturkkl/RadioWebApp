@@ -13,11 +13,6 @@ body {
 	overscroll-behavior: none;
 }
 
-/* Prevent hover effects from changing scrollbar colors */
-*:hover {
-	scrollbar-color: unset !important;
-}
-
 /* Webkit scrollbar styling for Chrome, Safari, and Edge */
 *::-webkit-scrollbar {
 	width: 10px !important;
@@ -35,17 +30,29 @@ body {
 
 /* Browsers without `::-webkit-scrollbar-*` support */
 @supports not selector(::-webkit-scrollbar) {
-	html {
-		scrollbar-width: thin;
+	* {
+		scrollbar-width: thin !important;
 		scrollbar-color: rgba(128, 128, 128, 0.5) transparent;
 	}
 }
 
-.overflow-y-auto:not(.no-stable-gutter) {
+.stable-gutter {
 	scrollbar-gutter: stable both-edges;
+}
+
+.no-scrollbar {
+	-ms-overflow-style: none !important;
+	scrollbar-width: none !important;
+}
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
 }
 
 .collapse-arrow > .collapse-title:after {
 	top: 1.2rem;
 	right: 1rem;
+}
+
+.divider {
+	height: unset;
 }
