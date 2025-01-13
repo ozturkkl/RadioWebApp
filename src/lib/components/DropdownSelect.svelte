@@ -2,7 +2,9 @@
 	import { ChevronDown } from 'lucide-svelte';
 	export let value: string | number;
 	export let options: Array<{ value: string | number; label: string }>;
-	export let classes = 'w-40 sm:w-52 bg-base-100';
+	export let dropDirection: 'top' | 'bottom' = 'bottom';
+	export let backgroundColor = 'bg-base-100';
+	export let optionTextCenter = false;
 
 	let dropdownRef: HTMLElement | null = null;
 
@@ -59,7 +61,7 @@
 	}
 </script>
 
-<div class="dropdown">
+<div class="dropdown {dropDirection === 'top' ? 'dropdown-top' : ''}">
 	<button
 		tabindex="-1"
 		aria-hidden="true"
@@ -68,27 +70,34 @@
 			dropdownRef?.focus();
 		}}
 	></button>
+
 	<div
 		bind:this={dropdownRef}
 		role="button"
 		tabindex="0"
-		class="btn {classes} flex-nowrap justify-between"
+		class="h-full w-full"
 		aria-label={`Select ${options.find((opt) => opt.value === value)?.label}`}
 		on:keydown={handleKeydown}
 		on:focus={scrollToSelected}
 	>
-		<span class="leading-snug">
-			{options.find((opt) => opt.value === value)?.label}
-		</span>
-		<ChevronDown class="ml-2 h-4 w-4 shrink-0" />
+		{#if $$slots.trigger}
+			<slot name="trigger" />
+		{:else}
+			<div class="btn w-40 flex-nowrap justify-between sm:w-52 {backgroundColor}">
+				<span class="leading-snug">
+					{options.find((opt) => opt.value === value)?.label}
+				</span>
+				<ChevronDown class="ml-2 h-4 w-4 shrink-0" />
+			</div>
+		{/if}
 	</div>
 	<div
-		class="menu dropdown-content z-[100] flex max-h-[40vh] flex-col flex-nowrap overflow-y-auto border border-base-content/10 p-0 shadow-xl {classes}"
-		style="border-radius: var(--rounded-btn, 0.5rem);"
+		class={`dropdown-content z-[100] flex max-h-[40vh] cursor-pointer flex-col flex-nowrap overflow-y-auto border border-base-content/10 p-0 shadow-xl ${optionTextCenter ? 'text-center' : ''} ${backgroundColor}`}
+		style={`border-radius: var(--rounded-btn, 0.5rem); min-width: ${dropdownRef?.clientWidth}px`}
 	>
 		{#each options as option}
 			<div
-				class="p-3 hover:bg-base-200 {option.value === value ? 'bg-base-300' : ''}"
+				class="p-3 {option.value === value ? 'bg-primary/25' : 'hover:bg-base-300/50'}"
 				style="border-radius: var(--rounded-btn, 0.5rem);"
 				on:click|stopPropagation|preventDefault={() => handleSelect(option.value)}
 				on:keydown={handleKeydown}

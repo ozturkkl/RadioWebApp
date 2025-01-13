@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let onClick: () => void;
+	export let onClick: () => void = () => {};
 	export let disabled = false;
 	export let ariaLabel: string;
 	export let small = false;

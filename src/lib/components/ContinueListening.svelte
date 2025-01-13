@@ -28,18 +28,28 @@
 	let showLeftArrow = false;
 	let showRightArrow = false;
 	let isTouchDevice = false;
+	let scrollTo = 0;
+
+	$: {
+		if (scrollTo < 0) {
+			scrollTo = 0;
+		} else if (scrollTo > scrollContainer?.scrollWidth - scrollContainer?.clientWidth) {
+			scrollTo = scrollContainer?.scrollWidth - scrollContainer?.clientWidth;
+		}
+		scrollContainer?.scrollTo({ left: scrollTo, behavior: 'smooth' });
+	}
 
 	onMount(() => {
 		fetchPodcastsFromRssFeeds().then((p) => (podcasts = p));
 		isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-		setTimeout(checkArrows, 100);
-		window.addEventListener('resize', checkArrows);
+		setTimeout(onScroll, 100);
+		window.addEventListener('resize', onScroll);
 		return () => {
-			window.removeEventListener('resize', checkArrows);
+			window.removeEventListener('resize', onScroll);
 		};
 	});
 
-	function checkArrows() {
+	function onScroll(e: Event) {
 		if (!scrollContainer) return;
 		if (isTouchDevice) {
 			showLeftArrow = false;
@@ -49,6 +59,11 @@
 		showLeftArrow = scrollContainer.scrollLeft > 10;
 		showRightArrow =
 			scrollContainer.scrollLeft < scrollContainer.scrollWidth - scrollContainer.clientWidth - 10;
+	}
+	function onMouseWheel(e: WheelEvent) {
+		e.preventDefault();
+		e.stopPropagation();
+		scrollTo += e.deltaY;
 	}
 
 	function scroll(direction: 'left' | 'right') {
@@ -82,7 +97,7 @@
 			return b.lastPlayed - a.lastPlayed;
 		});
 
-		setTimeout(checkArrows, 0);
+		setTimeout(onScroll, 0);
 	}
 
 	function handleItemClick(item: ContinueListeningItem) {
@@ -111,32 +126,32 @@
 </script>
 
 {#if continueListeningItems.length > 0}
-	<div class="relative border-b border-base-300 py-2">
+	<div class="relative w-full overflow-hidden border-b-2 border-base-content/10">
 		{#if showLeftArrow}
-			<div class="absolute left-[-4px] top-1/2 z-10 -translate-y-1/2 pl-3 sm:pl-0">
+			<div class="absolute left-[.2rem] top-1/2 z-10 -translate-y-1/2">
 				<TouchableButton onClick={() => scroll('left')} ariaLabel="Scroll left">
 					<ChevronLeft class="h-5 w-5" />
 				</TouchableButton>
 			</div>
 		{/if}
 		{#if showRightArrow}
-			<div class="absolute right-[-4px] top-1/2 z-10 -translate-y-1/2 pr-3 sm:pr-0">
+			<div class="absolute right-[.2rem] top-1/2 z-10 -translate-y-1/2">
 				<TouchableButton onClick={() => scroll('right')} ariaLabel="Scroll right">
 					<ChevronRight class="h-5 w-5" />
 				</TouchableButton>
 			</div>
 		{/if}
+
 		<div
 			bind:this={scrollContainer}
-			class="no-scrollbar flex gap-1 overflow-x-auto p-1"
-			on:scroll={checkArrows}
+			on:scroll={onScroll}
+			on:wheel={onMouseWheel}
+			class="no-scrollbar flex gap-1 overflow-x-auto p-2"
 		>
 			{#each continueListeningItems as item, index}
 				<button
 					class="hover:brightness-120 group flex min-w-fit items-center rounded-full border-2 border-base-content/20 bg-accent/15 p-0 transition-colors
-                    transition-transform hover:scale-105 {index === 0
-						? 'ml-3 sm:ml-0'
-						: ''} {index === continueListeningItems.length - 1 ? 'mr-3 sm:mr-0' : ''}"
+                    transition-transform hover:scale-105"
 					on:click={() => handleItemClick(item)}
 				>
 					<img
