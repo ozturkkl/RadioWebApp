@@ -10,7 +10,8 @@
 		seekTo,
 		skipForward,
 		skipBackward,
-		restartRadio
+		restartRadio,
+		toggleMuted
 	} from '$lib/stores/player';
 	import { settings } from '$lib/stores/settings';
 	import { radios } from '$lib/stores/radios';
@@ -27,6 +28,7 @@
 		VolumeOff
 	} from 'lucide-svelte';
 	import DropdownSelect from './DropdownSelect.svelte';
+	import { isIOS } from '$lib/util/isIOS';
 
 	const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 	const speedSelectOptions = speedOptions.map((speed) => ({ value: speed, label: `${speed}x` }));
@@ -214,29 +216,46 @@
 			<!-- Right Side Controls -->
 			<div class="flex items-stretch">
 				<!-- Volume Control -->
-				<div class="dropdown dropdown-top" on:click|stopPropagation role="presentation">
-					<TouchableButton ariaLabel="Volume control" small className="h-full pr-3">
-						{#if $playerStore.volume === 0}
+				{#if isIOS()}
+					<TouchableButton
+						ariaLabel="Volume control"
+						small
+						className="h-full pr-3"
+						onClick={() => toggleMuted()}
+					>
+						{#if $playerStore.muted}
 							<VolumeOff class="h-6 w-6" />
 						{:else}
 							<Volume2 class="h-6 w-6" />
 						{/if}
 					</TouchableButton>
-					<div class="dropdown-content z-[1] mb-2 h-40 w-12 rounded-box bg-base-200 p-3 shadow-lg">
-						<div class="relative h-full w-full">
-							<input
-								type="range"
-								min="0"
-								max="1"
-								step="0.01"
-								class="range range-md absolute w-[150px]"
-								style="top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%) rotate(-90deg);"
-								value={$playerStore.volume}
-								on:input|stopPropagation={(e) => updateVolume(parseFloat(e.currentTarget.value))}
-							/>
+				{:else}
+					<div class="dropdown dropdown-top" on:click|stopPropagation role="presentation">
+						<TouchableButton ariaLabel="Volume control" small className="h-full pr-3">
+							{#if $playerStore.volume === 0}
+								<VolumeOff class="h-6 w-6" />
+							{:else}
+								<Volume2 class="h-6 w-6" />
+							{/if}
+						</TouchableButton>
+						<div
+							class="dropdown-content z-[1] mb-2 h-40 w-12 rounded-box bg-base-200 p-3 shadow-lg"
+						>
+							<div class="relative h-full w-full">
+								<input
+									type="range"
+									min="0"
+									max="1"
+									step="0.01"
+									class="range range-md absolute w-[150px]"
+									style="top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%) rotate(-90deg);"
+									value={$playerStore.volume}
+									on:input|stopPropagation={(e) => updateVolume(parseFloat(e.currentTarget.value))}
+								/>
+							</div>
 						</div>
 					</div>
-				</div>
+				{/if}
 			</div>
 		</div>
 	</div>

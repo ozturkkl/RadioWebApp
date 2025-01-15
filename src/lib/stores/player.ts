@@ -14,6 +14,7 @@ interface BasePlayerState {
 	currentTime: number;
 	volume: number;
 	playbackRate: number;
+	muted: boolean;
 }
 
 interface RadioPlayerState extends BasePlayerState {
@@ -50,8 +51,9 @@ const initialState: PlayerState = {
 	isPlaying: false,
 	currentTime: 0,
 	duration: 0,
-	volume: 1,
-	playbackRate: 1,
+	volume: get(settings).volume ?? 1,
+	playbackRate: get(settings).playbackRate ?? 1,
+	muted: get(settings).muted ?? false,
 	type: null,
 	currentRadio: null,
 	currentPodcast: null,
@@ -127,8 +129,9 @@ playerStore.subscribe((state) => {
 		audio.load();
 	}
 
-	// Always update volume and playback rate
+	// Always update volume, playback rate and muted state
 	audio.volume = state.volume;
+	audio.muted = state.muted;
 	if (state.type === 'podcast' && state.playbackRate) {
 		audio.playbackRate = state.playbackRate;
 	}
@@ -136,12 +139,11 @@ playerStore.subscribe((state) => {
 
 export function playRadio(radio: Radio): void {
 	playerStore.update(
-		(): RadioPlayerState => ({
+		(state): RadioPlayerState => ({
+			...state,
 			type: 'radio',
-			isPlaying: !(audio?.paused ?? true),
 			currentTime: 0,
 			duration: 0,
-			volume: get(settings).volume ?? 1,
 			playbackRate: 1,
 			currentRadio: radio,
 			currentPodcast: null,
@@ -161,12 +163,10 @@ export function playPodcast(
 	if (!episodeToPlay) return;
 
 	playerStore.update(
-		(): PodcastPlayerState => ({
+		(state): PodcastPlayerState => ({
+			...state,
 			type: 'podcast',
-			isPlaying: !(audio?.paused ?? true),
 			currentTime: startWithTime,
-			volume: get(settings).volume ?? 1,
-			playbackRate: get(settings).playbackRate ?? 1,
 			currentRadio: null,
 			currentPodcast: podcast,
 			currentEpisode: episodeToPlay,
@@ -234,9 +234,19 @@ export function updateVolume(volume: number) {
 	settings.update((s) => ({ ...s, volume: normalizedVolume }));
 	playerStore.update((state) => ({
 		...state,
-		volume: normalizedVolume
+		volume: normalizedVolume,
+		muted: normalizedVolume === 0
 	}));
 }
+
+export function toggleMuted(muted?: boolean) {
+	settings.update((s) => ({ ...s, muted: muted ?? !s.muted }));
+	playerStore.update((state) => ({
+		...state,
+		muted: muted ?? !state.muted
+	}));
+}
+
 export function updatePlaybackRate(rate: number) {
 	playerStore.update((state): PlayerState => {
 		if (state.type === 'podcast') {

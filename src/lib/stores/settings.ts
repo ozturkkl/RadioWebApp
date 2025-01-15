@@ -45,6 +45,7 @@ interface Settings {
 	skipSeconds: number;
 	playbackRate: number;
 	volume: number;
+	muted: boolean;
 	selectedCategory: string;
 	autoplayLastContent: boolean;
 }
@@ -59,6 +60,7 @@ const getInitialSettings = (): Settings => {
 			skipSeconds: 5,
 			playbackRate: 1.0,
 			volume: 1.0,
+			muted: false,
 			selectedCategory: 'All',
 			autoplayLastContent: false
 		};
@@ -76,6 +78,7 @@ const getInitialSettings = (): Settings => {
 		skipSeconds: 5,
 		playbackRate: 1.0,
 		volume: 1.0,
+		muted: false,
 		selectedCategory: 'All',
 		autoplayLastContent: false
 	};
