@@ -5,9 +5,15 @@
 	import ContinueListening from '$lib/components/ContinueListening.svelte';
 	import InitializePWA from '$lib/components/InitializePWA.svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
+	import { onMount } from 'svelte';
+	import { fetchRadios } from '$lib/util/fetchRadios';
 
 	const outerDivStyle = 'flex flex-col items-center';
 	const innerDivStyle = 'container mx-0 sm:mx-5 w-auto flex-col fill-available';
+
+	onMount(() => {
+		fetchRadios();
+	});
 </script>
 
 <InitializePWA />

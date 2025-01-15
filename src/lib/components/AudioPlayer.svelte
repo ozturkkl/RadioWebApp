@@ -232,7 +232,7 @@
 				{:else}
 					<div class="dropdown dropdown-top" on:click|stopPropagation role="presentation">
 						<TouchableButton ariaLabel="Volume control" small className="h-full pr-3">
-							{#if $playerStore.volume === 0}
+							{#if $playerStore.volume === 0 || $playerStore.muted}
 								<VolumeOff class="h-6 w-6" />
 							{:else}
 								<Volume2 class="h-6 w-6" />

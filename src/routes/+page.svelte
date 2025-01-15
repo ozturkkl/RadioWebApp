@@ -46,7 +46,6 @@
 
 	onMount(async () => {
 		podcasts = await fetchPodcastsFromRssFeeds();
-		await fetchRadios(); // This will initialize the radios store
 	});
 
 	function handlePodcastExpand(podcastId: string, isExpanded: boolean) {
@@ -113,7 +112,7 @@
 	<DropdownSelect
 		bind:value={$settings.selectedCategory}
 		options={categoryOptions}
-		classes="bg-base-200 w-48 sm:w-64 border border-1 border-base-300"
+		backgroundColor="bg-base-200"
 	/>
 </div>
 <div class={sectionClasses}>
