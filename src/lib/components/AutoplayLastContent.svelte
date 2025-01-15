@@ -8,30 +8,8 @@
 	import { fetchPodcastsFromRssFeeds } from '$lib/util/fetchPodcasts';
 	import type { Podcast, Episode } from '$lib/util/fetchPodcasts';
 
-	async function requestAutoplayPermission() {
-		try {
-			// Try to play a silent audio to request permission
-			const audio = new Audio();
-			audio.src =
-				'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-			await audio.play();
-			audio.remove();
-			return true;
-		} catch (error) {
-			console.log('Autoplay permission denied');
-			return false;
-		}
-	}
-
 	async function setupLastContent() {
 		if (!$settings.autoplayLastContent) return;
-
-		// Request autoplay permission
-		const hasPermission = await requestAutoplayPermission();
-		if (!hasPermission) {
-			console.log('Autoplay permission denied, content will be loaded but not played');
-			return;
-		}
 
 		// Get the last played times for radios and podcasts
 		const lastPlayedRadio = Object.entries($radioProgress).reduce(

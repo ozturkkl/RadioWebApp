@@ -96,7 +96,7 @@ function initAudio() {
 	});
 
 	audio.addEventListener('play', () => {
-		playerStore.update((state) => ({ ...state, isPlaying: true }));
+		playerStore.update((state) => ({ ...state, isPlaying: true, muted: state.volume === 0 }));
 	});
 }
 
@@ -220,7 +220,11 @@ function toggleAudioWhenReady(value?: boolean, retries: number = 0) {
 				value = audio.paused;
 			}
 			if (value) {
-				audio.play();
+				audio.play().catch((e) => {
+					if (e.name === 'NotAllowedError') {
+						playerStore.update((state) => ({ ...state, muted: true }));
+					}
+				});
 			} else {
 				audio.pause();
 			}
@@ -240,11 +244,17 @@ export function updateVolume(volume: number) {
 }
 
 export function toggleMuted(muted?: boolean) {
-	settings.update((s) => ({ ...s, muted: muted ?? !s.muted }));
-	playerStore.update((state) => ({
-		...state,
-		muted: muted ?? !state.muted
-	}));
+	playerStore.update((state) => {
+		const newMuted = muted ?? !state.muted;
+		settings.update((s) => ({ ...s, muted: newMuted }));
+		if (!newMuted) {
+			toggleAudioWhenReady(true);
+		}
+		return {
+			...state,
+			muted: newMuted
+		};
+	});
 }
 
 export function updatePlaybackRate(rate: number) {
