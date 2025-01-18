@@ -4,9 +4,9 @@
 	import radioProgress from '$lib/stores/radioProgress';
 	import podcastProgress from '$lib/stores/podcastProgress';
 	import { playerStore, playRadio, playPodcast } from '$lib/stores/player';
-	import { fetchRadios } from '$lib/util/fetchRadios';
-	import { fetchPodcastsFromRssFeeds } from '$lib/util/fetchPodcasts';
-	import type { Podcast, Episode } from '$lib/util/fetchPodcasts';
+	import { get } from 'svelte/store';
+	import { radios } from '$lib/stores/radios';
+	import { podcasts, type Episode, type Podcast } from '$lib/stores/podcasts';
 
 	async function setupLastContent() {
 		if (!$settings.autoplayLastContent) return;
@@ -43,12 +43,10 @@
 		// If both exist, play the most recently played one
 		if (lastPlayedRadio && lastPlayedPodcast) {
 			if (lastPlayedRadio.lastPlayed > lastPlayedPodcast.lastPlayed) {
-				const radios = await fetchRadios();
-				const radio = radios.find((r) => r.id === lastPlayedRadio.id);
+				const radio = await get(radios).find((r) => r.id === lastPlayedRadio.id);
 				if (radio) playRadio(radio);
 			} else {
-				const podcasts = await fetchPodcastsFromRssFeeds();
-				const podcast = podcasts.find((p: Podcast) => p.id === lastPlayedPodcast.id);
+				const podcast = await get(podcasts).find((p: Podcast) => p.id === lastPlayedPodcast.id);
 				if (podcast) {
 					const episode = podcast.items.find((e: Episode) => e.id === lastPlayedPodcast.episodeId);
 					if (episode) {
@@ -61,16 +59,14 @@
 
 		// If only radio exists
 		if (lastPlayedRadio) {
-			const radios = await fetchRadios();
-			const radio = radios.find((r) => r.id === lastPlayedRadio.id);
+			const radio = await get(radios).find((r) => r.id === lastPlayedRadio.id);
 			if (radio) playRadio(radio);
 			return;
 		}
 
 		// If only podcast exists
 		if (lastPlayedPodcast) {
-			const podcasts = await fetchPodcastsFromRssFeeds();
-			const podcast = podcasts.find((p: Podcast) => p.id === lastPlayedPodcast.id);
+			const podcast = await get(podcasts).find((p: Podcast) => p.id === lastPlayedPodcast.id);
 			if (podcast) {
 				const episode = podcast.items.find((e: Episode) => e.id === lastPlayedPodcast.episodeId);
 				if (episode) {

@@ -1,11 +1,13 @@
 import { writable } from 'svelte/store';
-import type { Episode, Podcast } from '$lib/util/fetchPodcasts';
-import type { Radio } from '$lib/util/fetchRadios';
 import { settings } from './settings';
 import { updatePodcastProgress } from './podcastProgress';
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { updateRadioProgress } from './radioProgress';
+import { podcasts, type Episode, type Podcast } from './podcasts';
+import type { Radio } from './radios';
+import { blinkClasses } from '$lib/util/blinkClassess';
+import { scrollIntoViewPromise } from '$lib/util/scrollIntoViewPromised';
 
 export type PlayerType = 'radio' | 'podcast';
 
@@ -309,77 +311,87 @@ export function previousTrack() {
 }
 
 // UI related functions
-export function togglePlaylist() {
+export function togglePlaylist(targetPodcastId?: string) {
 	const state = get(playerStore);
-	if (state.type === 'podcast' && state.currentPodcast && state.currentEpisode) {
+	const podcastId = targetPodcastId ?? (state.type === 'podcast' ? state.currentPodcast?.id : null);
+
+	console.log('podcastId', podcastId);
+
+	if (podcastId) {
 		// Navigate to main page using SvelteKit's goto
 		goto('/').then(() => {
+			const podcast = podcastId ? get(podcasts).find((p) => p.id === podcastId) : null;
 			// After navigation, find and expand the podcast
-			const podcastElement = document.querySelector(
-				`[data-podcast-id="${state.currentPodcast?.id}"]`
-			);
+			const podcastElement = document.querySelector(`[data-podcast-id="${podcastId}"]`);
 			if (podcastElement) {
 				// Function to find and scroll to episode
-				const scrollToEpisode = () => {
+				const scrollToEpisode = async () => {
 					const episodeButtons = podcastElement.querySelectorAll('button');
-					const episodeElement = Array.from(episodeButtons).find((button) => {
-						const titleSpan = button.querySelector('span');
-						return titleSpan && titleSpan.textContent === state.currentEpisode?.title;
-					});
+					const episodeId = state.currentEpisode?.id ?? podcast?.items[0].id;
+					const episodeElement =
+						Array.from(episodeButtons).find(
+							(button) => button.getAttribute('data-episode-id') === episodeId
+						) ?? episodeButtons[0];
 					if (episodeElement) {
-						episodeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-						// Immediately queue the podcast scroll
-						requestAnimationFrame(() => {
-							podcastElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-						});
+						scrollIntoViewPromise(episodeElement, { behavior: 'smooth', block: 'nearest' });
+						scrollIntoViewPromise(podcastElement, { behavior: 'smooth', block: 'center' });
 					}
 				};
 
 				// Expand the podcast if not already expanded
 				const checkbox = podcastElement.querySelector('input[type="checkbox"]') as HTMLInputElement;
 				if (checkbox && !checkbox.checked) {
-					// Get the collapse content element
-					const collapseContent = podcastElement.querySelector('.collapse-content');
-					if (collapseContent) {
+					// Trigger the change event properly
+					checkbox.checked = true;
+					checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+				}
+
+				// Get the collapse content element
+				const collapseContent = podcastElement.querySelector('.collapse-content');
+				if (collapseContent) {
+					if (collapseContent.getAnimations().length > 0) {
 						// Listen for the transition end
 						const onTransitionEnd = () => {
 							collapseContent.removeEventListener('transitionend', onTransitionEnd);
 							scrollToEpisode();
 						};
 						collapseContent.addEventListener('transitionend', onTransitionEnd);
+					} else {
+						scrollToEpisode();
 					}
-					// Trigger the change event properly
-					checkbox.checked = true;
-					checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-				} else {
-					// If already expanded, just scroll to episode
-					scrollToEpisode();
 				}
 			} else {
 				// If podcast is not found, check if it exists and if current category doesn't include it
 				const settingsStore = get(settings);
 				if (
 					settingsStore.selectedCategory !== 'All' &&
-					state.currentPodcast.categories &&
-					!state.currentPodcast.categories.includes(settingsStore.selectedCategory)
+					podcast?.categories &&
+					!podcast.categories.includes(settingsStore.selectedCategory)
 				) {
 					settings.update((s) => ({ ...s, selectedCategory: 'All' }));
 					// Wait for the next tick to let the UI update
 					setTimeout(() => {
-						return togglePlaylist();
+						return togglePlaylist(targetPodcastId);
 					}, 0);
 				}
 			}
 		});
 	} else if (state.type === 'radio' && state.currentRadio) {
 		// Navigate to main page using SvelteKit's goto
-		goto('/').then(() => {
+		goto('/').then(async () => {
 			// Find the radio card by title
 			const radioCard = Array.from(document.querySelectorAll('[role="button"]')).find(
 				(element) => element.querySelector('h3')?.textContent === state.currentRadio?.title
-			);
+			) as HTMLElement;
 			if (radioCard) {
-				radioCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				await scrollIntoViewPromise(radioCard, { behavior: 'smooth', block: 'center' });
+				// add focus visible
+				const focusClasses = ['outline-primary', 'outline-2', 'outline-offset-2', 'outline'];
+				radioCard.focus({ preventScroll: true });
+				radioCard.onblur = () => {
+					focusClasses.forEach((className) => radioCard.classList.remove(className));
+				};
+				await blinkClasses(radioCard, focusClasses, 1, 0, 1500);
 			}
 		});
 	}

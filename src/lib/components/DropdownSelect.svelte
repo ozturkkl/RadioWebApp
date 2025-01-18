@@ -1,12 +1,15 @@
 <script lang="ts">
+	import { scrollIntoViewPromise } from '$lib/util/scrollIntoViewPromised';
 	import { ChevronDown } from 'lucide-svelte';
 	export let value: string | number;
 	export let options: Array<{ value: string | number; label: string }>;
 	export let dropDirection: 'top' | 'bottom' = 'bottom';
 	export let backgroundColor = 'bg-base-100';
 	export let optionTextCenter = false;
+	export let maxHeight = '40vh';
 
 	let dropdownRef: HTMLElement | null = null;
+	let dropdownContentRef: HTMLElement | null = null;
 
 	function handleSelect(newValue: string | number) {
 		value = newValue;
@@ -49,11 +52,19 @@
 	function scrollToSelected() {
 		const selectedOption = options.find((opt) => opt.value === value);
 		if (selectedOption) {
-			const optionElement = document.querySelector(`[data-value="${selectedOption.value}"]`);
+			const optionElement = dropdownContentRef?.querySelector(
+				`[data-value="${selectedOption.value}"]`
+			);
 			if (optionElement) {
-				optionElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+				scrollIntoViewPromise(optionElement, { behavior: 'smooth', block: 'nearest' });
 			}
 		}
+	}
+
+	async function scrollToContent() {
+		if (!dropdownContentRef) return;
+		await scrollIntoViewPromise(dropdownContentRef, { behavior: 'smooth', block: 'center' });
+		scrollToSelected();
 	}
 
 	$: if (typeof window !== 'undefined' && value) {
@@ -78,7 +89,7 @@
 		class="h-full w-full"
 		aria-label={`Select ${options.find((opt) => opt.value === value)?.label}`}
 		on:keydown={handleKeydown}
-		on:focus={scrollToSelected}
+		on:focus={scrollToContent}
 	>
 		{#if $$slots.trigger}
 			<slot name="trigger" />
@@ -92,7 +103,8 @@
 		{/if}
 	</div>
 	<div
-		class={`dropdown-content z-[100] flex max-h-[40vh] cursor-pointer flex-col flex-nowrap overflow-y-auto border border-base-content/10 p-0 shadow-xl ${optionTextCenter ? 'text-center' : ''} ${backgroundColor}`}
+		bind:this={dropdownContentRef}
+		class={`dropdown-content z-[100] flex max-h-[${maxHeight}] cursor-pointer flex-col flex-nowrap overflow-y-auto border border-base-content/10 p-0 shadow-xl ${optionTextCenter ? 'text-center' : ''} ${backgroundColor}`}
 		style={`border-radius: var(--rounded-btn, 0.5rem); min-width: ${dropdownRef?.clientWidth}px`}
 	>
 		{#each options as option}

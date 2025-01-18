@@ -2,14 +2,11 @@
 	import podcastProgress from '$lib/stores/podcastProgress';
 	import radioProgress from '$lib/stores/radioProgress';
 	import { playPodcast, playRadio } from '$lib/stores/player';
-	import { type Podcast, type Episode, fetchPodcastsFromRssFeeds } from '$lib/util/fetchPodcasts';
-	import type { Radio } from '$lib/util/fetchRadios';
 	import { onMount } from 'svelte';
 	import TouchableButton from './TouchableButton.svelte';
 	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
-	import { radios } from '$lib/stores/radios';
-
-	let podcasts: Podcast[] = [];
+	import { radios, type Radio } from '$lib/stores/radios';
+	import { podcasts, type Episode, type Podcast } from '$lib/stores/podcasts';
 
 	type ContinueListeningItem =
 		| {
@@ -40,7 +37,6 @@
 	}
 
 	onMount(() => {
-		fetchPodcastsFromRssFeeds().then((p) => (podcasts = p));
 		isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 		setTimeout(onScroll, 100);
 		window.addEventListener('resize', onScroll);
@@ -73,24 +69,24 @@
 	}
 
 	$: {
-		const podcastItems = podcasts
-			.filter((podcast) => $podcastProgress[podcast.id])
-			.map((podcast) => ({
+		const podcastItems = $podcasts
+			.filter((p) => $podcastProgress[p.id])
+			.map((p) => ({
 				type: 'podcast' as const,
 				item: {
-					...podcast,
-					episodeId: $podcastProgress[podcast.id].episodeId,
-					timestamp: $podcastProgress[podcast.id].timestamp
+					...p,
+					episodeId: $podcastProgress[p.id].episodeId,
+					timestamp: $podcastProgress[p.id].timestamp
 				},
-				lastPlayed: $podcastProgress[podcast.id].lastPlayed
+				lastPlayed: $podcastProgress[p.id].lastPlayed
 			}));
 
 		const radioItems = $radios
-			.filter((radio) => $radioProgress[radio.id])
-			.map((radio) => ({
+			.filter((r) => $radioProgress[r.id])
+			.map((r) => ({
 				type: 'radio' as const,
-				item: radio,
-				lastPlayed: $radioProgress[radio.id].lastPlayed
+				item: r,
+				lastPlayed: $radioProgress[r.id].lastPlayed
 			}));
 
 		continueListeningItems = [...podcastItems, ...radioItems].sort((a, b) => {

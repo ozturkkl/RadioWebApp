@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { Podcast, Episode } from '$lib/util/fetchPodcasts';
 	import { favorites } from '$lib/stores/favorites';
 	import { playPodcast } from '$lib/stores/player';
 	import { playerStore } from '$lib/stores/player';
 	import { cardStyles } from './RadioCard.svelte';
 	import FavoriteButton from './FavoriteButton.svelte';
 	import { formatTime, formatDate } from '$lib/util/time';
+	import type { Episode, Podcast } from '$lib/stores/podcasts';
 
 	export let podcast: Podcast;
 	export let expanded = false;
@@ -51,10 +51,11 @@
 		</div>
 		<div class="collapse-content relative">
 			<div
-				class="-mx-3 flex max-h-80 flex-col gap-1 overflow-y-auto stable-gutter overflow-x-hidden border-t border-base-300 p-1 pt-3 sm:max-h-96"
+				class="stable-gutter -mx-3 flex max-h-80 flex-col gap-1 overflow-y-auto overflow-x-hidden border-t border-base-300 p-1 pt-3 sm:max-h-96"
 			>
-				{#each podcast.items as episode}
+				{#each podcast.items as episode (episode.id)}
 					<button
+						data-episode-id={episode.id}
 						class={getEpisodeClasses(episode, podcast)}
 						on:click={() => playPodcast(podcast, episode)}
 					>

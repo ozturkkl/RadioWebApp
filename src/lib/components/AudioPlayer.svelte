@@ -114,6 +114,7 @@
 						options={speedSelectOptions}
 						dropDirection="top"
 						optionTextCenter
+						maxHeight="100dvh"
 					>
 						<TouchableButton
 							ariaLabel="Playback speed"

@@ -30,8 +30,6 @@
 
 	function handleEvent(e: Event) {
 		e.stopPropagation();
-		// e.preventDefault();
-		console.log(e.type);
 		if (e.type === 'click') {
 			isClicked = true;
 			onClick();

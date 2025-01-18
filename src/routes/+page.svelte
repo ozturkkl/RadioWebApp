@@ -1,27 +1,22 @@
 <script lang="ts">
-	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
 	import PodcastCard from '$lib/components/PodcastCard.svelte';
 	import RadioCard from '$lib/components/RadioCard.svelte';
-	import ContinueListening from '$lib/components/ContinueListening.svelte';
-	import { onMount } from 'svelte';
-	import { fetchPodcastsFromRssFeeds } from '$lib/util/fetchPodcasts';
-	import { fetchRadios } from '$lib/util/fetchRadios';
-	import type { Radio } from '$lib/util/fetchRadios';
-	import type { Podcast } from '$lib/util/fetchPodcasts';
 	import { settings } from '$lib/stores/settings';
 	import { favorites } from '$lib/stores/favorites';
 	import { radios } from '$lib/stores/radios';
 	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
 	import { config } from '$lib/config';
+	import { togglePlaylist } from '$lib/stores/player';
+	import { podcasts, type Podcast } from '$lib/stores/podcasts';
 
-	let podcasts: Podcast[] = [];
 	let expandedPodcasts = new Set<string>();
-	let headerClasses = 'mb-2 text-2xl font-bold sm:mb-4';
+	let headerClasses = 'mb-2 sm:mb-4';
+	let headerTextClasses = 'text-2xl font-bold';
 	let sectionClasses = 'grid grid-cols-1 items-start gap-2 sm:gap-4 lg:grid-cols-2 2xl:grid-cols-3';
 	let filteredPodcasts: Podcast[] = [];
 
 	$: {
-		filteredPodcasts = podcasts.filter((podcast) => !$favorites.podcasts.has(podcast.id));
+		filteredPodcasts = $podcasts.filter((podcast) => !$favorites.podcasts.has(podcast.id));
 		if (selectedCategory !== 'All') {
 			filteredPodcasts = filteredPodcasts.filter((podcast) => {
 				return podcast.categories.includes(selectedCategory);
@@ -33,7 +28,7 @@
 	$: allCategories = [
 		'All',
 		...new Set(
-			podcasts.flatMap((p) =>
+			$podcasts.flatMap((p) =>
 				p.categories.filter((cat) => !config.podcast.bypassCategories.includes(cat))
 			)
 		)
@@ -41,12 +36,8 @@
 	$: categoryOptions = allCategories.map((cat) => ({ value: cat, label: cat }));
 	$: favoriteRadios = $radios.filter((radio) => $favorites.radios.has(radio.title));
 	$: otherRadios = $radios.filter((radio) => !$favorites.radios.has(radio.title));
-	$: favoritePodcasts = podcasts.filter((podcast) => $favorites.podcasts.has(podcast.id));
+	$: favoritePodcasts = $podcasts.filter((podcast) => $favorites.podcasts.has(podcast.id));
 	$: otherPodcasts = filteredPodcasts;
-
-	onMount(async () => {
-		podcasts = await fetchPodcastsFromRssFeeds();
-	});
 
 	function handlePodcastExpand(podcastId: string, isExpanded: boolean) {
 		if (isExpanded) {
@@ -63,11 +54,8 @@
 					}
 				});
 			}
-			// Find and scroll to the expanded podcast card
-			setTimeout(() => {
-				const podcastCard = document.querySelector(`[data-podcast-id="${podcastId}"]`);
-				podcastCard?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-			}, 150); // Wait for collapse animation to start
+			// Use togglePlaylist for scrolling
+			togglePlaylist(podcastId);
 		} else {
 			expandedPodcasts.delete(podcastId);
 		}
@@ -76,7 +64,7 @@
 </script>
 
 {#if favoriteRadios.length > 0 || favoritePodcasts.length > 0}
-	<h2 class={headerClasses}>Favorites</h2>
+	<h2 class={[headerClasses, headerTextClasses]}>Favorites</h2>
 	<div class={sectionClasses}>
 		{#each favoriteRadios as radio (radio.title)}
 			<RadioCard {radio} />
@@ -92,7 +80,7 @@
 	<div class="divider"></div>
 {/if}
 
-<h2 class={headerClasses}>Radio</h2>
+<h2 class={[headerClasses, headerTextClasses]}>Radio</h2>
 <div class={sectionClasses}>
 	{#if $radios.length === 0}
 		<p class="text-base-content-secondary">Loading stations...</p>
@@ -108,7 +96,7 @@
 <div class="divider"></div>
 
 <div class="flex items-start items-center justify-between {headerClasses}">
-	<h2>Archive</h2>
+	<h2 class={[headerTextClasses]}>Archive</h2>
 	<DropdownSelect
 		bind:value={$settings.selectedCategory}
 		options={categoryOptions}
@@ -116,7 +104,7 @@
 	/>
 </div>
 <div class={sectionClasses}>
-	{#if podcasts.length === 0}
+	{#if $podcasts.length === 0}
 		<p class="text-base-content-secondary">Loading archive...</p>
 	{:else if otherPodcasts.length === 0}
 		<p class="text-base-content-secondary">All of this archive is in favorites</p>
