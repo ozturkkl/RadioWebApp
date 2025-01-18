@@ -315,8 +315,6 @@ export function togglePlaylist(targetPodcastId?: string) {
 	const state = get(playerStore);
 	const podcastId = targetPodcastId ?? (state.type === 'podcast' ? state.currentPodcast?.id : null);
 
-	console.log('podcastId', podcastId);
-
 	if (podcastId) {
 		// Navigate to main page using SvelteKit's goto
 		goto('/').then(() => {
