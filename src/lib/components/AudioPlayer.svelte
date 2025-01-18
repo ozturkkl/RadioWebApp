@@ -115,6 +115,7 @@
 						dropDirection="top"
 						optionTextCenter
 						maxHeight="100dvh"
+						matchOptionWidth={false}
 					>
 						<TouchableButton
 							ariaLabel="Playback speed"

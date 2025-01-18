@@ -7,6 +7,7 @@
 	export let backgroundColor = 'bg-base-100';
 	export let optionTextCenter = false;
 	export let maxHeight = '40vh';
+	export let matchOptionWidth = true;
 
 	let dropdownRef: HTMLElement | null = null;
 	let dropdownContentRef: HTMLElement | null = null;
@@ -104,8 +105,12 @@
 	</div>
 	<div
 		bind:this={dropdownContentRef}
-		class={`dropdown-content z-[100] flex max-h-[${maxHeight}] cursor-pointer flex-col flex-nowrap overflow-y-auto border border-base-content/10 p-0 shadow-xl ${optionTextCenter ? 'text-center' : ''} ${backgroundColor}`}
-		style={`border-radius: var(--rounded-btn, 0.5rem); min-width: ${dropdownRef?.clientWidth}px`}
+		class="dropdown-content z-[100] flex max-h-[{maxHeight}] cursor-pointer flex-col flex-nowrap overflow-y-auto border border-base-content/10 p-0 shadow-xl {optionTextCenter
+			? 'text-center'
+			: ''} {backgroundColor}"
+		style="border-radius: var(--rounded-btn, 0.5rem); {matchOptionWidth
+			? `min-width: ${dropdownRef?.clientWidth}px; max-width: ${dropdownRef?.clientWidth}px`
+			: ''} {dropdownRef?.clientWidth}px"
 	>
 		{#each options as option}
 			<div
