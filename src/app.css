@@ -11,6 +11,12 @@
 html,
 body {
 	overscroll-behavior: none;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+* {
+	touch-action: pan-x pan-y;
 }
 
 /* Webkit scrollbar styling for Chrome, Safari, and Edge */

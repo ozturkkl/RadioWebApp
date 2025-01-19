@@ -29,6 +29,7 @@
 	} from 'lucide-svelte';
 	import DropdownSelect from './DropdownSelect.svelte';
 	import { isIOS } from '$lib/util/isIOS';
+	import { iosRangeTouchEventPolyfill } from '$lib/util/iosRangeTouchEventPolyfill';
 
 	const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 	const speedSelectOptions = speedOptions.map((speed) => ({ value: speed, label: `${speed}x` }));
@@ -98,6 +99,8 @@
 					value={$playerStore.currentTime}
 					class="range range-xs flex-1"
 					on:input|stopPropagation={(e) => seekTo(parseFloat(e.currentTarget.value))}
+					on:touchstart|stopPropagation={iosRangeTouchEventPolyfill}
+					on:touchmove|stopPropagation={iosRangeTouchEventPolyfill}
 				/>
 				<span class="w-10">{formatTime($playerStore.duration)}</span>
 			</div>
