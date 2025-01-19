@@ -114,7 +114,7 @@
 						options={speedSelectOptions}
 						dropDirection="top"
 						optionTextCenter
-						maxHeight="100dvh"
+						limitHeight={false}
 						matchOptionWidth={false}
 					>
 						<TouchableButton
