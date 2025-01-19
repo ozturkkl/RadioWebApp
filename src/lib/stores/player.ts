@@ -18,6 +18,7 @@ interface BasePlayerState {
 	playbackRate: number;
 	muted: boolean;
 	isBuffering: boolean;
+	errored: boolean;
 }
 
 interface RadioPlayerState extends BasePlayerState {
@@ -58,6 +59,7 @@ const initialState: PlayerState = {
 	playbackRate: get(settings).playbackRate ?? 1,
 	muted: get(settings).muted ?? false,
 	isBuffering: false,
+	errored: false,
 	type: null,
 	currentRadio: null,
 	currentPodcast: null,
@@ -75,6 +77,7 @@ function initAudio() {
 	if (typeof window === 'undefined') return; // Skip initialization if not in browser
 
 	audio = new Audio();
+
 	audio.addEventListener('timeupdate', () => {
 		playerStore.update((state) => {
 			if (!state.isBuffering) {
@@ -99,17 +102,35 @@ function initAudio() {
 	audio.addEventListener('loadstart', () => {
 		playerStore.update((state) => ({ ...state, isBuffering: true }));
 	});
-
-	audio.addEventListener('canplay', () => {
-		playerStore.update((state) => ({ ...state, isBuffering: false }));
-	});
-
 	audio.addEventListener('waiting', () => {
 		playerStore.update((state) => ({ ...state, isBuffering: true }));
 	});
+	audio.addEventListener('waitingforkey', () => {
+		playerStore.update((state) => ({ ...state, isBuffering: true }));
+	});
+	// audio.addEventListener('progress', () => {
+	// 	console.log('progress');
+	// });
 
+	audio.addEventListener('canplay', () => {
+		playerStore.update((state) => ({ ...state, isBuffering: false, errored: false }));
+	});
 	audio.addEventListener('playing', () => {
-		playerStore.update((state) => ({ ...state, isBuffering: false }));
+		playerStore.update((state) => ({ ...state, isBuffering: false, errored: false }));
+	});
+	// audio.addEventListener('suspend', () => {
+	// 	console.log('suspend');
+	// });
+
+	audio.addEventListener('stalled', () => {
+		resetAudio();
+	});
+
+	audio.addEventListener('error', () => {
+		playerStore.update((state) => ({ ...state, errored: true }));
+	});
+	audio.addEventListener('abort', () => {
+		playerStore.update((state) => ({ ...state, errored: true }));
 	});
 
 	audio.addEventListener('ended', () => {
@@ -119,10 +140,22 @@ function initAudio() {
 	audio.addEventListener('pause', () => {
 		playerStore.update((state) => ({ ...state, isPlaying: false }));
 	});
-
 	audio.addEventListener('play', () => {
 		playerStore.update((state) => ({ ...state, isPlaying: true, muted: state.volume === 0 }));
 	});
+}
+export function resetAudio() {
+	if (audio) {
+		const currentTime = audio.currentTime;
+		const currentPlaying = !audio.paused;
+		audio.load();
+		setTimeout(() => {
+			if (currentPlaying) {
+				audio!.play();
+			}
+			audio!.currentTime = currentTime;
+		}, 0);
+	}
 }
 
 export const playerStore = writable<PlayerState>(initialState);
@@ -206,6 +239,10 @@ export function playPodcast(
 
 // Player controls for AUDIO element
 export function togglePlayPause() {
+	const playerError = get(playerStore).errored;
+	if (playerError) {
+		resetAudio();
+	}
 	toggleAudioWhenReady();
 }
 export function seekTo(time: number) {
@@ -248,6 +285,8 @@ function toggleAudioWhenReady(value?: boolean, retries: number = 0) {
 				audio.play().catch((e) => {
 					if (e.name === 'NotAllowedError') {
 						playerStore.update((state) => ({ ...state, muted: true }));
+					} else {
+						playerStore.update((state) => ({ ...state, errored: true }));
 					}
 				});
 			} else {

@@ -25,7 +25,9 @@
 		Pause,
 		Play,
 		Volume2,
-		VolumeOff
+		VolumeOff,
+		ChevronsLeft,
+		TriangleAlert
 	} from 'lucide-svelte';
 	import DropdownSelect from './DropdownSelect.svelte';
 	import { isIOS } from '$lib/util/isIOS';
@@ -163,14 +165,7 @@
 						ariaLabel="Skip backward {$settings.skipSeconds} seconds"
 						small
 					>
-						<div class="relative">
-							<RotateCcw class="h-6 w-6" />
-							<span
-								class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] font-bold"
-							>
-								{$settings.skipSeconds}
-							</span>
-						</div>
+						<ChevronsLeft class="h-6 w-6" />
 					</TouchableButton>
 
 					<TouchableButton
@@ -179,6 +174,8 @@
 					>
 						{#if $playerStore.isBuffering}
 							<span class="loading loading-spinner loading-lg h-8 w-8"></span>
+						{:else if $playerStore.errored}
+							<TriangleAlert class="h-8 w-8 pb-px" />
 						{:else if $playerStore.isPlaying}
 							<Pause class="h-8 w-8" />
 						{:else}
@@ -193,14 +190,7 @@
 						ariaLabel="Skip forward {$settings.skipSeconds} seconds"
 						small
 					>
-						<div class="relative">
-							<RotateCcw class="h-6 w-6" style="transform: scaleX(-1)" />
-							<span
-								class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[10px] font-bold"
-							>
-								{$settings.skipSeconds}
-							</span>
-						</div>
+						<ChevronsLeft class="h-6 w-6" style="transform: scaleX(-1)" />
 					</TouchableButton>
 
 					{#if $playerStore.type === 'podcast'}
