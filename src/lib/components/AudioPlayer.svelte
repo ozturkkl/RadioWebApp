@@ -174,7 +174,9 @@
 						onClick={togglePlayPause}
 						ariaLabel={$playerStore.isPlaying ? 'Pause' : 'Play'}
 					>
-						{#if $playerStore.isPlaying}
+						{#if $playerStore.isBuffering}
+							<span class="loading loading-spinner loading-lg h-8 w-8"></span>
+						{:else if $playerStore.isPlaying}
 							<Pause class="h-8 w-8" />
 						{:else}
 							<Play class="h-8 w-8" />

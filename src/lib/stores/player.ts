@@ -17,6 +17,7 @@ interface BasePlayerState {
 	volume: number;
 	playbackRate: number;
 	muted: boolean;
+	isBuffering: boolean;
 }
 
 interface RadioPlayerState extends BasePlayerState {
@@ -56,6 +57,7 @@ const initialState: PlayerState = {
 	volume: get(settings).volume ?? 1,
 	playbackRate: get(settings).playbackRate ?? 1,
 	muted: get(settings).muted ?? false,
+	isBuffering: false,
 	type: null,
 	currentRadio: null,
 	currentPodcast: null,
@@ -74,10 +76,15 @@ function initAudio() {
 
 	audio = new Audio();
 	audio.addEventListener('timeupdate', () => {
-		playerStore.update((state) => ({
-			...state,
-			currentTime: audio?.currentTime ?? 0
-		}));
+		playerStore.update((state) => {
+			if (!state.isBuffering) {
+				return {
+					...state,
+					currentTime: audio?.currentTime ?? 0
+				};
+			}
+			return state;
+		});
 
 		const currentState = get(playerStore);
 		if (currentState.type === 'podcast') {
@@ -87,6 +94,22 @@ function initAudio() {
 				audio?.currentTime ?? 0
 			);
 		}
+	});
+
+	audio.addEventListener('loadstart', () => {
+		playerStore.update((state) => ({ ...state, isBuffering: true }));
+	});
+
+	audio.addEventListener('canplay', () => {
+		playerStore.update((state) => ({ ...state, isBuffering: false }));
+	});
+
+	audio.addEventListener('waiting', () => {
+		playerStore.update((state) => ({ ...state, isBuffering: true }));
+	});
+
+	audio.addEventListener('playing', () => {
+		playerStore.update((state) => ({ ...state, isBuffering: false }));
 	});
 
 	audio.addEventListener('ended', () => {

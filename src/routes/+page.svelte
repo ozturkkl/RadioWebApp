@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PodcastCard from '$lib/components/PodcastCard.svelte';
 	import RadioCard from '$lib/components/RadioCard.svelte';
+	import SkeletonCard from '$lib/components/SkeletonCard.svelte';
 	import { settings } from '$lib/stores/settings';
 	import { favorites } from '$lib/stores/favorites';
 	import { radios } from '$lib/stores/radios';
@@ -66,16 +67,16 @@
 {#if favoriteRadios.length > 0 || favoritePodcasts.length > 0}
 	<h2 class={[headerClasses, headerTextClasses]}>Favorites</h2>
 	<div class={sectionClasses}>
-		{#each favoriteRadios as radio (radio.title)}
-			<RadioCard {radio} />
-		{/each}
-		{#each favoritePodcasts as podcast (podcast.id)}
-			<PodcastCard
-				{podcast}
-				expanded={expandedPodcasts.has(podcast.id)}
-				onExpand={handlePodcastExpand}
-			/>
-		{/each}
+			{#each favoriteRadios as radio (radio.title)}
+				<RadioCard {radio} />
+			{/each}
+			{#each favoritePodcasts as podcast (podcast.id)}
+				<PodcastCard
+					{podcast}
+					expanded={expandedPodcasts.has(podcast.id)}
+					onExpand={handlePodcastExpand}
+				/>
+			{/each}
 	</div>
 	<div class="divider"></div>
 {/if}
@@ -83,7 +84,9 @@
 <h2 class={[headerClasses, headerTextClasses]}>Radio</h2>
 <div class={sectionClasses}>
 	{#if $radios.length === 0}
-		<p class="text-base-content-secondary">Loading stations...</p>
+		{#each Array(4) as _}
+			<SkeletonCard />
+		{/each}
 	{:else if otherRadios.length === 0}
 		<p class="text-base-content-secondary">All stations are in favorites</p>
 	{:else}
@@ -105,7 +108,9 @@
 </div>
 <div class={sectionClasses}>
 	{#if $podcasts.length === 0}
-		<p class="text-base-content-secondary">Loading archive...</p>
+		{#each Array(6) as _}
+			<SkeletonCard />
+		{/each}
 	{:else if otherPodcasts.length === 0}
 		<p class="text-base-content-secondary">All of this archive is in favorites</p>
 	{:else}
