@@ -55,7 +55,7 @@
 
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
 <div
-	class="touchable-button flex cursor-pointer items-center p-2 transition-all duration-75 ease-out focus-visible:scale-110 focus-visible:brightness-110 {disabled
+	class="touchable-button flex cursor-pointer items-center p-2 transition-all duration-75 ease-out focus-visible:scale-110 focus-visible:brightness-110 w-max {disabled
 		? 'pointer-events-none opacity-50'
 		: ''} {isHovered ? 'scale-110 brightness-110' : ''} {isPressed ? 'scale-95' : ''} {isClicked
 		? 'pop-back'

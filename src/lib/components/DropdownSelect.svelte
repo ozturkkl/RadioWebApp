@@ -8,6 +8,7 @@
 	export let optionTextCenter = false;
 	export let limitHeight = true;
 	export let matchOptionWidth = true;
+	export let width = 'w-36 sm:w-40';
 
 	let dropdownRef: HTMLElement | null = null;
 	let dropdownContentRef: HTMLElement | null = null;
@@ -95,7 +96,7 @@
 		{#if $$slots.trigger}
 			<slot name="trigger" />
 		{:else}
-			<div class="btn w-40 flex-nowrap justify-between sm:w-52 {backgroundColor}">
+			<div class="btn flex-nowrap justify-between {width} {backgroundColor}">
 				<span class="leading-snug">
 					{options.find((opt) => opt.value === value)?.label}
 				</span>
@@ -105,7 +106,9 @@
 	</div>
 	<div
 		bind:this={dropdownContentRef}
-		class="dropdown-content z-[100] flex {limitHeight ? 'max-h-[40vh]' : 'max-h-[100dvh]'} cursor-pointer flex-col flex-nowrap overflow-y-auto border border-base-content/10 p-0 shadow-xl {optionTextCenter
+		class="dropdown-content z-[100] flex {limitHeight
+			? 'max-h-[40vh]'
+			: 'max-h-[100dvh]'} cursor-pointer flex-col flex-nowrap overflow-y-auto border border-base-content/10 p-0 shadow-xl {optionTextCenter
 			? 'text-center'
 			: ''} {backgroundColor}"
 		style="border-radius: var(--rounded-btn, 0.5rem); {matchOptionWidth

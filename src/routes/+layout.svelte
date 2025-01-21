@@ -7,7 +7,7 @@
 	import Navbar from '$lib/components/Navbar.svelte';
 
 	const outerDivStyle = 'flex flex-col items-center';
-	const innerDivStyle = 'container mx-0 sm:mx-5 w-auto flex-col fill-available';
+	const innerDivStyle = 'container mx-0 sm:mx-5 w-auto flex-col fill-available grow';
 </script>
 
 <InitializePWA />
