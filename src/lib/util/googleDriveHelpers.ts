@@ -1,7 +1,8 @@
-import { signInWithGoogle } from '$lib/auth/store';
+import { signInWithGoogle, user } from '$lib/stores/auth';
 import { get } from 'svelte/store';
-import { user } from '$lib/auth/store';
-import { deepMerge } from './deepMerge';
+import { deepMerge } from '$lib/util/deepMerge';
+import { throttleDebounce } from '$lib/util/throttleDebounce';
+import type { UserData } from '$lib/util/userData';
 
 type File = {
 	id: string;
@@ -22,7 +23,20 @@ class GoogleDriveFetcher {
 
 	public async upsertFile(name: string, file: Record<string, unknown>, merge = false) {
 		const { files } = await this.getFiles();
-		const existingFile = files.find((f) => f.name === name + '.json');
+		const existingFiles = files.filter((f) => f.name.split('.').slice(0, -1).join('.') === name);
+		const existingFile = existingFiles.length > 0 ? existingFiles[0] : null;
+
+		if (existingFiles.length > 1) {
+			console.error(
+				`Multiple files with the same name found: ${existingFiles.map((f) => f.id + ': ' + f.name).join(', ')}`
+			);
+			for (const [index, file] of existingFiles.entries()) {
+				if (index === 0) {
+					continue;
+				}
+				await this.deleteFileById(file.id);
+			}
+		}
 
 		let finalData: Record<string, unknown>;
 		if (merge && existingFile) {
@@ -61,12 +75,12 @@ class GoogleDriveFetcher {
 			await this.deleteFileById(file.id);
 		}
 	}
-
-	private async getFiles(): Promise<{ files: File[] }> {
+	public async getFiles(): Promise<{ files: File[] }> {
 		return this.fetch('https://www.googleapis.com/drive/v3/files?spaces=appDataFolder') as Promise<{
 			files: File[];
 		}>;
 	}
+
 	private async getFileById(id: string) {
 		return this.fetch(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`);
 	}
@@ -80,16 +94,7 @@ class GoogleDriveFetcher {
 			name: name + '.json',
 			parents: ['appDataFolder']
 		};
-		const body = `
---${this.boundary}
-Content-Type: application/json; charset=UTF-8
-
-${JSON.stringify(metadata)}
---${this.boundary}
-Content-Type: application/json; charset=UTF-8
-
-${JSON.stringify(file)}
---${this.boundary}--`;
+		const body = this.buildBody(file, metadata);
 
 		return this.fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart`, {
 			method: 'POST',
@@ -101,16 +106,7 @@ ${JSON.stringify(file)}
 		});
 	}
 	private async updateFile(id: string, file: Record<string, unknown>) {
-		const body = `
---${this.boundary}
-Content-Type: application/json; charset=UTF-8
-
-{}
---${this.boundary}
-Content-Type: application/json; charset=UTF-8
-
-${JSON.stringify(file)}
---${this.boundary}--`;
+		const body = this.buildBody(file);
 
 		return this.fetch(
 			`https://www.googleapis.com/upload/drive/v3/files/${id}?uploadType=multipart`,
@@ -149,71 +145,58 @@ ${JSON.stringify(file)}
 			throw error ?? response;
 		}
 	}
+	private buildBody(file: Record<string, unknown>, metadata: Record<string, unknown> = {}) {
+		return `\n--${this.boundary}\nContent-Type: application/json; charset=UTF-8\n\n${JSON.stringify(metadata)}\n--${this.boundary}\nContent-Type: application/json; charset=UTF-8\n\n${JSON.stringify(file)}\n--${this.boundary}--\n`;
+	}
 }
 
-export async function syncUserDataWithGoogle() {
-	console.log('Starting Google Drive sync test...');
+async function saveUserDataToGoogleImpl<K extends keyof UserData>(
+	key: K,
+	data: UserData[K],
+	fetcher: GoogleDriveFetcher
+) {
+	try {
+		if (key === 'cached-podcasts' || key === 'cached-radios') return;
+		console.log(`Saving ${key} to Google Drive`);
+		await fetcher.upsertFile(key, {
+			[key]: data
+		});
+		console.log(`Successfully saved ${key} to Google Drive`);
+	} catch (error) {
+		console.error(`Error saving ${key} to Google Drive:`, error);
+	}
+}
+
+const userDataSaver = new Map<
+	keyof UserData,
+	(
+		key: keyof UserData,
+		data: UserData[keyof UserData],
+		fetcher: GoogleDriveFetcher
+	) => Promise<void> | void
+>();
+
+export function saveUserDataToGoogle<K extends keyof UserData>(key: K, data: UserData[K]) {
 	const fetcher = new GoogleDriveFetcher();
 
-	await fetcher.purgeAllFiles();
+	if (!userDataSaver.has(key)) {
+		const throttledSave = throttleDebounce(saveUserDataToGoogleImpl, 10000, false, true);
+		userDataSaver.set(key, throttledSave);
+		return throttledSave(key, data, fetcher);
+	}
+	return userDataSaver.get(key)!(key, data, fetcher);
+}
 
-	// Test 1: Create initial file with nested data
-	console.log('Test 1: Creating initial file with nested data...');
-	const testData1 = {
-		user: {
-			profile: {
-				name: 'John',
-				age: 30
-			},
-			settings: {
-				theme: 'dark',
-				notifications: true
-			}
-		},
-		preferences: {
-			language: 'en'
-		}
-	};
-	const result1 = await fetcher.upsertFile('test-file', testData1);
-	console.log('Created file:', result1);
+export async function logGoogleUserData() {
+	const fetcher = new GoogleDriveFetcher();
 
-	// Test 2: Update nested data with merge=false (should overwrite)
-	console.log('Test 2: Updating without merge...');
-	const testData2 = {
-		user: {
-			profile: {
-				name: 'Jane'
-			}
-		}
-	};
-	const result2 = await fetcher.upsertFile('test-file', testData2, false);
-	console.log('Updated file (overwrite):', result2);
-
-	// Read to verify overwrite
-	console.log('Verifying overwrite...');
-	const contentsAfterOverwrite = await fetcher.readFile('test-file');
-	console.log('File contents after overwrite:', contentsAfterOverwrite);
-
-	// Test 3: Update nested data with merge=true (should preserve nested structure)
-	console.log('Test 3: Updating with merge...');
-	const testData3 = {
-		user: {
-			profile: {
-				age: 31
-			},
-			settings: {
-				theme: 'light'
-			}
-		},
-		preferences: {
-			fontSize: 'large'
-		}
-	};
-	const result3 = await fetcher.upsertFile('test-file', testData3, true);
-	console.log('Updated file (merge):', result3);
-
-	// Read to verify merge
-	console.log('Verifying merge...');
-	const contentsAfterMerge = await fetcher.readFile('test-file');
-	console.log('File contents after merge:', contentsAfterMerge);
+	const { files } = await fetcher.getFiles();
+	const fileLogPromises = files.map(async (file) => {
+		return {
+			name: file.name,
+			content: await fetcher.readFile(file.name.replace('.json', ''))
+		};
+	});
+	const fileLog = await Promise.all(fileLogPromises);
+	console.log(fileLog);
 }

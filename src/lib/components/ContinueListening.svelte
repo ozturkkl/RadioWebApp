@@ -1,10 +1,10 @@
 <script lang="ts">
-	import podcastProgress from '$lib/stores/podcastProgress';
-	import radioProgress from '$lib/stores/radioProgress';
+	import podcastProgress, { removePodcastProgress } from '$lib/stores/podcastProgress';
+	import radioProgress, { removeRadioProgress } from '$lib/stores/radioProgress';
 	import { playPodcast, playRadio } from '$lib/stores/player';
 	import { onMount } from 'svelte';
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
-	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
+	import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-svelte';
 	import { radios, type Radio } from '$lib/stores/radios';
 	import { podcasts, type Episode, type Podcast } from '$lib/stores/podcasts';
 
@@ -26,6 +26,9 @@
 	let showRightArrow = false;
 	let isTouchDevice = false;
 	let scrollTo = 0;
+	let longPressTimeout: NodeJS.Timeout;
+	let isEditMode = false;
+	let componentRoot: HTMLElement;
 
 	$: {
 		if (scrollTo < 0) {
@@ -40,10 +43,21 @@
 		isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 		setTimeout(onScroll, 100);
 		window.addEventListener('resize', onScroll);
+		window.addEventListener('pointerdown', handleOutsidePointer);
 		return () => {
 			window.removeEventListener('resize', onScroll);
+			window.removeEventListener('pointerdown', handleOutsidePointer);
 		};
 	});
+
+	function handleOutsidePointer(event: PointerEvent) {
+		if (isEditMode) {
+			const target = event.target as HTMLElement;
+			if (!componentRoot.contains(target)) {
+				isEditMode = false;
+			}
+		}
+	}
 
 	function onScroll(e: Event) {
 		if (!scrollContainer) return;
@@ -56,6 +70,7 @@
 		showRightArrow =
 			scrollContainer.scrollLeft < scrollContainer.scrollWidth - scrollContainer.clientWidth - 10;
 	}
+
 	function onMouseWheel(e: WheelEvent) {
 		e.preventDefault();
 		e.stopPropagation();
@@ -66,6 +81,32 @@
 		if (!scrollContainer) return;
 		const scrollAmount = direction === 'left' ? -200 : 200;
 		scrollContainer.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+	}
+
+	function handlePointerDown(item: ContinueListeningItem, event: PointerEvent) {
+		longPressTimeout = setTimeout(() => {
+			isEditMode = true;
+		}, 500);
+	}
+
+	function handlePointerUp() {
+		if (!isEditMode) {
+			clearTimeout(longPressTimeout);
+		}
+	}
+
+	function handlePointerLeave() {
+		if (!isEditMode) {
+			clearTimeout(longPressTimeout);
+		}
+	}
+
+	function handleDelete(item: ContinueListeningItem) {
+		if (item.type === 'podcast') {
+			removePodcastProgress(item.item.id);
+		} else {
+			removeRadioProgress(item.item.id);
+		}
 	}
 
 	$: {
@@ -97,6 +138,9 @@
 	}
 
 	function handleItemClick(item: ContinueListeningItem) {
+		if (isEditMode) {
+			return;
+		}
 		if (item.type === 'podcast') {
 			const episode = item.item.items.find((ep: Episode) => ep.id === item.item.episodeId);
 			if (episode) {
@@ -104,6 +148,17 @@
 			}
 		} else {
 			playRadio(item.item);
+		}
+	}
+	function handleItemKeyDown(item: ContinueListeningItem, event: KeyboardEvent) {
+		if (event.key === 'Enter' || event.key === ' ') {
+			handleItemClick(item);
+		}
+		if (event.key === 'Delete') {
+			handleDelete(item);
+		}
+		if (event.key === 'Escape') {
+			isEditMode = false;
 		}
 	}
 
@@ -122,7 +177,10 @@
 </script>
 
 {#if continueListeningItems.length > 0}
-	<div class="relative w-full overflow-hidden border-b-2 border-base-content/10">
+	<div
+		bind:this={componentRoot}
+		class="relative w-full overflow-hidden border-b-2 border-base-content/10"
+	>
 		{#if showLeftArrow}
 			<div class="absolute left-[.2rem] top-1/2 z-10 -translate-y-1/2">
 				<TouchableButton onClick={() => scroll('left')} ariaLabel="Scroll left">
@@ -145,24 +203,55 @@
 			class="no-scrollbar flex gap-1 overflow-x-auto p-2"
 		>
 			{#each continueListeningItems as item, index}
-				<button
-					class="hover:brightness-120 group flex min-w-fit items-center rounded-full border-2 border-base-content/20 bg-accent/15 p-0 transition-colors
-                    transition-transform hover:scale-105"
-					on:click={() => handleItemClick(item)}
+				<div
+					role="button"
+					tabindex="0"
+					class="continue-listening-item hover:brightness-120 group flex min-w-fit items-center rounded-full border-2 border-base-content/20 bg-accent/15 p-0 transition-colors
+                    transition-transform hover:scale-105 {isEditMode
+						? 'animate-bounce-subtle'
+						: ''}"
+					on:click={(e) => handleItemClick(item)}
+					on:keydown={(e) => handleItemKeyDown(item, e)}
+					on:pointerdown={(e) => handlePointerDown(item, e)}
+					on:pointerup={handlePointerUp}
+					on:pointerleave={handlePointerLeave}
+					on:contextmenu={(e) => e.preventDefault()}
 				>
 					<img
 						src={item.type === 'podcast' ? item.item.imageUrl : item.item.image}
 						alt={item.item.title}
 						class="h-12 w-12 flex-shrink-0 rounded-full"
 					/>
-					{#if item.type === 'podcast'}
+					{#if item.type === 'podcast' && !isEditMode}
 						<div class="flex flex-col pl-[.2rem] pr-2 text-xs">
 							<span class="whitespace-nowrap">{getEpisodeNumber(item.item)}</span>
 							<span class="whitespace-nowrap">{getCompletionPercentage(item.item)}%</span>
 						</div>
+					{:else if isEditMode}
+						<button
+							class="flex items-center pl-[.2rem] pr-2 text-error"
+							on:click={(e) => handleDelete(item)}
+						>
+							<Trash2 class="h-6 w-6" />
+						</button>
 					{/if}
-				</button>
+				</div>
 			{/each}
 		</div>
 	</div>
 {/if}
+
+<style>
+	@keyframes bounce-subtle {
+		0%,
+		100% {
+			transform: translateY(0);
+		}
+		50% {
+			transform: translateY(-2px);
+		}
+	}
+	.animate-bounce-subtle {
+		animation: bounce-subtle 500ms ease-in-out infinite;
+	}
+</style>

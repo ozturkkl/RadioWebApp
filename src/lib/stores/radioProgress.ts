@@ -22,4 +22,12 @@ export const updateRadioProgress = (radioId: string) => {
 	}));
 };
 
+export function removeRadioProgress(radioId: string) {
+	radioProgress.update((progress) => {
+		const newProgress = { ...progress };
+		delete newProgress[radioId];
+		return newProgress;
+	});
+}
+
 export default radioProgress;

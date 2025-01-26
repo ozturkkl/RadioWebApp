@@ -28,4 +28,12 @@ export const updatePodcastProgress = (podcastId: string, episodeId: string, time
 	}));
 };
 
+export function removePodcastProgress(podcastId: string) {
+	podcastProgress.update((progress) => {
+		const newProgress = { ...progress };
+		delete newProgress[podcastId];
+		return newProgress;
+	});
+}
+
 export default podcastProgress;

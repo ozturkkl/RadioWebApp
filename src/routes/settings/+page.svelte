@@ -10,6 +10,7 @@
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { themes } from '$lib/util/theme';
+	import { logGoogleUserData } from '$lib/util/googleDriveHelpers';
 
 	const themeOptions = themes.map((theme) => ({ value: theme, label: theme }));
 	const skipOptions = [5, 10, 15, 30].map((seconds) => ({
@@ -101,6 +102,7 @@
 				{#if $user}
 					<TouchableButton
 						onClick={() => {
+							logGoogleUserData();
 						}}
 						circle={false}
 						className="transition-all hover:rotate-180 duration-300 -m-2"
