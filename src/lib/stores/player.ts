@@ -190,7 +190,13 @@ playerStore.subscribe((state) => {
 	// Always update volume, playback rate and muted state
 	audio.volume = state.volume;
 	audio.muted = state.muted;
-	if (state.type === 'podcast' && state.playbackRate) {
+	if (
+		state.type === 'podcast' &&
+		state.playbackRate &&
+		audio &&
+		audio.playbackRate !== state.playbackRate
+	) {
+		settings.update((s) => ({ ...s, playbackRate: state.playbackRate }));
 		audio.playbackRate = state.playbackRate;
 	}
 });
@@ -321,15 +327,6 @@ export function toggleMuted(muted?: boolean) {
 	});
 }
 
-export function updatePlaybackRate(rate: number) {
-	playerStore.update((state): PlayerState => {
-		if (state.type === 'podcast') {
-			settings.update((s) => ({ ...s, playbackRate: rate }));
-			return { ...state, playbackRate: rate };
-		}
-		return { ...state, playbackRate: 1 };
-	});
-}
 export function nextTrack(autoPlay: boolean = true) {
 	playerStore.update((state) => {
 		if (state.type !== 'podcast' || !state.currentEpisode) return state;

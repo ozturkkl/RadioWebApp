@@ -2,6 +2,7 @@ import { writable } from 'svelte/store';
 import { XMLParser } from 'fast-xml-parser';
 import { withCorsProxy } from '$lib/util/corsProxy';
 import { config } from '$lib/config';
+import { getUserData, setUserData } from '$lib/util/userData';
 
 export interface Podcast {
 	id: string;
@@ -24,15 +25,6 @@ export interface Episode {
 
 function createPodcastsStore() {
 	const { subscribe, set } = writable<Podcast[]>([]);
-
-	function getCachedPodcasts(): Podcast[] | null {
-		const cached = localStorage.getItem('cached-podcasts');
-		return cached ? JSON.parse(cached) : null;
-	}
-
-	function setCachedPodcasts(podcasts: Podcast[]) {
-		localStorage.setItem('cached-podcasts', JSON.stringify(podcasts));
-	}
 
 	async function getPodcastRssUrls() {
 		const feedsUrl = config.podcast.feedUrlsEndpoint;
@@ -95,13 +87,13 @@ function createPodcastsStore() {
 
 	async function refresh() {
 		// Return cached data immediately if available
-		const cached = getCachedPodcasts();
-		if (cached) {
+		const cached = getUserData('cached-podcasts');
+		if (cached.length > 0) {
 			set(cached);
 		}
 		// Fetch fresh data in the background
 		const freshData = await fetchFreshPodcasts();
-		setCachedPodcasts(freshData);
+		setUserData('cached-podcasts', freshData);
 		set(freshData);
 	}
 

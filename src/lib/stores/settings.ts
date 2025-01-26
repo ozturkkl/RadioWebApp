@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { updatePWAThemeColor } from './pwa';
+import { getUserData, setUserData } from '../util/userData';
 
 export type Theme = (typeof themes)[number];
 export const themes = [
@@ -38,7 +39,7 @@ export const themes = [
 	'sunset'
 ];
 
-interface Settings {
+export interface Settings {
 	theme: Theme;
 	autoplay: boolean;
 	autoCollapse: boolean;
@@ -50,47 +51,12 @@ interface Settings {
 	autoplayLastContent: boolean;
 }
 
-// Initialize settings from localStorage if available
-const getInitialSettings = (): Settings => {
-	if (typeof window === 'undefined') {
-		return {
-			theme: 'system',
-			autoplay: true,
-			autoCollapse: true,
-			skipSeconds: 5,
-			playbackRate: 1.0,
-			volume: 1.0,
-			muted: false,
-			selectedCategory: 'All',
-			autoplayLastContent: false
-		};
-	}
-
-	const savedSettings = localStorage.getItem('app-settings');
-	if (savedSettings) {
-		return JSON.parse(savedSettings);
-	}
-
-	return {
-		theme: 'system',
-		autoplay: true,
-		autoCollapse: true,
-		skipSeconds: 5,
-		playbackRate: 1.0,
-		volume: 1.0,
-		muted: false,
-		selectedCategory: 'All',
-		autoplayLastContent: false
-	};
-};
-
 // Create the store
-export const settings = writable<Settings>(getInitialSettings());
+export const settings = writable<Settings>(getUserData('app-settings'));
 
-// Subscribe to changes and save to localStorage
 if (typeof window !== 'undefined') {
 	settings.subscribe((value) => {
-		localStorage.setItem('app-settings', JSON.stringify(value));
+		setUserData('app-settings', value);
 
 		// Apply theme using daisyUI, handling system theme
 		const theme =

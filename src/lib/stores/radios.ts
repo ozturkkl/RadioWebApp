@@ -2,6 +2,7 @@ import { writable } from 'svelte/store';
 import { config } from '$lib/config';
 import { withCorsProxy } from '$lib/util/corsProxy';
 import * as Icons from 'lucide-svelte';
+import { getUserData, setUserData } from '$lib/util/userData';
 
 export interface Radio {
 	id: string;
@@ -22,11 +23,6 @@ export interface Radio {
 function createRadiosStore() {
 	const { subscribe, set, update } = writable<Radio[]>([]);
 
-	function getCachedRadios(): Radio[] | null {
-		const cached = localStorage.getItem('cached-radios');
-		return cached ? JSON.parse(cached) : null;
-	}
-
 	function setCachedRadios(radios: Radio[]) {
 		// Strip out the trackInfo when caching
 		const cachedRadios = radios.map((radio) => ({
@@ -37,7 +33,7 @@ function createRadiosStore() {
 				title: ''
 			}
 		}));
-		localStorage.setItem('cached-radios', JSON.stringify(cachedRadios));
+		setUserData('cached-radios', cachedRadios);
 	}
 
 	async function fetchFreshRadios(): Promise<Radio[]> {
@@ -86,8 +82,8 @@ function createRadiosStore() {
 	}
 
 	async function refresh() {
-		const cached = getCachedRadios();
-		if (cached) {
+		const cached = getUserData('cached-radios');
+		if (cached.length > 0) {
 			set(cached);
 		}
 		const freshData = await fetchFreshRadios();

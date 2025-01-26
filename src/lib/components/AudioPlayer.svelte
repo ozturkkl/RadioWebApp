@@ -3,7 +3,6 @@
 		playerStore,
 		togglePlayPause,
 		updateVolume,
-		updatePlaybackRate,
 		nextTrack,
 		previousTrack,
 		togglePlaylist,
@@ -41,10 +40,6 @@
 		$playerStore.type === 'radio' && $playerStore.currentRadio
 			? $radios.find((r) => r.id === $playerStore.currentRadio.id)
 			: null;
-
-	$: if ($playerStore.playbackRate) {
-		updatePlaybackRate($playerStore.playbackRate);
-	}
 </script>
 
 {#if $playerStore.type}

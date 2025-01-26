@@ -17,7 +17,7 @@
 	let filteredPodcasts: Podcast[] = [];
 
 	$: {
-		filteredPodcasts = $podcasts.filter((podcast) => !$favorites.podcasts.has(podcast.id));
+		filteredPodcasts = $podcasts.filter((podcast) => !$favorites.podcasts[podcast.id]);
 		if (selectedCategory !== 'All') {
 			filteredPodcasts = filteredPodcasts.filter((podcast) => {
 				return podcast.categories.includes(selectedCategory);
@@ -35,9 +35,9 @@
 		)
 	].sort();
 	$: categoryOptions = allCategories.map((cat) => ({ value: cat, label: cat }));
-	$: favoriteRadios = $radios.filter((radio) => $favorites.radios.has(radio.title));
-	$: otherRadios = $radios.filter((radio) => !$favorites.radios.has(radio.title));
-	$: favoritePodcasts = $podcasts.filter((podcast) => $favorites.podcasts.has(podcast.id));
+	$: favoriteRadios = $radios.filter((radio) => !!$favorites.radios[radio.title]);
+	$: otherRadios = $radios.filter((radio) => !$favorites.radios[radio.title]);
+	$: favoritePodcasts = $podcasts.filter((podcast) => !!$favorites.podcasts[podcast.id]);
 	$: otherPodcasts = filteredPodcasts;
 
 	function handlePodcastExpand(podcastId: string, isExpanded: boolean) {

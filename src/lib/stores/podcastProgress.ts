@@ -1,40 +1,31 @@
+import { getUserData, setUserData } from '$lib/util/userData';
 import { writable } from 'svelte/store';
 
 interface EpisodeProgress {
-    episodeId: string;
-    timestamp: number;
-    lastPlayed: number; // Unix timestamp
+	episodeId: string;
+	timestamp: number;
+	lastPlayed: number; // Unix timestamp
 }
 
-interface PodcastProgress {
-    [podcastId: string]: EpisodeProgress;
+export interface PodcastProgress {
+	[podcastId: string]: EpisodeProgress;
 }
 
-const storedProgress = typeof localStorage !== 'undefined'
-    ? JSON.parse(localStorage.getItem('podcastProgress') || '{}')
-    : {};
-
-const podcastProgress = writable<PodcastProgress>(storedProgress);
+const podcastProgress = writable<PodcastProgress>(getUserData('podcast-progress'));
 
 podcastProgress.subscribe((value) => {
-    if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('podcastProgress', JSON.stringify(value));
-    }
+	setUserData('podcast-progress', value);
 });
 
-export const updatePodcastProgress = (
-    podcastId: string,
-    episodeId: string,
-    timestamp: number
-) => {
-    podcastProgress.update((progress) => ({
-        ...progress,
-        [podcastId]: {
-            episodeId,
-            timestamp,
-            lastPlayed: Date.now(),
-        },
-    }));
+export const updatePodcastProgress = (podcastId: string, episodeId: string, timestamp: number) => {
+	podcastProgress.update((progress) => ({
+		...progress,
+		[podcastId]: {
+			episodeId,
+			timestamp,
+			lastPlayed: Date.now()
+		}
+	}));
 };
 
-export default podcastProgress; 
+export default podcastProgress;

@@ -41,7 +41,7 @@
 	tabindex="0"
 >
 	<FavoriteButton
-		isFavorite={$favorites.radios.has(radio.title)}
+		isFavorite={$favorites.radios[radio.title]}
 		onClick={() => favorites.toggleRadio(radio.title)}
 	/>
 	<div class={cardStyles.content.wrapper}>

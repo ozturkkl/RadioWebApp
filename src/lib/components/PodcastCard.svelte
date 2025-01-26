@@ -67,7 +67,7 @@
 	data-podcast-id={podcast.id}
 >
 	<FavoriteButton
-		isFavorite={$favorites.podcasts.has(podcast.id)}
+		isFavorite={$favorites.podcasts[podcast.id]}
 		onClick={() => favorites.togglePodcast(podcast.id)}
 	/>
 	<div class="collapse collapse-arrow rounded-lg">
