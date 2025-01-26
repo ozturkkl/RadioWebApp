@@ -1,11 +1,10 @@
-import { writable } from 'svelte/store';
-import { settings } from './settings';
-import { updatePodcastProgress } from './podcastProgress';
-import { get } from 'svelte/store';
+import { writable, get } from 'svelte/store';
+import { settings } from '$lib/stores/settings';
+import { updatePodcastProgress } from '$lib/stores/podcastProgress';
 import { goto } from '$app/navigation';
-import { updateRadioProgress } from './radioProgress';
-import { podcasts, type Episode, type Podcast } from './podcasts';
-import type { Radio } from './radios';
+import { updateRadioProgress } from '$lib/stores/radioProgress';
+import { podcasts, type Episode, type Podcast } from '$lib/stores/podcasts';
+import type { Radio } from '$lib/stores/radios';
 import { blinkClasses } from '$lib/util/blinkClassess';
 import { scrollIntoViewPromise } from '$lib/util/scrollIntoViewPromised';
 

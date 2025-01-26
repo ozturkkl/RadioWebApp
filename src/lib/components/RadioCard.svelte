@@ -16,7 +16,7 @@
 <script lang="ts">
 	import { favorites } from '$lib/stores/favorites';
 	import { playRadio } from '$lib/stores/player';
-	import FavoriteButton from './FavoriteButton.svelte';
+	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import type { Radio } from '$lib/stores/radios';
 

@@ -1,4 +1,4 @@
-import { isIOS } from './isIOS';
+import { isIOS } from '$lib/util/isIOS';
 
 export const iosRangeTouchEventPolyfill = (e: TouchEvent) => {
 	if (!isIOS()) return;

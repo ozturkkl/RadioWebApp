@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { settings, themes } from '$lib/stores/settings';
+	import { settings } from '$lib/stores/settings';
 	import { user, signInWithGoogle, signOut } from '$lib/stores/auth';
 	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
 	import PWAInstallButton from '$lib/components/PWAInstallButton.svelte';
@@ -8,8 +8,8 @@
 	import { RefreshCw } from 'lucide-svelte';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
-	import { syncUserDataWithGoogle } from '$lib/util/googleDriveHelpers';
 	import { goto } from '$app/navigation';
+	import { themes } from '$lib/util/theme';
 
 	const themeOptions = themes.map((theme) => ({ value: theme, label: theme }));
 	const skipOptions = [5, 10, 15, 30].map((seconds) => ({
@@ -101,7 +101,6 @@
 				{#if $user}
 					<TouchableButton
 						onClick={() => {
-							syncUserDataWithGoogle();
 						}}
 						circle={false}
 						className="transition-all hover:rotate-180 duration-300 -m-2"

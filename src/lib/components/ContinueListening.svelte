@@ -3,7 +3,7 @@
 	import radioProgress from '$lib/stores/radioProgress';
 	import { playPodcast, playRadio } from '$lib/stores/player';
 	import { onMount } from 'svelte';
-	import TouchableButton from './TouchableButton.svelte';
+	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { ChevronLeft, ChevronRight } from 'lucide-svelte';
 	import { radios, type Radio } from '$lib/stores/radios';
 	import { podcasts, type Episode, type Podcast } from '$lib/stores/podcasts';

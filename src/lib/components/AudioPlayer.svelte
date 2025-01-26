@@ -14,7 +14,7 @@
 	} from '$lib/stores/player';
 	import { settings } from '$lib/stores/settings';
 	import { radios } from '$lib/stores/radios';
-	import TouchableButton from './TouchableButton.svelte';
+	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { formatTime } from '$lib/util/time';
 	import {
 		List,
@@ -28,7 +28,7 @@
 		ChevronsLeft,
 		TriangleAlert
 	} from 'lucide-svelte';
-	import DropdownSelect from './DropdownSelect.svelte';
+	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
 	import { isIOS } from '$lib/util/isIOS';
 	import { iosRangeTouchEventPolyfill } from '$lib/util/iosRangeTouchEventPolyfill';
 

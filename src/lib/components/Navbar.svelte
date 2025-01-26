@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto, onNavigate } from '$app/navigation';
 	import { ChevronLeft, Settings, SquareArrowOutUpRight } from 'lucide-svelte';
-	import Logo from './Logo.svelte';
-	import TouchableButton from './TouchableButton.svelte';
+	import Logo from '$lib/components/Logo.svelte';
+	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { config } from '$lib/config/config';
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import { writable } from 'svelte/store';

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import TouchableButton from './TouchableButton.svelte';
+	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import { config } from '$lib/config';
 

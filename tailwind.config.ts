@@ -1,6 +1,6 @@
 import type { Config } from 'tailwindcss';
 import daisyui from 'daisyui';
-import { themes } from './src/lib/stores/settings';
+import { themes } from './src/lib/util/theme';
 
 export default {
 	content: ['./src/**/*.{html,js,svelte,ts}'],

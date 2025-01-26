@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Check, Download, Share } from 'lucide-svelte';
-	import TouchableButton from './TouchableButton.svelte';
+	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { deferredInstallPrompt, isInstalled } from '$lib/stores/pwa';
 
 	const isIOS =

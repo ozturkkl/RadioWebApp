@@ -1,43 +1,7 @@
 import { writable } from 'svelte/store';
-import { updatePWAThemeColor } from './pwa';
-import { getUserData, setUserData } from '../util/userData';
-
-export type Theme = (typeof themes)[number];
-export const themes = [
-	'system',
-	'light',
-	'dark',
-	'cupcake',
-	'bumblebee',
-	'emerald',
-	'corporate',
-	'synthwave',
-	'retro',
-	'cyberpunk',
-	'valentine',
-	'halloween',
-	'garden',
-	'forest',
-	'aqua',
-	'lofi',
-	'pastel',
-	'fantasy',
-	'wireframe',
-	'black',
-	'luxury',
-	'dracula',
-	'cmyk',
-	'autumn',
-	'business',
-	'acid',
-	'lemonade',
-	'night',
-	'coffee',
-	'winter',
-	'dim',
-	'nord',
-	'sunset'
-];
+import { getUserData, setUserData } from '$lib/util/userData';
+import { updatePWAThemeColor } from '$lib/stores/pwa';
+import { type Theme } from '$lib/util/theme';
 
 export interface Settings {
 	theme: Theme;

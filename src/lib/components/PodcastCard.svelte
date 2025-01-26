@@ -2,8 +2,8 @@
 	import { favorites } from '$lib/stores/favorites';
 	import { playPodcast } from '$lib/stores/player';
 	import { playerStore } from '$lib/stores/player';
-	import { cardStyles } from './RadioCard.svelte';
-	import FavoriteButton from './FavoriteButton.svelte';
+	import { cardStyles } from '$lib/components/RadioCard.svelte';
+	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
 	import { formatTime, formatDate } from '$lib/util/time';
 	import type { Episode, Podcast } from '$lib/stores/podcasts';
 
