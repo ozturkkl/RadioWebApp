@@ -6,15 +6,19 @@
 	export function open() {
 		const modal = document.getElementById('external_links_modal') as HTMLDialogElement;
 		modal.showModal();
+		// Remove inert when opening
+		modal.removeAttribute('inert');
 	}
 
 	export function close() {
 		const modal = document.getElementById('external_links_modal') as HTMLDialogElement;
 		modal.close();
+		// Add inert when closing to prevent focus
+		modal.setAttribute('inert', '');
 	}
 </script>
 
-<dialog id="external_links_modal" class="modal">
+<dialog id="external_links_modal" class="modal" inert>
 	<div class="modal-box flex max-h-[70vh] max-w-3xl flex-col overflow-hidden p-0">
 		<h3 class="px-7 pb-2 pt-4 text-lg font-bold">Other Resources</h3>
 		<div class="grid flex-1 grid-cols-1 overflow-x-hidden px-4 pb-2 md:grid-cols-2">
