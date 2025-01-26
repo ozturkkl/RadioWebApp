@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { settings, themes } from '$lib/stores/settings';
-	import { user, signInWithGoogle, signOut } from '$lib/auth/store';
+	import { user, signInWithGoogle, signOut } from '$lib/stores/auth';
 	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
 	import PWAInstallButton from '$lib/components/PWAInstallButton.svelte';
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
-	import { initAuth } from '$lib/auth/store';
+	import { initAuth } from '$lib/stores/auth';
 	import { RefreshCw } from 'lucide-svelte';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
