@@ -7,27 +7,37 @@ export interface RadioProgress {
 	};
 }
 
-const radioProgress = writable<RadioProgress>(getUserData('radio-progress'));
+function createRadioProgressStore() {
+	const initialState: RadioProgress = getUserData('radio-progress');
 
-radioProgress.subscribe((value) => {
-	setUserData('radio-progress', value);
-});
+	const { subscribe, update } = writable<RadioProgress>(initialState);
 
-export const updateRadioProgress = (radioId: string) => {
-	radioProgress.update((progress) => ({
-		...progress,
-		[radioId]: {
-			lastPlayed: Date.now()
-		}
-	}));
-};
-
-export function removeRadioProgress(radioId: string) {
-	radioProgress.update((progress) => {
-		const newProgress = { ...progress };
-		delete newProgress[radioId];
-		return newProgress;
+	subscribe((value) => {
+		setUserData('radio-progress', value);
 	});
+
+	const updateRadioProgress = (radioId: string) => {
+		update((progress) => ({
+			...progress,
+			[radioId]: {
+				lastPlayed: Date.now()
+			}
+		}));
+	};
+
+	function removeRadioProgress(radioId: string) {
+		update((progress) => {
+			const newProgress = { ...progress };
+			delete newProgress[radioId];
+			return newProgress;
+		});
+	}
+
+	return {
+		subscribe,
+		updateRadioProgress,
+		removeRadioProgress
+	};
 }
 
-export default radioProgress;
+export const radioProgress = createRadioProgressStore();

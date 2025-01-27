@@ -2,15 +2,11 @@
 	import {
 		playerStore,
 		togglePlayPause,
-		updateVolume,
-		nextTrack,
-		previousTrack,
 		togglePlaylist,
 		seekTo,
 		skipForward,
 		skipBackward,
-		restartRadio,
-		toggleMuted
+		restartRadio
 	} from '$lib/stores/player';
 	import { settings } from '$lib/stores/settings';
 	import { radios } from '$lib/stores/radios';
@@ -142,7 +138,7 @@
 				<div class="flex items-stretch">
 					{#if $playerStore.type === 'podcast'}
 						<TouchableButton
-							onClick={previousTrack}
+							onClick={playerStore.previousTrack}
 							disabled={$playerStore.currentEpisode &&
 								$playerStore.playlist.findIndex(
 									(ep) => ep.id === $playerStore.currentEpisode?.id
@@ -190,7 +186,7 @@
 
 					{#if $playerStore.type === 'podcast'}
 						<TouchableButton
-							onClick={nextTrack}
+							onClick={playerStore.nextTrack}
 							disabled={$playerStore.currentEpisode &&
 								$playerStore.playlist.findIndex(
 									(ep) => ep.id === $playerStore.currentEpisode?.id
@@ -213,7 +209,7 @@
 						ariaLabel="Volume control"
 						small
 						className="h-full pr-3"
-						onClick={() => toggleMuted()}
+						onClick={() => playerStore.toggleMuted()}
 					>
 						{#if $playerStore.muted}
 							<VolumeOff class="h-6 w-6" />
@@ -229,7 +225,7 @@
 							className="h-full pr-3"
 							onClick={() => {
 								if ($playerStore.muted && $playerStore.volume > 0) {
-									toggleMuted(false);
+									playerStore.toggleMuted(false);
 								}
 							}}
 						>
@@ -251,7 +247,7 @@
 									class="range range-md absolute w-[150px]"
 									style="top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%) rotate(-90deg);"
 									value={$playerStore.volume}
-									on:input|stopPropagation={(e) => updateVolume(parseFloat(e.currentTarget.value))}
+									on:input|stopPropagation={(e) => playerStore.setVolume(parseFloat(e.currentTarget.value))}
 								/>
 							</div>
 						</div>

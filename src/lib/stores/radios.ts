@@ -98,9 +98,7 @@ function createRadiosStore() {
 	}
 
 	return {
-		subscribe,
-		set,
-		update
+		subscribe
 	};
 }
 

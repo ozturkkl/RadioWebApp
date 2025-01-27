@@ -1,11 +1,9 @@
-import { user } from '$lib/stores/auth';
 import type { PodcastProgress } from '$lib/stores/podcastProgress';
 import type { Podcast } from '$lib/stores/podcasts';
+import type { Settings } from '$lib/stores/settings';
 import type { RadioProgress } from '$lib/stores/radioProgress';
 import type { Radio } from '$lib/stores/radios';
-import type { Settings } from '$lib/stores/settings';
 import { saveUserDataToGoogle } from '$lib/util/googleDriveHelpers';
-import { get } from 'svelte/store';
 
 export interface UserData {
 	'favorite-radios': Record<string, boolean>;
@@ -58,9 +56,7 @@ export function setUserData<K extends keyof UserData>(key: K, data: UserData[K])
 	try {
 		console.log(`Setting user data - ${key}`);
 		localStorage.setItem(key, JSON.stringify(data));
-		if (get(user)) {
-			saveUserDataToGoogle(key, data);
-		}
+		saveUserDataToGoogle(key, data);
 	} catch (error) {
 		console.error(`Error setting user data for key ${key}:`, error);
 	}

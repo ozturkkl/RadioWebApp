@@ -37,7 +37,8 @@ async function getUserData(tokens: Credentials, cookies: Cookies) {
 }
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
-	const { code, state } = await request.json();
+	const { code, state: stateStr } = await request.json();
+	const { state } = JSON.parse(stateStr);
 
 	// Verify state to prevent CSRF attacks
 	const storedState = cookies.get('oauth_state');

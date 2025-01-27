@@ -1,14 +1,12 @@
 import { writable, get } from 'svelte/store';
 import { settings } from '$lib/stores/settings';
-import { updatePodcastProgress } from '$lib/stores/podcastProgress';
 import { goto } from '$app/navigation';
-import { updateRadioProgress } from '$lib/stores/radioProgress';
 import { podcasts, type Episode, type Podcast } from '$lib/stores/podcasts';
-import type { Radio } from '$lib/stores/radios';
+import { radios, type Radio } from '$lib/stores/radios';
 import { blinkClasses } from '$lib/util/blinkClassess';
 import { scrollIntoViewPromise } from '$lib/util/scrollIntoViewPromised';
-
-export type PlayerType = 'radio' | 'podcast';
+import { podcastProgress } from '$lib/stores/podcastProgress';
+import { radioProgress } from '$lib/stores/radioProgress';
 
 interface BasePlayerState {
 	isPlaying: boolean;
@@ -48,49 +46,27 @@ interface IdlePlayerState extends BasePlayerState {
 	duration: 0;
 }
 
-export type PlayerState = RadioPlayerState | PodcastPlayerState | IdlePlayerState;
-
-const initialState: PlayerState = {
-	isPlaying: false,
-	currentTime: 0,
-	duration: 0,
-	volume: get(settings).volume ?? 1,
-	playbackRate: get(settings).playbackRate ?? 1,
-	muted: get(settings).muted ?? false,
-	isBuffering: false,
-	errored: false,
-	type: null,
-	currentRadio: null,
-	currentPodcast: null,
-	currentEpisode: null,
-	playlist: []
-};
+type PlayerState = RadioPlayerState | PodcastPlayerState | IdlePlayerState;
 
 // Initialize audio only in browser environment
 let audio: HTMLAudioElement | undefined;
 if (typeof window !== 'undefined') {
 	initAudio();
+	if (get(settings).autoplayLastContent) {
+		autoplayLastContent();
+	}
 }
 function initAudio() {
 	if (audio) return;
-	if (typeof window === 'undefined') return; // Skip initialization if not in browser
 
 	audio = new Audio();
 
 	audio.addEventListener('timeupdate', () => {
-		playerStore.update((state) => {
-			if (!state.isBuffering) {
-				return {
-					...state,
-					currentTime: audio?.currentTime ?? 0
-				};
-			}
-			return state;
-		});
+		playerStore.updateCurrentTime();
 
 		const currentState = get(playerStore);
 		if (currentState.type === 'podcast') {
-			updatePodcastProgress(
+			podcastProgress.updatePodcastProgress(
 				currentState.currentPodcast.id,
 				currentState.currentEpisode.id,
 				audio?.currentTime ?? 0
@@ -99,23 +75,23 @@ function initAudio() {
 	});
 
 	audio.addEventListener('loadstart', () => {
-		playerStore.update((state) => ({ ...state, isBuffering: true }));
+		playerStore.setBuffering(true);
 	});
 	audio.addEventListener('waiting', () => {
-		playerStore.update((state) => ({ ...state, isBuffering: true }));
+		playerStore.setBuffering(true);
 	});
 	audio.addEventListener('waitingforkey', () => {
-		playerStore.update((state) => ({ ...state, isBuffering: true }));
+		playerStore.setBuffering(true);
 	});
 	// audio.addEventListener('progress', () => {
 	// 	console.log('progress');
 	// });
 
 	audio.addEventListener('canplay', () => {
-		playerStore.update((state) => ({ ...state, isBuffering: false, errored: false }));
+		playerStore.setBuffering(false);
 	});
 	audio.addEventListener('playing', () => {
-		playerStore.update((state) => ({ ...state, isBuffering: false, errored: false }));
+		playerStore.setBuffering(false);
 	});
 	// audio.addEventListener('suspend', () => {
 	// 	console.log('suspend');
@@ -126,24 +102,48 @@ function initAudio() {
 	});
 
 	audio.addEventListener('error', () => {
-		playerStore.update((state) => ({ ...state, errored: true }));
+		playerStore.setErrored('errored');
 	});
 	audio.addEventListener('abort', () => {
-		playerStore.update((state) => ({ ...state, errored: true }));
+		playerStore.setErrored('errored');
 	});
 
 	audio.addEventListener('ended', () => {
-		nextTrack(get(settings).autoplay);
+		playerStore.nextTrack(get(settings).autoplay);
 	});
 
 	audio.addEventListener('pause', () => {
-		playerStore.update((state) => ({ ...state, isPlaying: false }));
+		playerStore.updateIsPlaying();
 	});
 	audio.addEventListener('play', () => {
-		playerStore.update((state) => ({ ...state, isPlaying: true, muted: state.volume === 0 }));
+		playerStore.updateIsPlaying();
 	});
 }
-export function resetAudio() {
+function toggleAudioWhenReady(value?: boolean, retries: number = 0) {
+	setTimeout(() => {
+		if (retries > 10) return;
+		if (!audio) {
+			return setTimeout(() => toggleAudioWhenReady(value, retries + 1), 100);
+		}
+		if (audio) {
+			if (value === undefined) {
+				value = audio.paused;
+			}
+			if (value) {
+				audio.play().catch((e) => {
+					if (e.name === 'NotAllowedError') {
+						playerStore.setErrored('muted');
+					} else {
+						playerStore.setErrored('errored');
+					}
+				});
+			} else {
+				audio.pause();
+			}
+		}
+	}, 0);
+}
+function resetAudio() {
 	if (audio) {
 		const currentTime = audio.currentTime;
 		const currentPlaying = !audio.paused;
@@ -157,98 +157,229 @@ export function resetAudio() {
 	}
 }
 
-export const playerStore = writable<PlayerState>(initialState);
-playerStore.subscribe((state) => {
-	if (!audio) return;
+function createPlayerStore() {
+	const initialState: PlayerState = {
+		isPlaying: false,
+		currentTime: 0,
+		duration: 0,
+		volume: get(settings)?.volume ?? 1,
+		playbackRate: get(settings)?.playbackRate ?? 1,
+		muted: get(settings)?.muted ?? false,
+		isBuffering: false,
+		errored: false,
+		type: null,
+		currentRadio: null,
+		currentPodcast: null,
+		currentEpisode: null,
+		playlist: []
+	};
 
-	let shouldUpdateSource = false;
+	const { subscribe, update } = writable<PlayerState>(initialState);
 
-	// Check if source needs updating
-	if (state.type === 'radio') {
-		shouldUpdateSource = !audio.src || audio.src !== state.currentRadio.streamUrl;
-	} else if (state.type === 'podcast') {
-		shouldUpdateSource = !audio.src || audio.src !== state.currentEpisode.url;
-	}
+	subscribe((state) => {
+		if (!audio) return;
 
-	// Update source if needed
-	if (shouldUpdateSource) {
+		let shouldUpdateSource = false;
+
+		// Check if source needs updating
 		if (state.type === 'radio') {
-			console.log('playing radio', state.currentRadio.streamUrl);
-			audio.src = state.currentRadio.streamUrl;
-			audio.playbackRate = 1;
-			updateRadioProgress(state.currentRadio.id);
+			shouldUpdateSource = !audio.src || audio.src !== state.currentRadio.streamUrl;
 		} else if (state.type === 'podcast') {
-			console.log('playing podcast', state.currentEpisode.url);
-			audio.src = state.currentEpisode.url;
-			updatePodcastProgress(state.currentPodcast.id, state.currentEpisode.id, 0);
+			shouldUpdateSource = !audio.src || audio.src !== state.currentEpisode.url;
 		}
-		// Wait for the source to be loaded
-		audio.load();
+
+		// Update source if needed
+		if (shouldUpdateSource) {
+			if (state.type === 'radio') {
+				console.log('playing radio', state.currentRadio.streamUrl);
+				audio.src = state.currentRadio.streamUrl;
+				audio.playbackRate = 1;
+				radioProgress.updateRadioProgress(state.currentRadio.id);
+			} else if (state.type === 'podcast') {
+				console.log('playing podcast', state.currentEpisode.url);
+				audio.src = state.currentEpisode.url;
+				podcastProgress.updatePodcastProgress(state.currentPodcast.id, state.currentEpisode.id, 0);
+			}
+			// Wait for the source to be loaded
+			audio.load();
+		}
+
+		// Always update volume, playback rate and muted state
+		audio.volume = state.volume;
+		audio.muted = state.muted;
+		if (
+			state.type === 'podcast' &&
+			state.playbackRate &&
+			audio &&
+			audio.playbackRate !== state.playbackRate
+		) {
+			settings.update({ playbackRate: state.playbackRate });
+			audio.playbackRate = state.playbackRate;
+		}
+	});
+
+	function playRadio(radio: Radio) {
+		update(
+			(state): RadioPlayerState => ({
+				...state,
+				type: 'radio',
+				currentTime: 0,
+				duration: 0,
+				playbackRate: 1,
+				currentRadio: radio,
+				currentPodcast: null,
+				currentEpisode: null,
+				playlist: []
+			})
+		);
+
+		toggleAudioWhenReady(true);
 	}
 
-	// Always update volume, playback rate and muted state
-	audio.volume = state.volume;
-	audio.muted = state.muted;
-	if (
-		state.type === 'podcast' &&
-		state.playbackRate &&
-		audio &&
-		audio.playbackRate !== state.playbackRate
-	) {
-		settings.update((s) => ({ ...s, playbackRate: state.playbackRate }));
-		audio.playbackRate = state.playbackRate;
+	function playPodcast(podcast: Podcast, startWithEpisode?: Episode, startWithTime: number = 0) {
+		const episodeToPlay = startWithEpisode || podcast.items[0];
+		if (!episodeToPlay) return;
+
+		update(
+			(state): PodcastPlayerState => ({
+				...state,
+				type: 'podcast',
+				currentTime: startWithTime,
+				currentRadio: null,
+				currentPodcast: podcast,
+				currentEpisode: episodeToPlay,
+				playlist: podcast.items,
+				duration: episodeToPlay.duration ? Number(episodeToPlay.duration) : 0
+			})
+		);
+
+		seekTo(startWithTime);
+		toggleAudioWhenReady(true);
 	}
-});
 
-export function playRadio(radio: Radio): void {
-	playerStore.update(
-		(state): RadioPlayerState => ({
+	function setErrored(type: 'muted' | 'errored') {
+		if (type === 'muted') {
+			update((state) => ({ ...state, muted: true }));
+		} else if (type === 'errored') {
+			update((state) => ({ ...state, errored: true }));
+		}
+	}
+
+	function setVolume(volume: number) {
+		const normalizedVolume = Math.max(0, Math.min(1, volume));
+		settings.update({ volume: normalizedVolume });
+		update((state) => ({
 			...state,
-			type: 'radio',
-			currentTime: 0,
-			duration: 0,
-			playbackRate: 1,
-			currentRadio: radio,
-			currentPodcast: null,
-			currentEpisode: null,
-			playlist: []
-		})
-	);
+			volume: normalizedVolume,
+			muted: normalizedVolume === 0
+		}));
+	}
 
-	toggleAudioWhenReady(true);
-}
-export function playPodcast(
-	podcast: Podcast,
-	startWithEpisode?: Episode,
-	startWithTime: number = 0
-) {
-	const episodeToPlay = startWithEpisode || podcast.items[0];
-	if (!episodeToPlay) return;
+	function toggleMuted(muted?: boolean) {
+		update((state) => {
+			const newMuted = muted ?? !state.muted;
+			settings.update({ muted: newMuted });
+			if (!newMuted) {
+				toggleAudioWhenReady(true);
+			}
+			return {
+				...state,
+				muted: newMuted
+			};
+		});
+	}
 
-	playerStore.update(
-		(state): PodcastPlayerState => ({
+	function nextTrack(autoPlay: boolean = true) {
+		update((state) => {
+			if (state.type !== 'podcast' || !state.currentEpisode) return state;
+			const currentIndex = state.playlist.findIndex((ep) => ep.id === state.currentEpisode?.id);
+			if (currentIndex < state.playlist.length - 1) {
+				const nextEpisode = state.playlist[currentIndex + 1];
+
+				if (autoPlay) {
+					toggleAudioWhenReady(true);
+				}
+				return {
+					...state,
+					currentEpisode: nextEpisode,
+					duration: Number(nextEpisode.duration),
+					currentTime: 0,
+					isPlaying: !(audio?.paused ?? true)
+				};
+			} else {
+				toggleAudioWhenReady(false);
+			}
+			return state;
+		});
+	}
+
+	function previousTrack() {
+		update((state) => {
+			if (state.type !== 'podcast' || !state.currentEpisode) return state;
+			const currentIndex = state.playlist.findIndex((ep) => ep.id === state.currentEpisode?.id);
+			if (currentIndex > 0) {
+				const prevEpisode = state.playlist[currentIndex - 1];
+				return {
+					...state,
+					currentEpisode: prevEpisode,
+					duration: Number(prevEpisode.duration),
+					currentTime: 0,
+					isPlaying: !(audio?.paused ?? true)
+				};
+			}
+			return state;
+		});
+		toggleAudioWhenReady(true);
+	}
+
+	function updateCurrentTime() {
+		update((state) => {
+			if (!state.isBuffering) {
+				return {
+					...state,
+					currentTime: audio?.currentTime ?? 0
+				};
+			}
+			return state;
+		});
+	}
+
+	function updateIsPlaying() {
+		update((state) => ({
 			...state,
-			type: 'podcast',
-			currentTime: startWithTime,
-			currentRadio: null,
-			currentPodcast: podcast,
-			currentEpisode: episodeToPlay,
-			playlist: podcast.items,
-			duration: episodeToPlay.duration ? Number(episodeToPlay.duration) : 0
-		})
-	);
+			isPlaying: !(audio?.paused ?? true),
+			muted: state.volume === 0
+		}));
+	}
 
-	seekTo(startWithTime);
-	toggleAudioWhenReady(true);
+	function setBuffering(buffering: boolean) {
+		update((state) => ({ ...state, isBuffering: buffering }));
+	}
+
+	return {
+		subscribe,
+		setErrored,
+		setVolume,
+		setBuffering,
+		updateCurrentTime,
+		updateIsPlaying,
+		toggleMuted,
+		playRadio,
+		playPodcast,
+		nextTrack,
+		previousTrack
+	};
 }
+
+export const playerStore = createPlayerStore();
 
 // Player controls for AUDIO element
-export function togglePlayPause() {
+export function togglePlayPause(value?: boolean) {
 	const playerError = get(playerStore).errored;
 	if (playerError) {
-		resetAudio();
+		return resetAudio();
 	}
-	toggleAudioWhenReady();
+	toggleAudioWhenReady(value);
 }
 export function seekTo(time: number) {
 	if (audio) {
@@ -276,99 +407,8 @@ export function restartRadio() {
 		toggleAudioWhenReady(true);
 	}
 }
-function toggleAudioWhenReady(value?: boolean, retries: number = 0) {
-	setTimeout(() => {
-		if (retries > 10) return;
-		if (!audio) {
-			return setTimeout(() => toggleAudioWhenReady(value, retries + 1), 100);
-		}
-		if (audio) {
-			if (value === undefined) {
-				value = audio.paused;
-			}
-			if (value) {
-				audio.play().catch((e) => {
-					if (e.name === 'NotAllowedError') {
-						playerStore.update((state) => ({ ...state, muted: true }));
-					} else {
-						playerStore.update((state) => ({ ...state, errored: true }));
-					}
-				});
-			} else {
-				audio.pause();
-			}
-		}
-	}, 0);
-}
 
-// Player controls for playerStore
-export function updateVolume(volume: number) {
-	const normalizedVolume = Math.max(0, Math.min(1, volume));
-	settings.update((s) => ({ ...s, volume: normalizedVolume }));
-	playerStore.update((state) => ({
-		...state,
-		volume: normalizedVolume,
-		muted: normalizedVolume === 0
-	}));
-}
-
-export function toggleMuted(muted?: boolean) {
-	playerStore.update((state) => {
-		const newMuted = muted ?? !state.muted;
-		settings.update((s) => ({ ...s, muted: newMuted }));
-		if (!newMuted) {
-			toggleAudioWhenReady(true);
-		}
-		return {
-			...state,
-			muted: newMuted
-		};
-	});
-}
-
-export function nextTrack(autoPlay: boolean = true) {
-	playerStore.update((state) => {
-		if (state.type !== 'podcast' || !state.currentEpisode) return state;
-		const currentIndex = state.playlist.findIndex((ep) => ep.id === state.currentEpisode?.id);
-		if (currentIndex < state.playlist.length - 1) {
-			const nextEpisode = state.playlist[currentIndex + 1];
-
-			if (autoPlay) {
-				toggleAudioWhenReady(true);
-			}
-			return {
-				...state,
-				currentEpisode: nextEpisode,
-				duration: Number(nextEpisode.duration),
-				currentTime: 0,
-				isPlaying: !(audio?.paused ?? true)
-			};
-		} else {
-			toggleAudioWhenReady(false);
-		}
-		return state;
-	});
-}
-export function previousTrack() {
-	playerStore.update((state) => {
-		if (state.type !== 'podcast' || !state.currentEpisode) return state;
-		const currentIndex = state.playlist.findIndex((ep) => ep.id === state.currentEpisode?.id);
-		if (currentIndex > 0) {
-			const prevEpisode = state.playlist[currentIndex - 1];
-			return {
-				...state,
-				currentEpisode: prevEpisode,
-				duration: Number(prevEpisode.duration),
-				currentTime: 0,
-				isPlaying: !(audio?.paused ?? true)
-			};
-		}
-		return state;
-	});
-	toggleAudioWhenReady(true);
-}
-
-// UI related functions
+// Other player utilities
 export function togglePlaylist(targetPodcastId?: string) {
 	const state = get(playerStore);
 	const podcastId = targetPodcastId ?? (state.type === 'podcast' ? state.currentPodcast?.id : null);
@@ -424,7 +464,7 @@ export function togglePlaylist(targetPodcastId?: string) {
 					podcast?.categories &&
 					!podcast.categories.includes(settingsStore.selectedCategory)
 				) {
-					settings.update((s) => ({ ...s, selectedCategory: 'All' }));
+					settings.update({ selectedCategory: 'All' });
 					// Wait for the next tick to let the UI update
 					setTimeout(() => {
 						return togglePlaylist(targetPodcastId);
@@ -450,5 +490,70 @@ export function togglePlaylist(targetPodcastId?: string) {
 				await blinkClasses(radioCard, focusClasses, 1, 0, 1500);
 			}
 		});
+	}
+}
+export async function autoplayLastContent() {
+	// Get the last played times for radios and podcasts
+	const lastPlayedRadio = Object.entries(get(radioProgress)).reduce(
+		(latest, [id, progress]) => {
+			if (!latest || progress.lastPlayed > latest.lastPlayed) {
+				return { id, lastPlayed: progress.lastPlayed };
+			}
+			return latest;
+		},
+		null as { id: string; lastPlayed: number } | null
+	);
+
+	const lastPlayedPodcast = Object.entries(get(podcastProgress)).reduce(
+		(latest, [id, progress]) => {
+			if (!latest || progress.lastPlayed > latest.lastPlayed) {
+				return {
+					id,
+					lastPlayed: progress.lastPlayed,
+					episodeId: progress.episodeId,
+					timestamp: progress.timestamp
+				};
+			}
+			return latest;
+		},
+		null as { id: string; lastPlayed: number; episodeId: string; timestamp: number } | null
+	);
+
+	// If neither exists, return
+	if (!lastPlayedRadio && !lastPlayedPodcast) return;
+
+	// If both exist, play the most recently played one
+	if (lastPlayedRadio && lastPlayedPodcast) {
+		if (lastPlayedRadio.lastPlayed > lastPlayedPodcast.lastPlayed) {
+			const radio = await get(radios).find((r) => r.id === lastPlayedRadio.id);
+			if (radio) playerStore.playRadio(radio);
+		} else {
+			const podcast = await get(podcasts).find((p: Podcast) => p.id === lastPlayedPodcast.id);
+			if (podcast) {
+				const episode = podcast.items.find((e: Episode) => e.id === lastPlayedPodcast.episodeId);
+				if (episode) {
+					playerStore.playPodcast(podcast, episode, lastPlayedPodcast.timestamp);
+				}
+			}
+		}
+		return;
+	}
+
+	// If only radio exists
+	if (lastPlayedRadio) {
+		const radio = await get(radios).find((r) => r.id === lastPlayedRadio.id);
+		if (radio) playerStore.playRadio(radio);
+		return;
+	}
+
+	// If only podcast exists
+	if (lastPlayedPodcast) {
+		const podcast = await get(podcasts).find((p: Podcast) => p.id === lastPlayedPodcast.id);
+		if (podcast) {
+			const episode = podcast.items.find((e: Episode) => e.id === lastPlayedPodcast.episodeId);
+			if (episode) {
+				playerStore.playPodcast(podcast, episode, lastPlayedPodcast.timestamp);
+			}
+		}
 	}
 }

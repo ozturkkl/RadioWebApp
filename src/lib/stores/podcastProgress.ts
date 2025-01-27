@@ -11,29 +11,39 @@ export interface PodcastProgress {
 	[podcastId: string]: EpisodeProgress;
 }
 
-const podcastProgress = writable<PodcastProgress>(getUserData('podcast-progress'));
+function createPodcastProgressStore() {
+	const initialState: PodcastProgress = getUserData('podcast-progress');
 
-podcastProgress.subscribe((value) => {
-	setUserData('podcast-progress', value);
-});
+	const { subscribe, update } = writable<PodcastProgress>(initialState);
 
-export const updatePodcastProgress = (podcastId: string, episodeId: string, timestamp: number) => {
-	podcastProgress.update((progress) => ({
-		...progress,
-		[podcastId]: {
-			episodeId,
-			timestamp,
-			lastPlayed: Date.now()
-		}
-	}));
-};
-
-export function removePodcastProgress(podcastId: string) {
-	podcastProgress.update((progress) => {
-		const newProgress = { ...progress };
-		delete newProgress[podcastId];
-		return newProgress;
+	subscribe((value) => {
+		setUserData('podcast-progress', value);
 	});
+
+	const updatePodcastProgress = (podcastId: string, episodeId: string, timestamp: number) => {
+		update((progress) => ({
+			...progress,
+			[podcastId]: {
+				episodeId,
+				timestamp,
+				lastPlayed: Date.now()
+			}
+		}));
+	};
+
+	function removePodcastProgress(podcastId: string) {
+		update((progress) => {
+			const newProgress = { ...progress };
+			delete newProgress[podcastId];
+			return newProgress;
+		});
+	}
+
+	return {
+		subscribe,
+		updatePodcastProgress,
+		removePodcastProgress
+	};
 }
 
-export default podcastProgress;
+export const podcastProgress = createPodcastProgressStore();

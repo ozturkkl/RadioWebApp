@@ -1,12 +1,12 @@
 <script lang="ts">
-	import podcastProgress, { removePodcastProgress } from '$lib/stores/podcastProgress';
-	import radioProgress, { removeRadioProgress } from '$lib/stores/radioProgress';
-	import { playPodcast, playRadio } from '$lib/stores/player';
+	import { playerStore } from '$lib/stores/player';
 	import { onMount } from 'svelte';
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-svelte';
 	import { radios, type Radio } from '$lib/stores/radios';
 	import { podcasts, type Episode, type Podcast } from '$lib/stores/podcasts';
+	import { podcastProgress } from '$lib/stores/podcastProgress';
+	import { radioProgress } from '$lib/stores/radioProgress';
 
 	type ContinueListeningItem =
 		| {
@@ -103,9 +103,9 @@
 
 	function handleDelete(item: ContinueListeningItem) {
 		if (item.type === 'podcast') {
-			removePodcastProgress(item.item.id);
+			podcastProgress.removePodcastProgress(item.item.id);
 		} else {
-			removeRadioProgress(item.item.id);
+			radioProgress.removeRadioProgress(item.item.id);
 		}
 	}
 
@@ -144,10 +144,10 @@
 		if (item.type === 'podcast') {
 			const episode = item.item.items.find((ep: Episode) => ep.id === item.item.episodeId);
 			if (episode) {
-				playPodcast(item.item, episode, item.item.timestamp);
+				playerStore.playPodcast(item.item, episode, item.item.timestamp);
 			}
 		} else {
-			playRadio(item.item);
+			playerStore.playRadio(item.item);
 		}
 	}
 	function handleItemKeyDown(item: ContinueListeningItem, event: KeyboardEvent) {

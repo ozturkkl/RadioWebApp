@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { favorites } from '$lib/stores/favorites';
-	import { playPodcast } from '$lib/stores/player';
 	import { playerStore } from '$lib/stores/player';
 	import { cardStyles } from '$lib/components/RadioCard.svelte';
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
@@ -40,10 +39,12 @@
 	}
 
 	function loadUpToCurrentEpisode() {
-		if ($playerStore.type === 'podcast' && 
-			$playerStore.currentPodcast?.id === podcast.id && 
-			$playerStore.currentEpisode) {
-			const episodeIndex = podcast.items.findIndex(e => e.id === $playerStore.currentEpisode?.id);
+		if (
+			$playerStore.type === 'podcast' &&
+			$playerStore.currentPodcast?.id === podcast.id &&
+			$playerStore.currentEpisode
+		) {
+			const episodeIndex = podcast.items.findIndex((e) => e.id === $playerStore.currentEpisode?.id);
 			if (episodeIndex >= 0) {
 				const batchesNeeded = Math.floor(episodeIndex / BATCH_SIZE) + 1;
 				visibleEpisodes = podcast.items.slice(0, batchesNeeded * BATCH_SIZE);
@@ -105,7 +106,7 @@
 						<button
 							data-episode-id={episode.id}
 							class={getEpisodeClasses(episode, podcast)}
-							on:click={() => playPodcast(podcast, episode)}
+							on:click={() => playerStore.playPodcast(podcast, episode)}
 						>
 							<div class="grid grid-cols-[1fr_auto] gap-x-0 gap-y-2">
 								<span class="line-clamp-2 font-medium">{episode.title}</span>

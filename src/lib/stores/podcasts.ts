@@ -76,8 +76,8 @@ function createPodcastsStore() {
 							: []
 				};
 				podcasts.push(podcast);
-			} catch (error) {
-				console.error(`Error processing RSS feed ${url}:`, error);
+			} catch {
+				// console.error(`Error processing RSS feed ${url}:`, error);
 				continue;
 			}
 		}
@@ -103,8 +103,7 @@ function createPodcastsStore() {
 	}
 
 	return {
-		subscribe,
-		refresh
+		subscribe
 	};
 }
 

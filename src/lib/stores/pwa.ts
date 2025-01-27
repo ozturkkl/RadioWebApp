@@ -10,6 +10,7 @@ export const isInstalled = writable(false);
 
 // Function to update PWA theme meta tags
 export function updatePWAThemeColor() {
+	if (typeof window === 'undefined') return;
 	setTimeout(() => {
 		const themeColorTag = document.querySelector('meta[name="theme-color"]');
 		const color = getCurrentThemeColor();

@@ -6,6 +6,9 @@ export const POST: RequestHandler = async ({ request, url }) => {
 	const data = await request.json();
 	const state = data?.state;
 	const prompt = data?.prompt;
+	const playAfterLogin = data?.playAfterLogin;
+	const gotoAfterLogin = data?.gotoAfterLogin;
+
 	if (!state) {
 		throw error(400, 'No state provided');
 	}
@@ -15,7 +18,7 @@ export const POST: RequestHandler = async ({ request, url }) => {
 		redirect_uri: `${url.origin}/settings`,
 		response_type: 'code',
 		scope: 'email https://www.googleapis.com/auth/drive.appdata',
-		state,
+		state: JSON.stringify({ state, playAfterLogin, gotoAfterLogin }),
 		access_type: 'offline'
 	});
 

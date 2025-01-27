@@ -177,6 +177,9 @@ const userDataSaver = new Map<
 >();
 
 export function saveUserDataToGoogle<K extends keyof UserData>(key: K, data: UserData[K]) {
+	const u = get(user);
+	if (!u) return;
+
 	const fetcher = new GoogleDriveFetcher();
 
 	if (!userDataSaver.has(key)) {

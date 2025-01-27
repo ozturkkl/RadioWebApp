@@ -15,10 +15,10 @@
 
 <script lang="ts">
 	import { favorites } from '$lib/stores/favorites';
-	import { playRadio } from '$lib/stores/player';
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import type { Radio } from '$lib/stores/radios';
+	import { playerStore } from '$lib/stores/player';
 
 	export let radio: Radio;
 
@@ -30,11 +30,11 @@
 
 <div
 	class="{cardStyles.container} {cardStyles.hoverScale}"
-	on:click={() => playRadio(radio)}
+	on:click={() => playerStore.playRadio(radio)}
 	on:keydown={(e) => {
 		if (e.key === 'Enter' || e.key === ' ') {
 			e.preventDefault();
-			playRadio(radio);
+			playerStore.playRadio(radio);
 		}
 	}}
 	role="button"

@@ -1,7 +1,6 @@
 <script lang="ts">
 	import '../app.css';
 	import AudioPlayer from '$lib/components/AudioPlayer.svelte';
-	import AutoplayLastContent from '$lib/components/AutoplayLastContent.svelte';
 	import ContinueListening from '$lib/components/ContinueListening.svelte';
 	import InitializePWA from '$lib/components/InitializePWA.svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
@@ -11,7 +10,6 @@
 </script>
 
 <InitializePWA />
-<AutoplayLastContent />
 
 <div class="flex h-dvh w-screen select-none flex-col overflow-hidden bg-base-100">
 	<div class="{outerDivStyle} bg-base-200 shadow-md">

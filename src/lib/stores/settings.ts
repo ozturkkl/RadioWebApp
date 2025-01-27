@@ -1,9 +1,9 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { getUserData, setUserData } from '$lib/util/userData';
 import { updatePWAThemeColor } from '$lib/stores/pwa';
 import { type Theme } from '$lib/util/theme';
 
-export interface Settings {
+export type Settings = {
 	theme: Theme;
 	autoplay: boolean;
 	autoCollapse: boolean;
@@ -13,36 +13,48 @@ export interface Settings {
 	muted: boolean;
 	selectedCategory: string;
 	autoplayLastContent: boolean;
-}
+};
 
-// Create the store
-export const settings = writable<Settings>(getUserData('app-settings'));
+function createSettingsStore() {
+	const initialState: Settings = getUserData('app-settings');
+	const { subscribe, update } = writable<Settings>(initialState);
 
-if (typeof window !== 'undefined') {
-	settings.subscribe((value) => {
+	subscribe((value) => {
 		setUserData('app-settings', value);
-
-		// Apply theme using daisyUI, handling system theme
-		const theme =
-			value.theme === 'system'
-				? window.matchMedia('(prefers-color-scheme: dark)').matches
-					? 'dark'
-					: 'light'
-				: value.theme;
-		document.documentElement.setAttribute('data-theme', theme);
-
-		// Update PWA theme color with the current theme's background color
+		applySystemTheme(value.theme);
 		updatePWAThemeColor();
 	});
 
-	// Listen for system theme changes
-	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-		settings.subscribe((s) => {
-			if (s.theme === 'system') {
-				document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+	watchSystemTheme();
 
-				updatePWAThemeColor();
-			}
-		});
+	function _update(state: Partial<Settings>) {
+		update((current) => ({ ...current, ...state }));
+	}
+
+	return {
+		subscribe,
+		update: _update
+	};
+}
+
+function watchSystemTheme() {
+	if (typeof window === 'undefined') return;
+	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+		applySystemTheme(get(settings).theme);
 	});
 }
+
+function applySystemTheme(theme: Theme) {
+	if (typeof window === 'undefined') return;
+
+	// Apply theme using daisyUI, handling system theme
+	const finalTheme =
+		theme === 'system'
+			? window.matchMedia('(prefers-color-scheme: dark)').matches
+				? 'dark'
+				: 'light'
+			: theme;
+	document.documentElement.setAttribute('data-theme', finalTheme);
+}
+
+export const settings = createSettingsStore();

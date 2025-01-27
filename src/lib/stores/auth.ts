@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
 export interface User {
 	sub: string;
@@ -6,54 +6,63 @@ export interface User {
 	access_token: string;
 }
 
-export const user = writable<User | null>(null);
+function createAuthStore() {
+	const { subscribe, set } = writable<User | null>(null);
 
-if (typeof window !== 'undefined') {
-	initAuth();
+	async function initAuth() {
+		try {
+			const response = await fetch('/auth');
+			const userData = await response?.json();
+			console.log('userData: ', JSON.stringify(userData, null, 2));
+			set(userData);
+		} catch {
+			set(null);
+		}
+	}
+
+	async function signOut() {
+		try {
+			await fetch('/auth/logout', { method: 'POST' });
+			set(null);
+		} catch {
+			set(null);
+		}
+	}
+
+	return {
+		subscribe,
+		initAuth,
+		signOut
+	};
 }
 
-export async function initAuth() {
-	try {
-		const response = await fetch('/auth');
-		const userData = await response?.json();
-		console.log('userData: ', JSON.stringify(userData, null, 2));
-		user.set(userData);
-	} catch {
-		user.set(null);
-	}
+export const user = createAuthStore();
+
+if (typeof window !== 'undefined') {
+	user.initAuth();
 }
 
 export async function signInWithGoogle(prompt: boolean = false) {
-	try {
-		console.log('Starting Google Sign In...');
+	console.log('Starting Google Sign In...');
 
-		// Generate a random state value for CSRF protection
-		const state = crypto.randomUUID();
-		console.log('Generated state:', state);
+	// Generate a random state value for CSRF protection
+	const state = crypto.randomUUID();
+	console.log('Generated state:', state);
 
-		document.cookie = `oauth_state=${state};path=/;max-age=3600;samesite=lax`;
+	document.cookie = `oauth_state=${state};path=/;max-age=3600;samesite=lax`;
 
-		const response = await fetch('/auth/login', {
-			method: 'POST',
-			body: JSON.stringify({ state, prompt })
-		});
-		const data = await response?.json();
-		const authUrl = data?.authUrl;
-		if (!authUrl) {
-			throw new Error('No auth URL provided');
-		}
+	const playAfterLogin = await get((await import('$lib/stores/player')).playerStore).isPlaying;
+	const gotoAfterLogin = window.location.pathname;
 
-		window.location.href = authUrl;
-	} catch {
-		user.set(null);
+	const response = await fetch('/auth/login', {
+		method: 'POST',
+		body: JSON.stringify({ state, prompt, playAfterLogin, gotoAfterLogin })
+	});
+	const data = await response?.json();
+	const authUrl = data?.authUrl;
+	if (!authUrl) {
+		throw new Error('No auth URL provided');
 	}
-}
 
-export async function signOut() {
-	try {
-		await fetch('/auth/logout', { method: 'POST' });
-		user.set(null);
-	} catch {
-		user.set(null);
-	}
+	window.location.href = authUrl;
 }
