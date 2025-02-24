@@ -2,12 +2,14 @@ import { signInWithGoogle, user } from '$lib/stores/auth';
 import { get } from 'svelte/store';
 import { deepMerge } from '$lib/util/deepMerge';
 import { throttleDebounce } from '$lib/util/throttleDebounce';
-import type { UserData } from '$lib/util/userData';
+import { getUserData, setUserData, userDataDefaults, type UserData } from '$lib/util/userData';
 
 type File = {
 	id: string;
 	name: string;
 };
+
+const localModifiedTime = new Map<keyof UserData, number>();
 
 class GoogleDriveFetcher {
 	private access_token: string;
@@ -21,7 +23,7 @@ class GoogleDriveFetcher {
 		this.access_token = access_token;
 	}
 
-	public async upsertFile(name: string, file: Record<string, unknown>, merge = false) {
+	public async upsertFile(name: keyof UserData, file: Record<string, unknown>, merge = false) {
 		const { files } = await this.getFiles();
 		const existingFiles = files.filter((f) => f.name.split('.').slice(0, -1).join('.') === name);
 		const existingFile = existingFiles.length > 0 ? existingFiles[0] : null;
@@ -39,16 +41,17 @@ class GoogleDriveFetcher {
 		}
 
 		let finalData: Record<string, unknown>;
+		const date = Date.now();
 		if (merge && existingFile) {
 			const existingData = await this.getFileById(existingFile.id);
 			finalData = {
 				...deepMerge(existingData, file),
-				_timestamp: Date.now()
+				_timestamp: date
 			};
 		} else {
 			finalData = {
 				...file,
-				_timestamp: Date.now()
+				_timestamp: date
 			};
 		}
 
@@ -150,23 +153,6 @@ class GoogleDriveFetcher {
 	}
 }
 
-async function saveUserDataToGoogleImpl<K extends keyof UserData>(
-	key: K,
-	data: UserData[K],
-	fetcher: GoogleDriveFetcher
-) {
-	try {
-		if (key === 'cached-podcasts' || key === 'cached-radios') return;
-		console.log(`Saving ${key} to Google Drive`);
-		await fetcher.upsertFile(key, {
-			[key]: data
-		});
-		console.log(`Successfully saved ${key} to Google Drive`);
-	} catch (error) {
-		console.error(`Error saving ${key} to Google Drive:`, error);
-	}
-}
-
 const userDataSaver = new Map<
 	keyof UserData,
 	(
@@ -175,19 +161,37 @@ const userDataSaver = new Map<
 		fetcher: GoogleDriveFetcher
 	) => Promise<void> | void
 >();
-
 export function saveUserDataToGoogle<K extends keyof UserData>(key: K, data: UserData[K]) {
 	const u = get(user);
 	if (!u) return;
 
 	const fetcher = new GoogleDriveFetcher();
 
+	localModifiedTime.set(key, Date.now());
+
 	if (!userDataSaver.has(key)) {
-		const throttledSave = throttleDebounce(saveUserDataToGoogleImpl, 10000, false, true);
+		const throttledSave = throttleDebounce(saveUserDataToGoogleImpl, 10000, true, true);
 		userDataSaver.set(key, throttledSave);
 		return throttledSave(key, data, fetcher);
 	}
 	return userDataSaver.get(key)!(key, data, fetcher);
+}
+async function saveUserDataToGoogleImpl<K extends keyof UserData>(
+	key: K,
+	data: UserData[K],
+	fetcher: GoogleDriveFetcher
+) {
+	try {
+		if (key === 'cached-podcasts' || key === 'cached-radios') return;
+		console.log(`Saving ${key} to Google Drive: ${JSON.stringify(data, null, 2)}`);
+
+		await fetcher.upsertFile(key, {
+			[key]: data
+		});
+		console.log(`Successfully saved ${key} to Google Drive`);
+	} catch (error) {
+		console.error(`Error saving ${key} to Google Drive:`, error);
+	}
 }
 
 export async function logGoogleUserData() {
@@ -202,4 +206,34 @@ export async function logGoogleUserData() {
 	});
 	const fileLog = await Promise.all(fileLogPromises);
 	console.log(fileLog);
+}
+
+export async function syncWithGoogle(key?: keyof UserData) {
+	const fetcher = new GoogleDriveFetcher();
+	if (key) {
+		const data = await fetcher.readFile(key);
+		const mt = data?._timestamp as number;
+		const lmt = localModifiedTime.get(key);
+		const value = data?.[key] as UserData[keyof UserData];
+		if (value !== undefined) {
+			if (lmt && lmt > mt) return;
+			console.log(`Syncing ${key} from Google Drive`);
+			setUserData(key, value, false);
+			storeRefresher.get(key)?.();
+		}
+	} else {
+		await Promise.all(
+			Object.keys(userDataDefaults).map((key) => syncWithGoogle(key as keyof UserData))
+		);
+	}
+}
+
+const storeRefresher = new Map<keyof UserData, () => void>();
+export function refreshStoreAfterGoogleFetch<K extends keyof UserData>(
+	key: K,
+	update: (fn: (value: UserData[K]) => UserData[K]) => void
+) {
+	storeRefresher.set(key, () => {
+		update(() => getUserData(key));
+	});
 }

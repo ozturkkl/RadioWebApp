@@ -49,14 +49,22 @@ export function getUserData<K extends keyof UserData>(key: K): UserData[K] {
 	}
 }
 
-export function setUserData<K extends keyof UserData>(key: K, data: UserData[K]) {
+export function setUserData<K extends keyof UserData>(
+	key: K,
+	data: UserData[K],
+	saveToGoogle = true
+) {
 	if (typeof window === 'undefined') {
 		return;
 	}
 	try {
-		console.log(`Setting user data - ${key}`);
+		const currentData = getUserData(key);
+		if (JSON.stringify(currentData) === JSON.stringify(data)) return;
+		console.log(`Setting user data: ${saveToGoogle} - ${key} - ${JSON.stringify(data, null, 2)}`);
 		localStorage.setItem(key, JSON.stringify(data));
-		saveUserDataToGoogle(key, data);
+		if (saveToGoogle) {
+			saveUserDataToGoogle(key, data);
+		}
 	} catch (error) {
 		console.error(`Error setting user data for key ${key}:`, error);
 	}

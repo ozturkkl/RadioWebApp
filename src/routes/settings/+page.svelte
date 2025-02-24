@@ -57,7 +57,11 @@
 				<h3 class="text-lg font-medium">Theme</h3>
 				<p class="text-base-content/70">Choose your preferred theme</p>
 			</div>
-			<DropdownSelect bind:value={$settings.theme} options={themeOptions} />
+			<DropdownSelect
+				value={$settings.theme}
+				onChange={(value) => settings.updateSettings({ theme: value })}
+				options={themeOptions}
+			/>
 		</label>
 
 		<!-- Autoplay -->
@@ -66,7 +70,12 @@
 				<h3 class="text-lg font-medium">Autoplay</h3>
 				<p class="text-base-content/70">Automatically play next episode</p>
 			</div>
-			<input type="checkbox" bind:checked={$settings.autoplay} class="toggle toggle-primary" />
+			<input 
+				type="checkbox" 
+				checked={$settings.autoplay}
+				on:change={(e: Event) => settings.updateSettings({ autoplay: (e.target as HTMLInputElement).checked })}
+				class="toggle toggle-primary" 
+			/>
 		</label>
 
 		<!-- Autoplay Last Content -->
@@ -79,7 +88,8 @@
 			</div>
 			<input
 				type="checkbox"
-				bind:checked={$settings.autoplayLastContent}
+				checked={$settings.autoplayLastContent}
+				on:change={(e: Event) => settings.updateSettings({ autoplayLastContent: (e.target as HTMLInputElement).checked })}
 				class="toggle toggle-primary"
 			/>
 		</label>
@@ -90,7 +100,12 @@
 				<h3 class="text-lg font-medium">Auto-close Podcasts</h3>
 				<p class="text-base-content/70">Automatically close other podcasts when expanding one</p>
 			</div>
-			<input type="checkbox" bind:checked={$settings.autoCollapse} class="toggle toggle-primary" />
+			<input 
+				type="checkbox" 
+				checked={$settings.autoCollapse}
+				on:change={(e: Event) => settings.updateSettings({ autoCollapse: (e.target as HTMLInputElement).checked })}
+				class="toggle toggle-primary" 
+			/>
 		</label>
 
 		<!-- Skip Seconds -->
@@ -99,7 +114,11 @@
 				<h3 class="text-lg font-medium">Skip Duration</h3>
 				<p class="text-base-content/70">Amount of seconds to skip when using the skip buttons</p>
 			</div>
-			<DropdownSelect bind:value={$settings.skipSeconds} options={skipOptions} />
+			<DropdownSelect
+				value={$settings.skipSeconds}
+				onChange={(value) => settings.updateSettings({ skipSeconds: Number(value) })}
+				options={skipOptions}
+			/>
 		</label>
 
 		<!-- Google Sign In -->

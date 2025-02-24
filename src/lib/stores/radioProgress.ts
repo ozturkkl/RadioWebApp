@@ -1,3 +1,4 @@
+import { refreshStoreAfterGoogleFetch } from '$lib/util/googleDriveHelpers';
 import { getUserData, setUserData } from '$lib/util/userData';
 import { writable } from 'svelte/store';
 
@@ -15,6 +16,8 @@ function createRadioProgressStore() {
 	subscribe((value) => {
 		setUserData('radio-progress', value);
 	});
+
+	refreshStoreAfterGoogleFetch('radio-progress', update);
 
 	const updateRadioProgress = (radioId: string) => {
 		update((progress) => ({

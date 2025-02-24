@@ -9,9 +9,14 @@
 	export let limitHeight = true;
 	export let matchOptionWidth = true;
 	export let width = 'w-36 sm:w-40';
+	export let onChange: (value: string) => void | unknown;
 
 	let dropdownRef: HTMLElement | null = null;
 	let dropdownContentRef: HTMLElement | null = null;
+
+	$: if (value) {
+		onChange?.(value.toString());
+	}
 
 	function handleSelect(newValue: string | number) {
 		value = newValue;

@@ -1,3 +1,4 @@
+import { syncWithGoogle } from '$lib/util/googleDriveHelpers';
 import { get, writable } from 'svelte/store';
 
 export interface User {
@@ -15,6 +16,9 @@ function createAuthStore() {
 			const userData = await response?.json();
 			console.log('userData: ', JSON.stringify(userData, null, 2));
 			set(userData);
+			if (userData) {
+				await syncWithGoogle();
+			}
 		} catch {
 			set(null);
 		}

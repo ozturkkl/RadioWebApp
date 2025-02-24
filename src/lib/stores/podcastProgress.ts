@@ -1,3 +1,4 @@
+import { refreshStoreAfterGoogleFetch } from '$lib/util/googleDriveHelpers';
 import { getUserData, setUserData } from '$lib/util/userData';
 import { writable } from 'svelte/store';
 
@@ -19,6 +20,8 @@ function createPodcastProgressStore() {
 	subscribe((value) => {
 		setUserData('podcast-progress', value);
 	});
+
+	refreshStoreAfterGoogleFetch('podcast-progress', update);
 
 	const updatePodcastProgress = (podcastId: string, episodeId: string, timestamp: number) => {
 		update((progress) => ({

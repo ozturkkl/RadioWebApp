@@ -1,7 +1,8 @@
 import { get, writable } from 'svelte/store';
 import { getUserData, setUserData } from '$lib/util/userData';
-import { updatePWAThemeColor } from '$lib/stores/pwa';
+import { refreshPWAThemeColor } from '$lib/stores/pwa';
 import { type Theme } from '$lib/util/theme';
+import { refreshStoreAfterGoogleFetch } from '$lib/util/googleDriveHelpers';
 
 export type Settings = {
 	theme: Theme;
@@ -22,18 +23,16 @@ function createSettingsStore() {
 	subscribe((value) => {
 		setUserData('app-settings', value);
 		applySystemTheme(value.theme);
-		updatePWAThemeColor();
+		refreshPWAThemeColor();
 	});
+
+	refreshStoreAfterGoogleFetch('app-settings', update);
 
 	watchSystemTheme();
 
-	function _update(state: Partial<Settings>) {
-		update((current) => ({ ...current, ...state }));
-	}
-
 	return {
 		subscribe,
-		update: _update
+		updateSettings: (state: Partial<Settings>) => update((current) => ({ ...current, ...state }))
 	};
 }
 

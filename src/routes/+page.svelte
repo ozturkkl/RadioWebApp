@@ -3,7 +3,8 @@
 	import RadioCard from '$lib/components/RadioCard.svelte';
 	import SkeletonCard from '$lib/components/SkeletonCard.svelte';
 	import { settings } from '$lib/stores/settings';
-	import { favorites } from '$lib/stores/favorites';
+	import { radioFavorites } from '$lib/stores/radioFavorites';
+	import { podcastFavorites } from '$lib/stores/podcastFavorites';
 	import { radios } from '$lib/stores/radios';
 	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
 	import { config } from '$lib/config';
@@ -17,7 +18,7 @@
 	let filteredPodcasts: Podcast[] = [];
 
 	$: {
-		filteredPodcasts = $podcasts.filter((podcast) => !$favorites.podcasts[podcast.id]);
+		filteredPodcasts = $podcasts.filter((podcast) => !$podcastFavorites[podcast.id]);
 		if (selectedCategory !== 'All') {
 			filteredPodcasts = filteredPodcasts.filter((podcast) => {
 				return podcast.categories.includes(selectedCategory);
@@ -35,9 +36,9 @@
 		)
 	].sort();
 	$: categoryOptions = allCategories.map((cat) => ({ value: cat, label: cat }));
-	$: favoriteRadios = $radios.filter((radio) => !!$favorites.radios[radio.title]);
-	$: otherRadios = $radios.filter((radio) => !$favorites.radios[radio.title]);
-	$: favoritePodcasts = $podcasts.filter((podcast) => !!$favorites.podcasts[podcast.id]);
+	$: favoriteRadios = $radios.filter((radio) => !!$radioFavorites[radio.title]);
+	$: otherRadios = $radios.filter((radio) => !$radioFavorites[radio.title]);
+	$: favoritePodcasts = $podcasts.filter((podcast) => !!$podcastFavorites[podcast.id]);
 	$: otherPodcasts = filteredPodcasts;
 
 	function handlePodcastExpand(podcastId: string, isExpanded: boolean) {
@@ -101,7 +102,8 @@
 <div class="flex items-start items-center justify-between {headerClasses}">
 	<h2 class={[headerTextClasses]}>Archive</h2>
 	<DropdownSelect
-		bind:value={$settings.selectedCategory}
+		value={$settings.selectedCategory}
+		onChange={(value) => settings.updateSettings({ selectedCategory: value })}
 		options={categoryOptions}
 		backgroundColor="bg-base-200"
 	/>

@@ -92,20 +92,28 @@ function initAudio() {
 	});
 	audio.addEventListener('playing', () => {
 		playerStore.setBuffering(false);
+		playerStore.setErrored(false);
 	});
+	// suspend happens when the download happens and is paused until the player reaches the point of the download
 	// audio.addEventListener('suspend', () => {
-	// 	console.log('suspend');
+	// 	console.log(`suspend`);
 	// });
 
+	let resetAudioTimeout: NodeJS.Timeout | undefined;
 	audio.addEventListener('stalled', () => {
-		resetAudio();
+		if (resetAudioTimeout) {
+			clearTimeout(resetAudioTimeout);
+		}
+		resetAudioTimeout = setTimeout(() => {
+			resetAudio();
+		}, 1000);
 	});
 
 	audio.addEventListener('error', () => {
-		playerStore.setErrored('errored');
+		playerStore.setErrored();
 	});
 	audio.addEventListener('abort', () => {
-		playerStore.setErrored('errored');
+		playerStore.setErrored();
 	});
 
 	audio.addEventListener('ended', () => {
@@ -132,9 +140,9 @@ function toggleAudioWhenReady(value?: boolean, retries: number = 0) {
 			if (value) {
 				audio.play().catch((e) => {
 					if (e.name === 'NotAllowedError') {
-						playerStore.setErrored('muted');
+						playerStore.setMuted();
 					} else {
-						playerStore.setErrored('errored');
+						playerStore.setErrored();
 					}
 				});
 			} else {
@@ -213,7 +221,6 @@ function createPlayerStore() {
 			audio &&
 			audio.playbackRate !== state.playbackRate
 		) {
-			settings.update({ playbackRate: state.playbackRate });
 			audio.playbackRate = state.playbackRate;
 		}
 	});
@@ -257,17 +264,17 @@ function createPlayerStore() {
 		toggleAudioWhenReady(true);
 	}
 
-	function setErrored(type: 'muted' | 'errored') {
-		if (type === 'muted') {
-			update((state) => ({ ...state, muted: true }));
-		} else if (type === 'errored') {
-			update((state) => ({ ...state, errored: true }));
-		}
+	function setErrored(errored = true) {
+		update((state) => ({ ...state, errored }));
+	}
+
+	function setMuted(muted = true) {
+		update((state) => ({ ...state, muted }));
 	}
 
 	function setVolume(volume: number) {
 		const normalizedVolume = Math.max(0, Math.min(1, volume));
-		settings.update({ volume: normalizedVolume });
+		settings.updateSettings({ volume: normalizedVolume });
 		update((state) => ({
 			...state,
 			volume: normalizedVolume,
@@ -278,7 +285,7 @@ function createPlayerStore() {
 	function toggleMuted(muted?: boolean) {
 		update((state) => {
 			const newMuted = muted ?? !state.muted;
-			settings.update({ muted: newMuted });
+			settings.updateSettings({ muted: newMuted });
 			if (!newMuted) {
 				toggleAudioWhenReady(true);
 			}
@@ -344,6 +351,17 @@ function createPlayerStore() {
 		});
 	}
 
+	function setPlaybackRate(playbackRate: number) {
+		update((state) => {
+			if (state.type === 'podcast') {
+				settings.updateSettings({ playbackRate });
+				return { ...state, playbackRate };
+			} else {
+				return state;
+			}
+		});
+	}
+
 	function updateIsPlaying() {
 		update((state) => ({
 			...state,
@@ -359,6 +377,7 @@ function createPlayerStore() {
 	return {
 		subscribe,
 		setErrored,
+		setMuted,
 		setVolume,
 		setBuffering,
 		updateCurrentTime,
@@ -367,11 +386,21 @@ function createPlayerStore() {
 		playRadio,
 		playPodcast,
 		nextTrack,
-		previousTrack
+		previousTrack,
+		setPlaybackRate
 	};
 }
 
 export const playerStore = createPlayerStore();
+
+settings.subscribe((settings) => {
+	if (settings.playbackRate !== get(playerStore).playbackRate) {
+		playerStore.setPlaybackRate(settings.playbackRate);
+	}
+	if (settings.volume !== get(playerStore).volume) {
+		playerStore.setVolume(settings.volume);
+	}
+});
 
 // Player controls for AUDIO element
 export function togglePlayPause(value?: boolean) {
@@ -464,7 +493,7 @@ export function togglePlaylist(targetPodcastId?: string) {
 					podcast?.categories &&
 					!podcast.categories.includes(settingsStore.selectedCategory)
 				) {
-					settings.update({ selectedCategory: 'All' });
+					settings.updateSettings({ selectedCategory: 'All' });
 					// Wait for the next tick to let the UI update
 					setTimeout(() => {
 						return togglePlaylist(targetPodcastId);

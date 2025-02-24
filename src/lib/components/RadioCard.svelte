@@ -14,7 +14,7 @@
 </script>
 
 <script lang="ts">
-	import { favorites } from '$lib/stores/favorites';
+	import { radioFavorites } from '$lib/stores/radioFavorites';
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import type { Radio } from '$lib/stores/radios';
@@ -41,8 +41,8 @@
 	tabindex="0"
 >
 	<FavoriteButton
-		isFavorite={$favorites.radios[radio.title]}
-		onClick={() => favorites.toggleRadio(radio.title)}
+		isFavorite={$radioFavorites[radio.title]}
+		onClick={() => radioFavorites.toggleRadio(radio.title)}
 	/>
 	<div class={cardStyles.content.wrapper}>
 		<img src={radio.image} alt={radio.title} class={cardStyles.content.image} />

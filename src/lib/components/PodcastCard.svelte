@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { favorites } from '$lib/stores/favorites';
+	import { podcastFavorites } from '$lib/stores/podcastFavorites';
 	import { playerStore } from '$lib/stores/player';
 	import { cardStyles } from '$lib/components/RadioCard.svelte';
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
@@ -68,8 +68,8 @@
 	data-podcast-id={podcast.id}
 >
 	<FavoriteButton
-		isFavorite={$favorites.podcasts[podcast.id]}
-		onClick={() => favorites.togglePodcast(podcast.id)}
+		isFavorite={$podcastFavorites[podcast.id]}
+		onClick={() => podcastFavorites.togglePodcast(podcast.id)}
 	/>
 	<div class="collapse collapse-arrow rounded-lg">
 		<input

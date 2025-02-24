@@ -9,7 +9,7 @@ export const deferredInstallPrompt = writable<BeforeInstallPromptEvent | null>(n
 export const isInstalled = writable(false);
 
 // Function to update PWA theme meta tags
-export function updatePWAThemeColor() {
+export function refreshPWAThemeColor() {
 	if (typeof window === 'undefined') return;
 	setTimeout(() => {
 		const themeColorTag = document.querySelector('meta[name="theme-color"]');

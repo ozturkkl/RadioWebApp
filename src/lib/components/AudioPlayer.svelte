@@ -106,7 +106,8 @@
 				{#if $playerStore.type === 'podcast'}
 					<!-- Playback Speed -->
 					<DropdownSelect
-						bind:value={$playerStore.playbackRate}
+						value={$playerStore.playbackRate}
+						onChange={(value) => playerStore.setPlaybackRate(parseFloat(value))}
 						options={speedSelectOptions}
 						dropDirection="top"
 						optionTextCenter
@@ -247,7 +248,8 @@
 									class="range range-md absolute w-[150px]"
 									style="top: 50%; left: 50%; transform: translateX(-50%) translateY(-50%) rotate(-90deg);"
 									value={$playerStore.volume}
-									on:input|stopPropagation={(e) => playerStore.setVolume(parseFloat(e.currentTarget.value))}
+									on:input|stopPropagation={(e) =>
+										playerStore.setVolume(parseFloat(e.currentTarget.value))}
 								/>
 							</div>
 						</div>
