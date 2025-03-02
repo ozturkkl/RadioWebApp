@@ -5,8 +5,11 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-RUN npm run setup
-RUN npm run build
+RUN CONFIG_URL=${CONFIG_URL} \
+    ORIGIN=${ORIGIN} \
+    GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID} \
+    GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET} \
+    npm run setup && npm run build
 
 FROM node:20-slim AS runner
 
