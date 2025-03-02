@@ -8,8 +8,11 @@ COPY . .
 ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
 ENV GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
 
-# Download config file directly
-RUN curl -f ${CONFIG_URL} -o ./src/lib/config/config.ts || exit 1
+# Install curl and download config file
+RUN apt-get update && apt-get install -y curl \
+    && curl -f ${CONFIG_URL} -o ./src/lib/config/config.ts || exit 1 \
+    && apt-get remove -y curl && apt-get autoremove -y && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN npm run build
 
