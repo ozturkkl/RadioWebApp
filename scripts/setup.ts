@@ -5,11 +5,11 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 //grab config path from .env
-const configPath = process.env.CONFIG_PATH;
+const configPath = process.env.CONFIG_URL;
 console.log('config path:::', configPath);
 
 if (!configPath) {
-	throw new Error('CONFIG_PATH environment variable is not defined in .env file');
+	throw new Error('CONFIG_URL environment variable is not defined in .env file');
 }
 
 // download the config file into the config folder
