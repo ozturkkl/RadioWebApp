@@ -1,4 +1,5 @@
 import { refreshStoreAfterGoogleFetch } from '$lib/util/googleDriveHelpers';
+import { throttleDebounce } from '$lib/util/throttleDebounce';
 import { getUserData, setUserData } from '$lib/util/userData';
 import { writable } from 'svelte/store';
 
@@ -23,16 +24,21 @@ function createPodcastProgressStore() {
 
 	refreshStoreAfterGoogleFetch('podcast-progress', update);
 
-	const updatePodcastProgress = (podcastId: string, episodeId: string, timestamp: number) => {
-		update((progress) => ({
-			...progress,
-			[podcastId]: {
-				episodeId,
-				timestamp,
-				lastPlayed: Date.now()
-			}
-		}));
-	};
+	const updatePodcastProgress = throttleDebounce(
+		(podcastId: string, episodeId: string, timestamp: number) => {
+			update((progress) => ({
+				...progress,
+				[podcastId]: {
+					episodeId,
+					timestamp,
+					lastPlayed: Date.now()
+				}
+			}));
+		},
+		1000,
+		true,
+		true
+	);
 
 	function removePodcastProgress(podcastId: string) {
 		update((progress) => {

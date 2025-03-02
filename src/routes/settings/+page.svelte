@@ -122,7 +122,7 @@
 		</label>
 
 		<!-- Google Sign In -->
-		<div class="flex items-center justify-between">
+		<!-- <div class="flex items-center justify-between">
 			<div>
 				<div class="flex items-center gap-2">
 					<h3 class="text-lg font-medium">Google Account</h3>
@@ -190,6 +190,6 @@
 					{/if}
 				</TouchableButton>
 			{/if}
-		</div>
+		</div> -->
 	</div>
 {/if}

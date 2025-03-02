@@ -1,6 +1,5 @@
 import { writable } from 'svelte/store';
 import { config } from '$lib/config';
-import { withCorsProxy } from '$lib/util/corsProxy';
 import * as Icons from 'lucide-svelte';
 import { getUserData, setUserData } from '$lib/util/userData';
 
@@ -52,7 +51,7 @@ function createRadiosStore() {
 		const configRadio = config.radios.find((r) => r.title === radio.title);
 		if (typeof configRadio?.trackInfo === 'string') {
 			try {
-				const response = await fetch(withCorsProxy(configRadio.trackInfo));
+				const response = await fetch(configRadio.trackInfo);
 				const data = await response.json();
 				return {
 					...radio,
