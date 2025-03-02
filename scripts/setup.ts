@@ -1,8 +1,8 @@
 import fs from 'fs';
-import * as dotenv from 'dotenv';
+// import * as dotenv from 'dotenv';
 
 // Load environment variables from .env file (going up one directory since we're in scripts/)
-dotenv.config();
+// dotenv.config();
 
 //grab config path from .env
 const configPath = process.env.CONFIG_URL;
