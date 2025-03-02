@@ -1,0 +1,26 @@
+archive-web-app:
+  build:
+    context: https://github.com/ozturkkl/RadioWebApp.git#main
+    args:
+      CONFIG_URL: ${ARCHIVE_CONFIG_URL}
+      ORIGIN: ${ARCHIVE_ORIGIN}
+      GOOGLE_CLIENT_ID: ${ARCHIVE_GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${ARCHIVE_GOOGLE_CLIENT_SECRET}
+  environment:
+    - CONFIG_URL=${ARCHIVE_CONFIG_URL}
+    - ORIGIN=${ARCHIVE_ORIGIN}
+    - GOOGLE_CLIENT_ID=${ARCHIVE_GOOGLE_CLIENT_ID}
+    - GOOGLE_CLIENT_SECRET=${ARCHIVE_GOOGLE_CLIENT_SECRET}
+  restart: unless-stopped
+  networks:
+    - archive-web-app 
+
+secrets:
+  config_url:
+    file: ${ARCHIVE_CONFIG_URL}
+  origin:
+    file: ${ARCHIVE_ORIGIN}
+  google_client_id:
+    file: ${ARCHIVE_GOOGLE_CLIENT_ID}
+  google_client_secret:
+    file: ${ARCHIVE_GOOGLE_CLIENT_SECRET} 

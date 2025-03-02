@@ -5,11 +5,13 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-ARG CONFIG_URL
+ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+ENV GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
 
-ENV CONFIG_URL=${CONFIG_URL}
+# Download config file directly
+RUN curl -f ${CONFIG_URL} -o ./src/lib/config/config.ts || exit 1
 
-RUN npm run setup && npm run build
+RUN npm run build
 
 FROM node:20-slim AS runner
 
