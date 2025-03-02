@@ -1,17 +1,20 @@
 <script lang="ts">
 	import { podcastFavorites } from '$lib/stores/podcastFavorites';
-	import { playerStore } from '$lib/stores/player';
+	import { playerStore, togglePlaylist } from '$lib/stores/player';
 	import { cardStyles } from '$lib/components/RadioCard.svelte';
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
 	import { formatTime, formatDate } from '$lib/util/time';
 	import type { Episode, Podcast } from '$lib/stores/podcasts';
+	import { ArrowDownNarrowWide, ArrowUpWideNarrow } from 'lucide-svelte';
+	import TouchableButton from '$lib/components/TouchableButton.svelte';
 
 	export let podcast: Podcast;
 	export let expanded = false;
 	export let onExpand: (podcastId: string, isExpanded: boolean) => void;
 
 	let visibleEpisodes: Episode[] = [];
-	const BATCH_SIZE = 10;
+	let isReversed = false;
+	const BATCH_SIZE = 20;
 
 	function getEpisodeClasses(episode: Episode, podcast: Podcast) {
 		const isActive =
@@ -25,7 +28,9 @@
 
 	function loadMoreEpisodes() {
 		const currentLength = visibleEpisodes.length;
-		const nextBatch = podcast.items.slice(currentLength, currentLength + BATCH_SIZE);
+		const nextBatch = isReversed
+			? podcast.items.slice(-(currentLength + BATCH_SIZE), -currentLength).reverse()
+			: podcast.items.slice(currentLength, currentLength + BATCH_SIZE);
 		if (nextBatch.length > 0) {
 			visibleEpisodes = [...visibleEpisodes, ...nextBatch];
 		}
@@ -33,7 +38,7 @@
 
 	function handleScroll(e: Event) {
 		const target = e.target as HTMLDivElement;
-		if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
+		if (target.scrollHeight - target.scrollTop <= target.clientHeight + 1000) {
 			requestAnimationFrame(loadMoreEpisodes);
 		}
 	}
@@ -46,15 +51,39 @@
 		) {
 			const episodeIndex = podcast.items.findIndex((e) => e.id === $playerStore.currentEpisode?.id);
 			if (episodeIndex >= 0) {
-				const batchesNeeded = Math.floor(episodeIndex / BATCH_SIZE) + 1;
-				visibleEpisodes = podcast.items.slice(0, batchesNeeded * BATCH_SIZE);
+				const indexFromEnd = podcast.items.length - 1 - episodeIndex;
+				const batchesNeeded =
+					Math.floor((isReversed ? indexFromEnd : episodeIndex) / BATCH_SIZE) + 1;
+				const totalToLoad = batchesNeeded * BATCH_SIZE;
+
+				if (isReversed) {
+					visibleEpisodes = podcast.items.slice(-totalToLoad).reverse();
+				} else {
+					visibleEpisodes = podcast.items.slice(0, totalToLoad);
+				}
 			}
 		}
 	}
 
+	function reverseEpisodes() {
+		isReversed = !isReversed;
+		// Recalculate visible episodes from the correct position
+		const currentCount = visibleEpisodes.length;
+		const episodes = isReversed
+			? podcast.items.slice(-currentCount).reverse()
+			: podcast.items.slice(0, currentCount);
+		visibleEpisodes = episodes;
+		loadUpToCurrentEpisode();
+		togglePlaylist(podcast.id);
+	}
+
 	$: if (expanded && visibleEpisodes.length === 0) {
 		// Load initial batch when expanded
-		visibleEpisodes = podcast.items.slice(0, BATCH_SIZE);
+		if (isReversed) {
+			visibleEpisodes = podcast.items.slice(-BATCH_SIZE).reverse();
+		} else {
+			visibleEpisodes = podcast.items.slice(0, BATCH_SIZE);
+		}
 		// If there's a currently playing episode in this podcast, load up to it
 		loadUpToCurrentEpisode();
 	} else if (!expanded) {
@@ -97,9 +126,19 @@
 			</div>
 		</div>
 		<div class="collapse-content relative">
+			<div class="flex justify-end">
+				<TouchableButton
+					onClick={reverseEpisodes}
+					circle={false}
+					ariaLabel={isReversed ? 'Show oldest first' : 'Show newest first'}
+					small={true}
+				>
+					<svelte:component this={isReversed ? ArrowUpWideNarrow : ArrowDownNarrowWide} />
+				</TouchableButton>
+			</div>
 			<div
 				on:scroll={handleScroll}
-				class="stable-gutter -mx-3 flex max-h-80 flex-col gap-1 overflow-y-auto overflow-x-hidden border-t border-base-300 p-1 pt-3 sm:max-h-96"
+				class="stable-gutter -mx-3 flex max-h-80 flex-col gap-1 overflow-y-auto overflow-x-hidden border-t border-base-300 p-1 sm:max-h-96"
 			>
 				{#if expanded}
 					{#each visibleEpisodes as episode (episode.id)}
