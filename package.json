@@ -4,6 +4,7 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
+		"predev": "node -e \"require('dotenv').config(); fetch(process.env.CONFIG_URL).then(r => r.text()).then(t => require('fs').writeFileSync('src/lib/config/config.ts', t))\"",
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
