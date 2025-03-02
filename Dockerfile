@@ -5,15 +5,13 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
+# Only CONFIG_URL needs to be a build arg since it's used during build
+ARG CONFIG_URL
 ENV CONFIG_URL=${CONFIG_URL}
 ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
 ENV GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
 
-# Install curl and download config file
-RUN apt-get update && apt-get install -y curl \
-    && curl -f ${CONFIG_URL} -o ./src/lib/config/config.ts || exit 1 \
-    && apt-get remove -y curl && apt-get autoremove -y && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+RUN wget -O ./src/lib/config/config.ts ${CONFIG_URL}
 
 RUN npm run build
 
