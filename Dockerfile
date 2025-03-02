@@ -5,8 +5,6 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-ARG CONFIG_URL
-ENV CONFIG_URL=${CONFIG_URL}
 RUN npm run setup
 RUN npm run build
 

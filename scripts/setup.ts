@@ -1,15 +1,10 @@
 import fs from 'fs';
-import * as dotenv from 'dotenv';
 
-// Load environment variables from .env file (going up one directory since we're in scripts/)
-dotenv.config();
-
-//grab config path from .env
 const configPath = process.env.CONFIG_URL;
 console.log('config path:::', configPath);
 
 if (!configPath) {
-	throw new Error('CONFIG_URL environment variable is not defined in .env file');
+	throw new Error('CONFIG_URL environment variable is not defined');
 }
 
 // download the config file into the config folder
