@@ -11,7 +11,8 @@ ENV CONFIG_URL=${CONFIG_URL}
 ENV GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
 ENV GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
 
-RUN wget -O ./src/lib/config/config.ts ${CONFIG_URL}
+RUN apt-get update && apt-get install -y wget \
+    && wget -O ./src/lib/config/config.ts ${CONFIG_URL}
 
 RUN npm run build
 
