@@ -7,6 +7,7 @@
 	import type { Episode, Podcast } from '$lib/stores/podcasts';
 	import { ArrowDownNarrowWide, ArrowUpWideNarrow } from 'lucide-svelte';
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
+	import { fade } from 'svelte/transition';
 
 	export let podcast: Podcast;
 	export let expanded = false;
@@ -136,11 +137,12 @@
 					<svelte:component this={isReversed ? ArrowUpWideNarrow : ArrowDownNarrowWide} />
 				</TouchableButton>
 			</div>
-			<div
-				on:scroll={handleScroll}
-				class="stable-gutter -mx-3 flex max-h-80 flex-col gap-1 overflow-y-auto overflow-x-hidden border-t border-base-300 p-1 sm:max-h-96"
-			>
-				{#if expanded}
+			{#if expanded}
+				<div
+					transition:fade={{ duration: 200 }}
+					on:scroll={handleScroll}
+					class="stable-gutter -mx-3 flex max-h-80 flex-col gap-1 overflow-y-auto overflow-x-hidden border-t border-base-300 p-1 sm:max-h-96"
+				>
 					{#each visibleEpisodes as episode (episode.id)}
 						<button
 							data-episode-id={episode.id}
@@ -172,8 +174,8 @@
 							Scroll for more episodes
 						</div>
 					{/if}
-				{/if}
-			</div>
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>
