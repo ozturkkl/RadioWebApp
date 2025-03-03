@@ -5,9 +5,10 @@
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
 	import { formatTime, formatDate } from '$lib/util/time';
 	import type { Episode, Podcast } from '$lib/stores/podcasts';
-	import { ArrowDownNarrowWide, ArrowUpWideNarrow } from 'lucide-svelte';
+	import { ArrowDownNarrowWide, ArrowUpWideNarrow, Info } from 'lucide-svelte';
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { fade } from 'svelte/transition';
+	import PodcastInfoModal from './PodcastInfoModal.svelte';
 
 	export let podcast: Podcast;
 	export let expanded = false;
@@ -16,6 +17,7 @@
 	let visibleEpisodes: Episode[] = [];
 	let isReversed = false;
 	const BATCH_SIZE = 20;
+	let infoModal: { open: () => void; close: () => void };
 
 	function getEpisodeClasses(episode: Episode, podcast: Podcast) {
 		const isActive =
@@ -129,6 +131,14 @@
 		<div class="collapse-content relative">
 			<div class="flex justify-end">
 				<TouchableButton
+					onClick={() => infoModal.open()}
+					circle={false}
+					ariaLabel="Show more information"
+					small={true}
+				>
+					<Info class="h-5 w-5" />
+				</TouchableButton>
+				<TouchableButton
 					onClick={reverseEpisodes}
 					circle={false}
 					ariaLabel={isReversed ? 'Show oldest first' : 'Show newest first'}
@@ -179,3 +189,5 @@
 		</div>
 	</div>
 </div>
+
+<PodcastInfoModal bind:this={infoModal} {podcast} />
