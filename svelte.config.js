@@ -8,6 +8,7 @@ const config = {
 	preprocess: vitePreprocess(),
 
 	kit: {
+		// https://svelte.dev/docs/kit/adapters
 		adapter: adapter(),
 		csrf: {
 			checkOrigin: true
