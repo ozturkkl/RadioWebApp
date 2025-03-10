@@ -74,7 +74,7 @@
 			</div>
 			<div class="flex min-w-0 flex-1 flex-col overflow-hidden">
 				<h3 class="mt-[-4px] pr-8 text-2xl font-bold">{podcast.title}</h3>
-				<div class="mt-3 flex flex-col gap-3 text-sm sm:flex-row sm:flex-wrap">
+				<div class="mt-3 flex flex-row flex-wrap gap-3 text-sm">
 					<div class="flex items-center gap-1">
 						<span class="text-base-content/70">Episodes:</span>
 						<span class="font-medium">{episodeCount}</span>
