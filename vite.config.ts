@@ -50,5 +50,14 @@ export default defineConfig({
 				]
 			}
 		})
-	]
+	],
+	build: {
+		chunkSizeWarningLimit: 1000,
+		rollupOptions: {
+			onwarn(warning, warn) {
+				if (warning.message.includes('but also statically imported by')) return;
+				warn(warning);
+			}
+		}
+	}
 });
