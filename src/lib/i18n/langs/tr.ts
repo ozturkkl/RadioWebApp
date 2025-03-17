@@ -14,11 +14,12 @@ export const tr: TranslationType = {
     autoClosePodcasts: 'Podcastleri Otomatik Kapat',
     autoClosePodcastsDescription: 'Bir podcast açıldığında diğerlerini otomatik olarak kapat',
     skipDuration: 'Atlama Süresi',
-    skipDurationDescription: 'Atlama düğmelerini kullanırken atlanacak saniye miktarı',
-    installApp: 'Uygulamayı Yükle',
-    installAppDescription: 'Bu uygulamayı cihazınıza yükleyin',
-    alreadyInstalled: 'Zaten Yüklü',
-    seconds: 'saniye'
+		skipDurationDescription: 'Atlama düğmelerini kullanırken atlanacak saniye miktarı',
+		install: 'Yükle',
+		installApp: 'Uygulamayı Yükle',
+		installAppDescription: 'Bu uygulamayı cihazınıza yükleyin',
+		alreadyInstalled: 'Zaten Yüklü',
+		seconds: 'saniye'
   },
   home: {
     favorites: 'Favoriler',
@@ -27,7 +28,7 @@ export const tr: TranslationType = {
     allStationsInFavorites: 'Tüm istasyonlar favorilerde',
     allArchiveInFavorites: 'Bu arşivin tamamı favorilerde',
     scrollForMoreEpisodes: 'Daha fazla bölüm için kaydırın',
-    allCategories: 'Hepsi'
+    allCategories: 'Hepsini Gör'
   },
   player: {
     skipBackward: 'Geri atla',
@@ -70,28 +71,62 @@ export const tr: TranslationType = {
     externalLinks: 'Diğer Kaynaklar'
   },
   installModal: {
+    // Titles
     installOnIOS: 'iOS\'ta Yükle',
     installOnAndroid: 'Android\'de Yükle',
+    
+    // Common elements
     step1: 'Adım 1',
     step2: 'Adım 2',
     step3: 'Adım 3',
-    tapShareButton: 'Safari veya Chrome\'da Paylaş düğmesine dokunun',
-    squareWithArrow: '(yukarı ok işaretli kare)',
-    addToHomeScreen: 'Paylaşım menüsünde aşağı kaydırın ve "Ana Ekrana Ekle" seçeneğine dokunun',
-    editNameAndAdd: 'İsterseniz adını düzenleyebilir, ardından sağ üst köşedeki "Ekle" düğmesine dokunabilirsiniz',
-    appOnHomeScreen: 'Not: Bu uygulama artık ana ekranınızda görünecek ve tarayıcı arayüzü olmadan tam ekran modunda çalışacaktır.',
-    worksSafariChrome: 'Önemli: Bu özellik yalnızca Safari ve Chrome\'da çalışır. iOS\'ta farklı bir tarayıcı kullanıyorsanız, lütfen önce bu siteyi Safari veya Chrome\'da açın.',
-    firefoxLimitation: 'Firefox Sınırlaması',
-    firefoxNoSupport: 'Ne yazık ki Firefox, web sitelerini Progressive Web Apps (PWA) olarak yüklemeyi desteklemiyor.',
-    useOtherBrowser: 'Bu uygulamayı cihazınıza yüklemek için aşağıdaki tarayıcılardan birini kullanın:',
-    chromeRecommended: 'Chrome (Android için önerilir)',
-    edge: 'Edge',
-    safariIOS: 'Safari (yalnızca iOS)',
-    samsungInternet: 'Samsung Internet',
-    modernBrowsers: 'İpucu: Firefox dışındaki çoğu modern tarayıcı PWA yüklemeyi destekler.',
-    tapMenuButton: 'Menü düğmesine dokunun',
-    tapInstall: 'Görünen istemde "Yükle" veya "Ekle" seçeneğine dokunun',
-    tipUseChrome: 'İpucu: Yükleme seçeneğini görmüyorsanız Chrome kullanmayı deneyin.'
+    
+    // iOS specific
+    ios: {
+      shareButton: 'Safari veya Chrome\'da Paylaş düğmesine dokunun',
+      shareButtonNote: '(yukarı ok işaretli kare)',
+      addToHomeScreen: 'Paylaşım menüsünde aşağı kaydırın ve "Ana Ekrana Ekle" seçeneğine dokunun',
+      finishInstall: 'İsterseniz adını düzenleyebilir, ardından sağ üst köşedeki "Ekle" düğmesine dokunabilirsiniz'
+    },
+    
+    // Firefox specific
+    firefox: {
+      limitation: 'Firefox Sınırlaması',
+      noSupport: 'Ne yazık ki Firefox, web sitelerini Progressive Web Apps (PWA) olarak yüklemeyi desteklemiyor.',
+      useAlternative: 'Bu uygulamayı cihazınıza yüklemek için aşağıdaki tarayıcılardan birini kullanın:'
+    },
+    
+    // Browser options
+    browsers: {
+      chrome: 'Chrome (Android için önerilir)',
+      edge: 'Edge',
+      safari: 'Safari (yalnızca iOS)',
+      samsung: 'Samsung Internet'
+    },
+    
+    // Generic instructions
+    generic: {
+      menuButton: '{browser} tarayıcısında menü düğmesine dokunun',
+      menuPosition: '{position}',
+      chromeInstall: '"Cast, save, and share" ve "Install page as app..." seçeneklerine dokunun',
+      edgeInstall: '"Uygulamalar" ve ardından "bu siteyi uygulama olarak yükle" seçeneğine dokunun',
+      defaultInstall: '"Uygulama yükle" veya "Ana ekrana ekle" seçeneğini arayın',
+      tapInstall: 'Görünen istemde "Yükle" veya "Ekle" seçeneğine dokunun'
+    },
+    
+    // Notes and tips
+    notes: {
+      important: 'Önemli',
+      appOnHomeScreen: 'Not: Bu uygulama artık ana ekranınızda görünecek ve tarayıcı arayüzü olmadan tam ekran modunda çalışacaktır.',
+      safariChromeOnly: 'Bu özellik yalnızca Safari ve Chrome\'da çalışır. iOS\'ta farklı bir tarayıcı kullanıyorsanız, lütfen önce bu siteyi Safari veya Chrome\'da açın.',
+      mostBrowsersSupport: 'İpucu: Firefox dışındaki çoğu modern tarayıcı PWA yüklemeyi destekler.',
+      tryChrome: 'İpucu: Yükleme seçeneğini görmüyorsanız Chrome kullanmayı deneyin.'
+    },
+    
+    // Menu positions
+    menuPositions: {
+      chromeEdge: 'sağ üst köşedeki üç nokta',
+      default: 'genellikle köşedeki üç nokta veya çizgi'
+    }
   },
   auth: {
     googleAccount: 'Google Hesabı',

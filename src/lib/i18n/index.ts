@@ -2,6 +2,7 @@ import { en } from './langs/en';
 import { tr } from './langs/tr';
 import { derived, writable } from 'svelte/store';
 import { browser } from '$app/environment';
+export { formatString } from './format';
 
 // Define the available languages
 export const languages = {

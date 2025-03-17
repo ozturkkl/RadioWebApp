@@ -76,12 +76,12 @@
 				{#if $deferredInstallPrompt}
 					<TouchableButton
 						onClick={installPWA}
-						ariaLabel={$t.settings.installApp}
+						ariaLabel={$t.settings.install}
 						circle={false}
 						buttonClassName="bg-base-100"
 					>
 						<Download class="mr-2 h-5 w-5" />
-						{$t.settings.installApp}
+						{$t.settings.install}
 					</TouchableButton>
 				{:else if $isInstalled}
 					<TouchableButton
@@ -98,10 +98,10 @@
 						buttonClassName="text-info"
 						onClick={() => installInstructionsModal.open()}
 						circle={false}
-						ariaLabel={$t.settings.installApp}
+						ariaLabel={$t.settings.install}
 					>
 						<Download class="mr-2 h-5 w-5" />
-						{$t.settings.installApp}</TouchableButton
+						{$t.settings.install}</TouchableButton
 					>
 				{/if}
 			</div>

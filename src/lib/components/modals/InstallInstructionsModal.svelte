@@ -13,6 +13,7 @@
 	import { onMount } from 'svelte';
 	import type { Icon } from 'lucide-svelte';
 	import { t } from '$lib/i18n';
+	import { formatString } from '$lib/i18n/format';
 
 	const modalId = 'install_instructions_modal';
 	let modalComponent: Modal;
@@ -27,9 +28,6 @@
 				return MoreHorizontal;
 			case 'Safari':
 				return Share;
-			case 'Firefox':
-			case 'Opera':
-			case 'Unknown':
 			default:
 				return Menu;
 		}
@@ -38,32 +36,21 @@
 	function getMenuPosition(): string {
 		switch (browserType) {
 			case 'Chrome':
-				return 'three dots in the top right';
 			case 'Edge':
-				return 'three dots in the top right';
-			case 'Firefox':
-				return 'three lines in the top right';
-			case 'Safari':
-				return 'share button at the bottom';
-			case 'Opera':
-			case 'Unknown':
+				return $t.installModal.menuPositions.chromeEdge;
 			default:
-				return 'usually three dots or lines in the corner';
+				return $t.installModal.menuPositions.default;
 		}
 	}
 
 	function getInstallInstructions(): string {
 		switch (browserType) {
 			case 'Chrome':
-				return 'Tap "Cast, save, and share" and "Install page as app..."';
+				return $t.installModal.generic.chromeInstall;
 			case 'Edge':
-				return 'Tap "Apps" and then "install this site as an app"';
-			case 'Safari':
-				return 'Tap "Add to Home Screen"';
-			case 'Opera':
-			case 'Unknown':
+				return $t.installModal.generic.edgeInstall;
 			default:
-				return 'Look for "Install app" or "Add to Home screen"';
+				return $t.installModal.generic.defaultInstall;
 		}
 	}
 
@@ -87,9 +74,10 @@
 <Modal
 	id={modalId}
 	title={isIOS() ? $t.installModal.installOnIOS : $t.installModal.installOnAndroid}
+	maxHeight="80vh"
 	bind:this={modalComponent}
 >
-	<div class="overflow-y-auto p-5 pt-1">
+	<div class="overflow-y-auto p-5 pt-2">
 		{#if isIOS()}
 			<div class="space-y-4">
 				<div class="flex items-start gap-3">
@@ -99,9 +87,8 @@
 					<div>
 						<p class="font-medium">{$t.installModal.step1}</p>
 						<p>
-							{$t.installModal.tapShareButton} <span class="text-xs"
-								>{$t.installModal.squareWithArrow}</span
-							>
+							{$t.installModal.ios.shareButton}
+							<span class="text-xs">{$t.installModal.ios.shareButtonNote}</span>
 						</p>
 					</div>
 				</div>
@@ -112,7 +99,7 @@
 					</div>
 					<div>
 						<p class="font-medium">{$t.installModal.step2}</p>
-						<p>{$t.installModal.addToHomeScreen}</p>
+						<p>{$t.installModal.ios.addToHomeScreen}</p>
 					</div>
 				</div>
 
@@ -122,16 +109,17 @@
 					</div>
 					<div>
 						<p class="font-medium">{$t.installModal.step3}</p>
-						<p>{$t.installModal.editNameAndAdd}</p>
+						<p>{$t.installModal.ios.finishInstall}</p>
 					</div>
 				</div>
 
 				<div class="mt-4 rounded-lg bg-base-200 p-3">
 					<p class="text-sm text-base-content/70">
-						{$t.installModal.appOnHomeScreen}
+						{$t.installModal.notes.appOnHomeScreen}
 					</p>
 					<p class="mt-2 text-sm text-base-content/70">
-						<strong>Important:</strong> {$t.installModal.worksSafariChrome}
+						<strong>{$t.installModal.notes.important}:</strong>
+						{$t.installModal.notes.safariChromeOnly}
 					</p>
 				</div>
 			</div>
@@ -142,25 +130,26 @@
 						<AlertCircle class="h-5 w-5 text-warning-content" />
 					</div>
 					<div>
-						<p class="font-medium">{$t.installModal.firefoxLimitation}</p>
+						<p class="font-medium">{$t.installModal.firefox.limitation}</p>
 						<p>
-							{$t.installModal.firefoxNoSupport}
+							{$t.installModal.firefox.noSupport}
 						</p>
 					</div>
 				</div>
 
 				<div class="mt-4 rounded-lg bg-base-200 p-3">
 					<p class="text-sm text-base-content/70">
-						{$t.installModal.useOtherBrowser}
+						{$t.installModal.firefox.useAlternative}
 					</p>
 					<ul class="mt-2 list-disc pl-5 text-sm text-base-content/70">
-						<li>{$t.installModal.chromeRecommended}</li>
-						<li>{$t.installModal.edge}</li>
-						<li>{$t.installModal.safariIOS}</li>
-						<li>{$t.installModal.samsungInternet}</li>
+						<li>{$t.installModal.browsers.chrome}</li>
+						<li>{$t.installModal.browsers.edge}</li>
+						<li>{$t.installModal.browsers.safari}</li>
+						<li>{$t.installModal.browsers.samsung}</li>
 					</ul>
 					<p class="mt-2 text-sm text-base-content/70">
-						<strong>Tip:</strong> {$t.installModal.modernBrowsers}
+						<strong>Tip:</strong>
+						{$t.installModal.notes.mostBrowsersSupport}
 					</p>
 				</div>
 			</div>
@@ -172,9 +161,15 @@
 					</div>
 					<div>
 						<p class="font-medium">{$t.installModal.step1}</p>
-						<p>{$t.installModal.tapMenuButton} {browserType === 'Unknown' ? 'your browser' : browserType}</p>
+						<p>
+							{formatString($t.installModal.generic.menuButton, {
+								browser: browserType === 'Unknown' ? 'your browser' : browserType
+							})}
+						</p>
 						<p class="text-xs text-base-content/70">
-							({getMenuPosition()})
+							({formatString($t.installModal.generic.menuPosition, {
+								position: getMenuPosition()
+							})})
 						</p>
 					</div>
 				</div>
@@ -197,17 +192,18 @@
 					</div>
 					<div>
 						<p class="font-medium">{$t.installModal.step3}</p>
-						<p>{$t.installModal.tapInstall}</p>
+						<p>{$t.installModal.generic.tapInstall}</p>
 					</div>
 				</div>
 
 				<div class="mt-4 rounded-lg bg-base-200 p-3">
 					<p class="text-sm text-base-content/70">
-						{$t.installModal.appOnHomeScreen}
+						{$t.installModal.notes.appOnHomeScreen}
 					</p>
 					{#if browserType !== 'Chrome'}
 						<p class="mt-2 text-sm text-base-content/70">
-							<strong>Tip:</strong> {$t.installModal.tipUseChrome}
+							<strong>Tip:</strong>
+							{$t.installModal.notes.tryChrome}
 						</p>
 					{/if}
 				</div>
