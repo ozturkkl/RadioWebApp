@@ -3,13 +3,13 @@
 	import RadioCard from '$lib/components/RadioCard.svelte';
 	import SkeletonCard from '$lib/components/SkeletonCard.svelte';
 	import { settings } from '$lib/stores/settings';
-	import { radioFavorites } from '$lib/stores/radioFavorites';
-	import { podcastFavorites } from '$lib/stores/podcastFavorites';
-	import { radios } from '$lib/stores/radios';
+	import { radioFavorites } from '$lib/stores/radio/radioFavorites';
+	import { podcastFavorites } from '$lib/stores/podcast/podcastFavorites';
 	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
 	import { config } from '$lib/config';
 	import { togglePlaylist } from '$lib/stores/player';
-	import { podcasts, type Podcast } from '$lib/stores/podcasts';
+	import { radios } from '$lib/stores/radio/radios';
+	import { podcasts, type Podcast } from '$lib/stores/podcast/podcasts';
 
 	let expandedPodcasts = new Set<string>();
 	let headerClasses = 'mb-2 sm:mb-4';

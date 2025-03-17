@@ -1,14 +1,14 @@
 <script lang="ts">
-	import { podcastFavorites } from '$lib/stores/podcastFavorites';
+	import { podcastFavorites } from '$lib/stores/podcast/podcastFavorites';
 	import { playerStore, togglePlaylist } from '$lib/stores/player';
 	import { cardStyles } from '$lib/components/RadioCard.svelte';
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
 	import { formatTime, formatDate } from '$lib/util/time';
-	import type { Episode, Podcast } from '$lib/stores/podcasts';
 	import { ArrowDownNarrowWide, ArrowUpWideNarrow, Info } from 'lucide-svelte';
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { fade } from 'svelte/transition';
-	import PodcastInfoModal from './PodcastInfoModal.svelte';
+	import PodcastInfoModal from '$lib/components/modals/PodcastInfoModal.svelte';
+	import type { Episode, Podcast } from '$lib/stores/podcast/podcasts';
 
 	export let podcast: Podcast;
 	export let expanded = false;
@@ -52,7 +52,7 @@
 			$playerStore.currentPodcast?.id === podcast.id &&
 			$playerStore.currentEpisode
 		) {
-			const episodeIndex = podcast.items.findIndex((e) => e.id === $playerStore.currentEpisode?.id);
+			const episodeIndex = podcast.items.findIndex((e: Episode) => e.id === $playerStore.currentEpisode?.id);
 			if (episodeIndex >= 0) {
 				const indexFromEnd = podcast.items.length - 1 - episodeIndex;
 				const batchesNeeded =

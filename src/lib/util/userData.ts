@@ -1,8 +1,8 @@
-import type { PodcastProgress } from '$lib/stores/podcastProgress';
-import type { Podcast } from '$lib/stores/podcasts';
+import type { PodcastProgress } from '$lib/stores/podcast/podcastProgress';
+import type { Podcast } from '$lib/stores/podcast/podcasts';
 import type { Settings } from '$lib/stores/settings';
-import type { RadioProgress } from '$lib/stores/radioProgress';
-import type { Radio } from '$lib/stores/radios';
+import type { RadioProgress } from '$lib/stores/radio/radioProgress';
+import type { Radio } from '$lib/stores/radio/radios';
 import { saveUserDataToGoogle } from '$lib/util/googleDriveHelpers';
 
 export interface UserData {

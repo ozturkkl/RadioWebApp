@@ -1,6 +1,5 @@
 import { signInWithGoogle, user } from '$lib/stores/auth';
 import { get } from 'svelte/store';
-import { deepMerge } from '$lib/util/deepMerge';
 import { throttleDebounce } from '$lib/util/throttleDebounce';
 import { getUserData, setUserData, userDataDefaults, type UserData } from '$lib/util/userData';
 
@@ -23,7 +22,7 @@ class GoogleDriveFetcher {
 		this.access_token = access_token;
 	}
 
-	public async upsertFile(name: keyof UserData, file: Record<string, unknown>, merge = false) {
+	public async upsertFile(name: keyof UserData, file: Record<string, unknown>) {
 		const { files } = await this.getFiles();
 		const existingFiles = files.filter((f) => f.name.split('.').slice(0, -1).join('.') === name);
 		const existingFile = existingFiles.length > 0 ? existingFiles[0] : null;
@@ -40,20 +39,11 @@ class GoogleDriveFetcher {
 			}
 		}
 
-		let finalData: Record<string, unknown>;
 		const date = Date.now();
-		if (merge && existingFile) {
-			const existingData = await this.getFileById(existingFile.id);
-			finalData = {
-				...deepMerge(existingData, file),
-				_timestamp: date
-			};
-		} else {
-			finalData = {
-				...file,
-				_timestamp: date
-			};
-		}
+		const finalData: Record<string, unknown> = {
+			...file,
+			_timestamp: date
+		};
 
 		if (existingFile) {
 			return this.updateFile(existingFile.id, finalData);

@@ -2,15 +2,16 @@
 	import { settings } from '$lib/stores/settings';
 	import { user, signInWithGoogle } from '$lib/stores/auth';
 	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
-	import PWAInstallButton from '$lib/components/PWAInstallButton.svelte';
-	import TouchableButton from '$lib/components/TouchableButton.svelte';
-	import { RefreshCw } from 'lucide-svelte';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { logGoogleUserData } from '$lib/util/googleDriveHelpers';
 	import { themes } from '$lib/util/theme';
 	import { autoplayLastContent } from '$lib/stores/player';
+	import { deferredInstallPrompt, isInstalled } from '$lib/stores/pwa';
+	import TouchableButton from '$lib/components/TouchableButton.svelte';
+	import { Check, Download } from 'lucide-svelte';
+	import { isIOS } from '$lib/util/isIOS';
+
 	const themeOptions = themes.map((theme) => ({ value: theme, label: theme }));
 	const skipOptions = [5, 10, 15, 30].map((seconds) => ({
 		value: seconds,
@@ -42,6 +43,22 @@
 			signingInProgress.set(false);
 		}
 	});
+
+	async function installPWA() {
+		if (!$deferredInstallPrompt) return;
+
+		$deferredInstallPrompt.prompt();
+		const { outcome } = await $deferredInstallPrompt.userChoice;
+		deferredInstallPrompt.set(null);
+	}
+
+	function showInstallInstructionsIOS() {
+		// TODO: Show install instructions for iOS
+	}
+
+	function showInstallInstructionsAndroid() {
+		// TODO: Show install instructions for Android
+	}
 </script>
 
 {#if $showSettingsPage}
@@ -49,7 +66,47 @@
 
 	<div class="space-y-4 rounded-lg bg-base-200 p-3 shadow-md sm:space-y-6 sm:p-6">
 		<!-- Install App Button -->
-		<PWAInstallButton />
+		<label class="flex cursor-pointer items-center justify-between">
+			<div>
+				<h3 class="text-lg font-medium">Install App</h3>
+				<p class="text-base-content/70">Install this app on your device for easier access</p>
+			</div>
+
+			<div class="flex-shrink-0">
+				{#if $deferredInstallPrompt}
+					<TouchableButton
+						onClick={installPWA}
+						ariaLabel="Install as app"
+						circle={false}
+						buttonClassName="bg-base-100"
+					>
+						<Download class="mr-2 h-5 w-5" />
+						Install
+					</TouchableButton>
+				{:else if $isInstalled}
+					<TouchableButton
+						buttonClassName="text-success shadow-none"
+						onClick={() => {}}
+						circle={false}
+						ariaLabel="App already installed"
+					>
+						<Check class="mr-2 h-5 w-5" />
+						Installed</TouchableButton
+					>
+				{:else}
+					<TouchableButton
+						buttonClassName="text-info"
+						onClick={() =>
+							isIOS() ? showInstallInstructionsIOS() : showInstallInstructionsAndroid()}
+						circle={false}
+						ariaLabel="Install instructions"
+					>
+						<Download class="mr-2 h-5 w-5" />
+						Install</TouchableButton
+					>
+				{/if}
+			</div>
+		</label>
 
 		<!-- Theme Selector -->
 		<label class="flex cursor-pointer items-center justify-between">
@@ -70,11 +127,12 @@
 				<h3 class="text-lg font-medium">Autoplay</h3>
 				<p class="text-base-content/70">Automatically play next episode</p>
 			</div>
-			<input 
-				type="checkbox" 
+			<input
+				type="checkbox"
 				checked={$settings.autoplay}
-				on:change={(e: Event) => settings.updateSettings({ autoplay: (e.target as HTMLInputElement).checked })}
-				class="toggle toggle-primary" 
+				on:change={(e: Event) =>
+					settings.updateSettings({ autoplay: (e.target as HTMLInputElement).checked })}
+				class="toggle toggle-primary"
 			/>
 		</label>
 
@@ -89,7 +147,10 @@
 			<input
 				type="checkbox"
 				checked={$settings.autoplayLastContent}
-				on:change={(e: Event) => settings.updateSettings({ autoplayLastContent: (e.target as HTMLInputElement).checked })}
+				on:change={(e: Event) =>
+					settings.updateSettings({
+						autoplayLastContent: (e.target as HTMLInputElement).checked
+					})}
 				class="toggle toggle-primary"
 			/>
 		</label>
@@ -100,11 +161,12 @@
 				<h3 class="text-lg font-medium">Auto-close Podcasts</h3>
 				<p class="text-base-content/70">Automatically close other podcasts when expanding one</p>
 			</div>
-			<input 
-				type="checkbox" 
+			<input
+				type="checkbox"
 				checked={$settings.autoCollapse}
-				on:change={(e: Event) => settings.updateSettings({ autoCollapse: (e.target as HTMLInputElement).checked })}
-				class="toggle toggle-primary" 
+				on:change={(e: Event) =>
+					settings.updateSettings({ autoCollapse: (e.target as HTMLInputElement).checked })}
+				class="toggle toggle-primary"
 			/>
 		</label>
 

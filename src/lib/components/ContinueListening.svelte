@@ -3,10 +3,10 @@
 	import { onMount } from 'svelte';
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-svelte';
-	import { radios, type Radio } from '$lib/stores/radios';
-	import { podcasts, type Episode, type Podcast } from '$lib/stores/podcasts';
-	import { podcastProgress } from '$lib/stores/podcastProgress';
-	import { radioProgress } from '$lib/stores/radioProgress';
+	import { type Episode, type Podcast, podcasts } from '$lib/stores/podcast/podcasts';
+	import { type Radio, radios } from '$lib/stores/radio/radios';
+	import { podcastProgress } from '$lib/stores/podcast/podcastProgress';
+	import { radioProgress } from '$lib/stores/radio/radioProgress';
 
 	type ContinueListeningItem =
 		| {

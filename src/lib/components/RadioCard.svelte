@@ -14,11 +14,11 @@
 </script>
 
 <script lang="ts">
-	import { radioFavorites } from '$lib/stores/radioFavorites';
+	import { radioFavorites } from '$lib/stores/radio/radioFavorites';
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
 	import { getIconComponent } from '$lib/util/getIconComponent';
-	import type { Radio } from '$lib/stores/radios';
 	import { playerStore } from '$lib/stores/player';
+	import type { Radio } from '$lib/stores/radio/radios';
 
 	export let radio: Radio;
 

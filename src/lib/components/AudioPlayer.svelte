@@ -9,7 +9,6 @@
 		restartRadio
 	} from '$lib/stores/player';
 	import { settings } from '$lib/stores/settings';
-	import { radios } from '$lib/stores/radios';
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { formatTime } from '$lib/util/time';
 	import {
@@ -27,6 +26,7 @@
 	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
 	import { isIOS } from '$lib/util/isIOS';
 	import { iosRangeTouchEventPolyfill } from '$lib/util/iosRangeTouchEventPolyfill';
+	import { radios } from '$lib/stores/radio/radios';
 
 	const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 	const speedSelectOptions = speedOptions.map((speed) => ({ value: speed, label: `${speed}x` }));

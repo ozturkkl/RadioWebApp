@@ -6,7 +6,7 @@
 	import { config } from '$lib/config/config';
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import { writable } from 'svelte/store';
-	import ExternalLinksModal from '$lib/components/ExternalLinksModal.svelte';
+	import ExternalLinksModal from '$lib/components/modals/ExternalLinksModal.svelte';
 	import { onMount } from 'svelte';
 
 	const showBackButton = writable(false);
