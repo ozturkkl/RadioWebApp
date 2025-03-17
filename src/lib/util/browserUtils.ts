@@ -61,3 +61,19 @@ export function detectBrowser(): BrowserType {
 	// Default for unknown browsers
 	return 'Unknown';
 }
+
+/**
+ * Detects if the current device is a touch device
+ * @returns boolean indicating if the device supports touch input
+ */
+export function isTouchDevice(): boolean {
+	// Only run this check in the browser
+	if (typeof window === 'undefined') return false;
+
+	// Multiple checks for touch device detection
+	return (
+		'ontouchstart' in window ||
+		navigator.maxTouchPoints > 0 ||
+		window.matchMedia('(hover: none) and (pointer: coarse)').matches
+	);
+}

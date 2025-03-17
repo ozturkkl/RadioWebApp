@@ -8,6 +8,7 @@
 	import { podcastProgress } from '$lib/stores/podcast/podcastProgress';
 	import { radioProgress } from '$lib/stores/radio/radioProgress';
 	import { t } from '$lib/i18n';
+	import { isTouchDevice } from '$lib/util/browserUtils';
 
 	type ContinueListeningItem =
 		| {
@@ -25,7 +26,6 @@
 	let scrollContainer: HTMLElement;
 	let showLeftArrow = false;
 	let showRightArrow = false;
-	let isTouchDevice = false;
 	let scrollTo = 0;
 	let longPressTimeout: NodeJS.Timeout;
 	let isEditMode = false;
@@ -41,7 +41,6 @@
 	}
 
 	onMount(() => {
-		isTouchDevice = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
 		setTimeout(onScroll, 100);
 		window.addEventListener('resize', onScroll);
 		window.addEventListener('pointerdown', handleOutsidePointer);
@@ -62,7 +61,7 @@
 
 	function onScroll(e: Event) {
 		if (!scrollContainer) return;
-		if (isTouchDevice) {
+		if (isTouchDevice()) {
 			showLeftArrow = false;
 			showRightArrow = false;
 			return;
@@ -191,7 +190,10 @@
 		{/if}
 		{#if showRightArrow}
 			<div class="absolute right-[.2rem] top-1/2 z-10 -translate-y-1/2">
-				<TouchableButton onClick={() => scroll('right')} ariaLabel={$t.continueListening.scrollRight}>
+				<TouchableButton
+					onClick={() => scroll('right')}
+					ariaLabel={$t.continueListening.scrollRight}
+				>
 					<ChevronRight class="h-5 w-5" />
 				</TouchableButton>
 			</div>
