@@ -10,7 +10,7 @@
 	import { deferredInstallPrompt, isInstalled } from '$lib/stores/pwa';
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { Check, Download } from 'lucide-svelte';
-	import { isIOS } from '$lib/util/isIOS';
+	import InstallInstructionsModal from '$lib/components/modals/InstallInstructionsModal.svelte';
 
 	const themeOptions = themes.map((theme) => ({ value: theme, label: theme }));
 	const skipOptions = [5, 10, 15, 30].map((seconds) => ({
@@ -19,6 +19,7 @@
 	}));
 	const signingInProgress = writable(true);
 	const showSettingsPage = writable(false);
+	let installInstructionsModal: InstallInstructionsModal;
 
 	onMount(async () => {
 		const params = new URLSearchParams(window.location.search);
@@ -51,15 +52,9 @@
 		const { outcome } = await $deferredInstallPrompt.userChoice;
 		deferredInstallPrompt.set(null);
 	}
-
-	function showInstallInstructionsIOS() {
-		// TODO: Show install instructions for iOS
-	}
-
-	function showInstallInstructionsAndroid() {
-		// TODO: Show install instructions for Android
-	}
 </script>
+
+<InstallInstructionsModal bind:this={installInstructionsModal} />
 
 {#if $showSettingsPage}
 	<h1 class="mb-4 text-2xl font-bold sm:mb-6">Settings</h1>
@@ -96,8 +91,7 @@
 				{:else}
 					<TouchableButton
 						buttonClassName="text-info"
-						onClick={() =>
-							isIOS() ? showInstallInstructionsIOS() : showInstallInstructionsAndroid()}
+						onClick={() => installInstructionsModal.open()}
 						circle={false}
 						ariaLabel="Install instructions"
 					>

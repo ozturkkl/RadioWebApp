@@ -1,4 +1,4 @@
-import { isIOS } from '$lib/util/isIOS';
+import { isIOS } from '$lib/util/browserUtils';
 
 export const iosRangeTouchEventPolyfill = (e: TouchEvent) => {
 	if (!isIOS()) return;

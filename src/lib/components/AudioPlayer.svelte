@@ -24,7 +24,7 @@
 		TriangleAlert
 	} from 'lucide-svelte';
 	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
-	import { isIOS } from '$lib/util/isIOS';
+	import { isIOS } from '$lib/util/browserUtils';
 	import { iosRangeTouchEventPolyfill } from '$lib/util/iosRangeTouchEventPolyfill';
 	import { radios } from '$lib/stores/radio/radios';
 
