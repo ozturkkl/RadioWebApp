@@ -20,7 +20,7 @@
 	}));
 	const skipOptions = [5, 10, 15, 30].map((seconds) => ({
 		value: seconds,
-		label: `${seconds} seconds`
+		label: `${seconds} ${$t.settings.seconds}`
 	}));
 	const signingInProgress = writable(true);
 	const showSettingsPage = writable(false);
@@ -76,7 +76,7 @@
 				{#if $deferredInstallPrompt}
 					<TouchableButton
 						onClick={installPWA}
-						ariaLabel="Install as app"
+						ariaLabel={$t.settings.installApp}
 						circle={false}
 						buttonClassName="bg-base-100"
 					>
@@ -88,7 +88,7 @@
 						buttonClassName="text-success shadow-none"
 						onClick={() => {}}
 						circle={false}
-						ariaLabel="App already installed"
+						ariaLabel={$t.settings.alreadyInstalled}
 					>
 						<Check class="mr-2 h-5 w-5" />
 						{$t.settings.alreadyInstalled}</TouchableButton
@@ -98,7 +98,7 @@
 						buttonClassName="text-info"
 						onClick={() => installInstructionsModal.open()}
 						circle={false}
-						ariaLabel="Install instructions"
+						ariaLabel={$t.settings.installApp}
 					>
 						<Download class="mr-2 h-5 w-5" />
 						{$t.settings.installApp}</TouchableButton
@@ -111,7 +111,7 @@
 		<label class="flex cursor-pointer items-center justify-between">
 			<div>
 				<h3 class="text-lg font-medium">{$t.settings.language}</h3>
-				<p class="text-base-content/70">Choose your preferred language</p>
+				<p class="text-base-content/70">{$t.settings.chooseLanguage}</p>
 			</div>
 			<DropdownSelect
 				value={$settings.language}
@@ -124,7 +124,7 @@
 		<label class="flex cursor-pointer items-center justify-between">
 			<div>
 				<h3 class="text-lg font-medium">{$t.settings.theme}</h3>
-				<p class="text-base-content/70">Choose your preferred theme</p>
+				<p class="text-base-content/70">{$t.settings.chooseTheme}</p>
 			</div>
 			<DropdownSelect
 				value={$settings.theme}
@@ -199,7 +199,7 @@
 		<!-- <div class="flex items-center justify-between">
 			<div>
 				<div class="flex items-center gap-2">
-					<h3 class="text-lg font-medium">Google Account</h3>
+					<h3 class="text-lg font-medium">{$t.auth.googleAccount}</h3>
 					{#if $user}
 						<TouchableButton
 							onClick={() => {
@@ -208,7 +208,7 @@
 							circle={false}
 							className="transition-all hover:rotate-180 duration-300 -m-2"
 							buttonClassName="bg-transparent"
-							ariaLabel="Sync data with Google"
+							ariaLabel={$t.auth.syncData}
 						>
 							<RefreshCw class="h-4 w-4 cursor-pointer text-success" />
 						</TouchableButton>
@@ -216,9 +216,9 @@
 				</div>
 				<p class="text-base-content/70">
 					{#if $user}
-						Signed in as {$user.email}
+						{$t.auth.signedInAs} {$user.email}
 					{:else}
-						Sign in to sync your progress across devices
+						{$t.auth.signInToSync}
 					{/if}
 				</p>
 			</div>
@@ -232,17 +232,17 @@
 						circle={false}
 						className="!p-0"
 						buttonClassName="bg-transparent"
-						ariaLabel="Change User"
+						ariaLabel={$t.auth.changeUser}
 					>
-						Change User
+						{$t.auth.changeUser}
 					</TouchableButton>
 					<TouchableButton
 						onClick={user.signOut}
 						circle={false}
 						buttonClassName="bg-base-100"
-						ariaLabel="Sign out"
+						ariaLabel={$t.auth.signOut}
 					>
-						Sign out
+						{$t.auth.signOut}
 					</TouchableButton>
 				</div>
 			{:else}
@@ -254,13 +254,13 @@
 					}}
 					circle={false}
 					buttonClassName="bg-base-100"
-					ariaLabel="Sign in with Google"
+					ariaLabel={$t.auth.signInWithGoogle}
 				>
 					{#if $signingInProgress}
 						<div class="loading loading-spinner loading-md mr-1"></div>
-						Processing...
+						{$t.auth.processing}
 					{:else}
-						Sign in with Google
+						{$t.auth.signInWithGoogle}
 					{/if}
 				</TouchableButton>
 			{/if}

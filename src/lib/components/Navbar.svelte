@@ -8,6 +8,7 @@
 	import { writable } from 'svelte/store';
 	import ExternalLinksModal from '$lib/components/modals/ExternalLinksModal.svelte';
 	import { onMount } from 'svelte';
+	import { t } from '$lib/i18n';
 
 	const showBackButton = writable(false);
 	let externalLinksModal: ExternalLinksModal;
@@ -25,7 +26,7 @@
 	<div class="flex items-center">
 		<TouchableButton
 			onClick={() => ($showBackButton ? window.history.back() : goto('/'))}
-			ariaLabel="Go back"
+			ariaLabel={$t.navbar.goBack}
 			circle={false}
 			buttonClassName="shadow-none px-1"
 			small
@@ -58,7 +59,7 @@
 		<TouchableButton
 			onClick={() => externalLinksModal.open()}
 			buttonClassName="shadow-none"
-			ariaLabel="Other Links"
+			ariaLabel={$t.navbar.otherLinks}
 			circle={false}
 			small
 		>
@@ -67,7 +68,7 @@
 
 		<TouchableButton
 			onClick={() => goto('/settings')}
-			ariaLabel="Settings"
+			ariaLabel={$t.settings.title}
 			buttonClassName="shadow-none"
 			circle={false}
 			small

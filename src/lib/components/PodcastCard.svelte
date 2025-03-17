@@ -9,6 +9,7 @@
 	import { fade } from 'svelte/transition';
 	import PodcastInfoModal from '$lib/components/modals/PodcastInfoModal.svelte';
 	import type { Episode, Podcast } from '$lib/stores/podcast/podcasts';
+	import { t } from '$lib/i18n';
 
 	export let podcast: Podcast;
 	export let expanded = false;
@@ -133,7 +134,7 @@
 				<TouchableButton
 					onClick={() => infoModal.open()}
 					circle={false}
-					ariaLabel="Show more information"
+					ariaLabel={$t.podcast.showMoreInfo}
 					small={true}
 				>
 					<Info class="h-5 w-5" />
@@ -141,7 +142,7 @@
 				<TouchableButton
 					onClick={reverseEpisodes}
 					circle={false}
-					ariaLabel={isReversed ? 'Show oldest first' : 'Show newest first'}
+					ariaLabel={isReversed ? $t.podcast.showOldestFirst : $t.podcast.showNewestFirst}
 					small={true}
 				>
 					<svelte:component this={isReversed ? ArrowUpWideNarrow : ArrowDownNarrowWide} />
@@ -181,7 +182,7 @@
 					{/each}
 					{#if visibleEpisodes.length < podcast.items.length}
 						<div class="text-base-content-secondary py-2 text-center text-sm">
-							Scroll for more episodes
+							{$t.home.scrollForMoreEpisodes}
 						</div>
 					{/if}
 				</div>

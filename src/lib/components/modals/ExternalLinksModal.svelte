@@ -3,6 +3,7 @@
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import { config } from '$lib/config';
+	import { t } from '$lib/i18n';
 
 	const modalId = 'external_links_modal';
 	let modalComponent: Modal;
@@ -20,7 +21,7 @@
 	}
 </script>
 
-<Modal id={modalId} title="Other Resources" bind:this={modalComponent}>
+<Modal id={modalId} title={$t.modals.externalLinks} bind:this={modalComponent}>
 	<div class="grid flex-1 grid-cols-1 overflow-x-hidden p-4 md:grid-cols-2">
 		{#each config.website.externalLinks as link}
 			<TouchableButton

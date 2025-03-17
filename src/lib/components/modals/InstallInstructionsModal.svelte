@@ -12,6 +12,7 @@
 	} from 'lucide-svelte';
 	import { onMount } from 'svelte';
 	import type { Icon } from 'lucide-svelte';
+	import { t } from '$lib/i18n';
 
 	const modalId = 'install_instructions_modal';
 	let modalComponent: Modal;
@@ -85,7 +86,7 @@
 
 <Modal
 	id={modalId}
-	title={isIOS() ? 'Install on iOS' : 'Install on Android'}
+	title={isIOS() ? $t.installModal.installOnIOS : $t.installModal.installOnAndroid}
 	bind:this={modalComponent}
 >
 	<div class="overflow-y-auto p-5 pt-1">
@@ -96,10 +97,10 @@
 						<svelte:component this={getMenuIcon()} class="h-5 w-5" />
 					</div>
 					<div>
-						<p class="font-medium">Step 1</p>
+						<p class="font-medium">{$t.installModal.step1}</p>
 						<p>
-							Tap the Share button in Safari or Chrome <span class="text-xs"
-								>(square with arrow pointing up)</span
+							{$t.installModal.tapShareButton} <span class="text-xs"
+								>{$t.installModal.squareWithArrow}</span
 							>
 						</p>
 					</div>
@@ -110,8 +111,8 @@
 						<PlusCircle class="h-5 w-5" />
 					</div>
 					<div>
-						<p class="font-medium">Step 2</p>
-						<p>Scroll down in the share menu and tap "Add to Home Screen"</p>
+						<p class="font-medium">{$t.installModal.step2}</p>
+						<p>{$t.installModal.addToHomeScreen}</p>
 					</div>
 				</div>
 
@@ -120,19 +121,17 @@
 						<Download class="h-5 w-5" />
 					</div>
 					<div>
-						<p class="font-medium">Step 3</p>
-						<p>You can edit the name if you want, then tap "Add" in the top right corner</p>
+						<p class="font-medium">{$t.installModal.step3}</p>
+						<p>{$t.installModal.editNameAndAdd}</p>
 					</div>
 				</div>
 
 				<div class="mt-4 rounded-lg bg-base-200 p-3">
 					<p class="text-sm text-base-content/70">
-						Note: This app will now appear on your home screen and will run in full-screen mode
-						without the browser interface.
+						{$t.installModal.appOnHomeScreen}
 					</p>
 					<p class="mt-2 text-sm text-base-content/70">
-						<strong>Important:</strong> This feature only works in Safari and Chrome. If you're using a different
-						browser on iOS, please open this site in Safari or Chrome first.
+						<strong>Important:</strong> {$t.installModal.worksSafariChrome}
 					</p>
 				</div>
 			</div>
@@ -143,26 +142,25 @@
 						<AlertCircle class="h-5 w-5 text-warning-content" />
 					</div>
 					<div>
-						<p class="font-medium">Firefox Limitation</p>
+						<p class="font-medium">{$t.installModal.firefoxLimitation}</p>
 						<p>
-							Unfortunately, Firefox does not support installing websites as Progressive Web Apps
-							(PWAs).
+							{$t.installModal.firefoxNoSupport}
 						</p>
 					</div>
 				</div>
 
 				<div class="mt-4 rounded-lg bg-base-200 p-3">
 					<p class="text-sm text-base-content/70">
-						To install this app on your device, please use one of these browsers instead:
+						{$t.installModal.useOtherBrowser}
 					</p>
 					<ul class="mt-2 list-disc pl-5 text-sm text-base-content/70">
-						<li>Chrome (recommended for Android)</li>
-						<li>Edge</li>
-						<li>Safari (iOS only)</li>
-						<li>Samsung Internet</li>
+						<li>{$t.installModal.chromeRecommended}</li>
+						<li>{$t.installModal.edge}</li>
+						<li>{$t.installModal.safariIOS}</li>
+						<li>{$t.installModal.samsungInternet}</li>
 					</ul>
 					<p class="mt-2 text-sm text-base-content/70">
-						<strong>Tip:</strong> Most modern browsers except Firefox support installing PWAs.
+						<strong>Tip:</strong> {$t.installModal.modernBrowsers}
 					</p>
 				</div>
 			</div>
@@ -173,8 +171,8 @@
 						<svelte:component this={getMenuIcon()} class="h-5 w-5" />
 					</div>
 					<div>
-						<p class="font-medium">Step 1</p>
-						<p>Tap the menu button in {browserType === 'Unknown' ? 'your browser' : browserType}</p>
+						<p class="font-medium">{$t.installModal.step1}</p>
+						<p>{$t.installModal.tapMenuButton} {browserType === 'Unknown' ? 'your browser' : browserType}</p>
 						<p class="text-xs text-base-content/70">
 							({getMenuPosition()})
 						</p>
@@ -186,7 +184,7 @@
 						<Download class="h-5 w-5" />
 					</div>
 					<div>
-						<p class="font-medium">Step 2</p>
+						<p class="font-medium">{$t.installModal.step2}</p>
 						<p>
 							{getInstallInstructions()}
 						</p>
@@ -198,19 +196,18 @@
 						<PlusCircle class="h-5 w-5" />
 					</div>
 					<div>
-						<p class="font-medium">Step 3</p>
-						<p>Tap "Install" or "Add" in the prompt that appears</p>
+						<p class="font-medium">{$t.installModal.step3}</p>
+						<p>{$t.installModal.tapInstall}</p>
 					</div>
 				</div>
 
 				<div class="mt-4 rounded-lg bg-base-200 p-3">
 					<p class="text-sm text-base-content/70">
-						Note: This app will now appear on your home screen and will run in full-screen mode
-						without the browser interface.
+						{$t.installModal.appOnHomeScreen}
 					</p>
 					{#if browserType !== 'Chrome'}
 						<p class="mt-2 text-sm text-base-content/70">
-							<strong>Tip:</strong> If you don't see the install option, try using Chrome.
+							<strong>Tip:</strong> {$t.installModal.tipUseChrome}
 						</p>
 					{/if}
 				</div>

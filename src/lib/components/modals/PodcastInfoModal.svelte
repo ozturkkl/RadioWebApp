@@ -2,6 +2,7 @@
 	import Modal from '$lib/components/modals/Modal.svelte';
 	import { podcastProgress } from '$lib/stores/podcast/podcastProgress';
 	import type { Podcast } from '$lib/stores/podcast/podcasts';
+	import { t } from '$lib/i18n';
 
 	export let podcast: Podcast;
 	let modalComponent: Modal;
@@ -26,9 +27,13 @@
 		const diffHours = Math.floor(diff / (1000 * 60 * 60));
 		const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
 		if (diffDays === 0 && diffHours === 0 && diffMinutes < 2) {
-			return 'just now';
+			return $t.podcast.justNow;
 		}
-		return diffDays > 0 ? `${diffDays}d` : diffHours > 0 ? `${diffHours}h` : `${diffMinutes}m ago`;
+		return diffDays > 0 
+			? `${diffDays}${$t.podcast.timeUnits.days}` 
+			: diffHours > 0 
+				? `${diffHours}${$t.podcast.timeUnits.hours}` 
+				: `${diffMinutes}${$t.podcast.timeUnits.minutes} ${$t.podcast.timeAgo}`;
 	}
 
 	$: progress = $podcastProgress[podcast.id];
@@ -66,15 +71,15 @@
 			<h3 class="mt-[-4px] pr-8 text-2xl font-bold">{podcast.title}</h3>
 			<div class="mt-3 flex flex-row flex-wrap gap-3 text-sm">
 				<div class="flex items-center gap-1">
-					<span class="text-base-content/70">Episodes:</span>
+					<span class="text-base-content/70">{$t.podcast.episodes}:</span>
 					<span class="font-medium">{episodeCount}</span>
 				</div>
 				<div class="flex items-center gap-1">
-					<span class="text-base-content/70">Refreshed:</span>
+					<span class="text-base-content/70">{$t.podcast.refreshed}:</span>
 					<span class="font-medium">{refreshed}</span>
 				</div>
 				<div class="flex items-center gap-1">
-					<span class="text-base-content/70">Overall Progress:</span>
+					<span class="text-base-content/70">{$t.podcast.overallProgress}:</span>
 					<span class="font-medium">{completionPercentage}%</span>
 				</div>
 			</div>
@@ -86,7 +91,7 @@
 				<div class="divider my-2"></div>
 				<div class="text-sm">
 					<span class="text-base-content/70"
-						>Current Episode ({currentEpisodeIndex + 1}/{episodeCount}):</span
+						>{$t.podcast.currentEpisode} ({currentEpisodeIndex + 1}/{episodeCount}):</span
 					>
 					<div class="group mt-2 overflow-hidden rounded bg-base-200 hover:bg-base-200/80">
 						<div class="relative">

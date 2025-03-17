@@ -27,6 +27,7 @@
 	import { isIOS } from '$lib/util/browserUtils';
 	import { iosRangeTouchEventPolyfill } from '$lib/util/iosRangeTouchEventPolyfill';
 	import { radios } from '$lib/stores/radio/radios';
+	import { t } from '$lib/i18n';
 
 	const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 	const speedSelectOptions = speedOptions.map((speed) => ({ value: speed, label: `${speed}x` }));
@@ -74,7 +75,7 @@
 		<!-- Playlist Button -->
 		<TouchableButton
 			onClick={togglePlaylist}
-			ariaLabel={$playerStore.type === 'radio' ? 'Go to radio' : 'Go to podcast'}
+			ariaLabel={$playerStore.type === 'radio' ? $t.player.goToRadio : $t.player.goToPodcast}
 		>
 			<List class="h-6 w-6" />
 		</TouchableButton>
@@ -115,7 +116,7 @@
 						matchOptionWidth={false}
 					>
 						<TouchableButton
-							ariaLabel="Playback speed"
+							ariaLabel={$t.player.playbackSpeed}
 							small
 							className="pl-3 h-full w-full"
 							slot="trigger"
@@ -128,7 +129,7 @@
 						</TouchableButton>
 					</DropdownSelect>
 				{:else if $playerStore.type === 'radio'}
-					<TouchableButton onClick={restartRadio} ariaLabel="Refresh radio stream" small>
+					<TouchableButton onClick={restartRadio} ariaLabel={$t.player.refreshRadio} small>
 						<RotateCcw class="h-6 w-6" />
 					</TouchableButton>
 				{/if}
@@ -144,7 +145,7 @@
 								$playerStore.playlist.findIndex(
 									(ep) => ep.id === $playerStore.currentEpisode?.id
 								) === 0}
-							ariaLabel="Previous track"
+							ariaLabel={$t.player.previousTrack}
 							small
 						>
 							<SkipBack class="h-6 w-6" />
@@ -154,7 +155,7 @@
 					<TouchableButton
 						onClick={skipBackward}
 						disabled={$playerStore.currentTime === 0 && $playerStore.duration !== 0}
-						ariaLabel="Skip backward {$settings.skipSeconds} seconds"
+						ariaLabel={`${$t.player.skipBackward} ${$settings.skipSeconds} ${$t.settings.seconds}`}
 						small
 					>
 						<ChevronsLeft class="h-6 w-6" />
@@ -162,7 +163,7 @@
 
 					<TouchableButton
 						onClick={togglePlayPause}
-						ariaLabel={$playerStore.isPlaying ? 'Pause' : 'Play'}
+						ariaLabel={$playerStore.isPlaying ? $t.player.pause : $t.player.play}
 					>
 						{#if $playerStore.isBuffering}
 							<span class="loading loading-spinner loading-lg h-8 w-8"></span>
@@ -179,7 +180,7 @@
 						onClick={skipForward}
 						disabled={$playerStore.duration === $playerStore.currentTime &&
 							$playerStore.duration !== 0}
-						ariaLabel="Skip forward {$settings.skipSeconds} seconds"
+						ariaLabel={`${$t.player.skipForward} ${$settings.skipSeconds} ${$t.settings.seconds}`}
 						small
 					>
 						<ChevronsLeft class="h-6 w-6" style="transform: scaleX(-1)" />
@@ -193,7 +194,7 @@
 									(ep) => ep.id === $playerStore.currentEpisode?.id
 								) ===
 									$playerStore.playlist.length - 1}
-							ariaLabel="Next track"
+							ariaLabel={$t.player.nextTrack}
 							small
 						>
 							<SkipForward class="h-6 w-6" />
@@ -207,7 +208,7 @@
 				<!-- Volume Control -->
 				{#if isIOS()}
 					<TouchableButton
-						ariaLabel="Volume control"
+						ariaLabel={$t.player.volumeControl}
 						small
 						className="h-full pr-3"
 						onClick={() => playerStore.toggleMuted()}
@@ -221,7 +222,7 @@
 				{:else}
 					<div class="dropdown dropdown-top" on:click|stopPropagation role="presentation">
 						<TouchableButton
-							ariaLabel="Volume control"
+							ariaLabel={$t.player.volumeControl}
 							small
 							className="h-full pr-3"
 							onClick={() => {

@@ -7,6 +7,7 @@
 	import { type Radio, radios } from '$lib/stores/radio/radios';
 	import { podcastProgress } from '$lib/stores/podcast/podcastProgress';
 	import { radioProgress } from '$lib/stores/radio/radioProgress';
+	import { t } from '$lib/i18n';
 
 	type ContinueListeningItem =
 		| {
@@ -183,14 +184,14 @@
 	>
 		{#if showLeftArrow}
 			<div class="absolute left-[.2rem] top-1/2 z-10 -translate-y-1/2">
-				<TouchableButton onClick={() => scroll('left')} ariaLabel="Scroll left">
+				<TouchableButton onClick={() => scroll('left')} ariaLabel={$t.continueListening.scrollLeft}>
 					<ChevronLeft class="h-5 w-5" />
 				</TouchableButton>
 			</div>
 		{/if}
 		{#if showRightArrow}
 			<div class="absolute right-[.2rem] top-1/2 z-10 -translate-y-1/2">
-				<TouchableButton onClick={() => scroll('right')} ariaLabel="Scroll right">
+				<TouchableButton onClick={() => scroll('right')} ariaLabel={$t.continueListening.scrollRight}>
 					<ChevronRight class="h-5 w-5" />
 				</TouchableButton>
 			</div>

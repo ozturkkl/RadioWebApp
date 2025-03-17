@@ -9,6 +9,7 @@
 	export let limitHeight = true;
 	export let matchOptionWidth = true;
 	export let width = 'w-36 sm:w-40';
+	export let specialFirstOption = false;
 	export let onChange: (value: string) => void | unknown;
 
 	let dropdownRef: HTMLElement | null = null;
@@ -120,7 +121,7 @@
 			? `min-width: ${dropdownRef?.clientWidth}px; max-width: ${dropdownRef?.clientWidth}px`
 			: ''} {dropdownRef?.clientWidth}px"
 	>
-		{#each options as option}
+		{#each options as option, index}
 			<div
 				class="p-3 {option.value === value ? 'bg-primary/25' : 'hover:bg-base-300/50'}"
 				style="border-radius: var(--rounded-btn, 0.5rem);"
@@ -133,6 +134,9 @@
 			>
 				{option.label}
 			</div>
+			{#if specialFirstOption && index === 0 && options.length > 1}
+				<div class="divider m-1 bg-primary/10"></div>
+			{/if}
 		{/each}
 	</div>
 </div>
