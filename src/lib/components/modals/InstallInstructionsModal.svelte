@@ -128,11 +128,11 @@
 				<div class="mt-4 rounded-lg bg-base-200 p-3">
 					<p class="text-sm text-base-content/70">
 						Note: This app will now appear on your home screen and will run in full-screen mode
-						without the Safari interface.
+						without the browser interface.
 					</p>
 					<p class="mt-2 text-sm text-base-content/70">
-						<strong>Important:</strong> This feature only works in Safari. If you're using a different
-						browser on iOS (like Chrome), please open this site in Safari first.
+						<strong>Important:</strong> This feature only works in Safari and Chrome. If you're using a different
+						browser on iOS, please open this site in Safari or Chrome first.
 					</p>
 				</div>
 			</div>
