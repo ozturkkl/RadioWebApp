@@ -43,7 +43,17 @@ export function getUserData<K extends keyof UserData>(key: K): UserData[K] {
 	console.log(`Getting user data - ${key}`);
 	try {
 		const data = localStorage.getItem(key);
-		return data ? JSON.parse(data) : userDataDefaults[key];
+		if (!data) return userDataDefaults[key];
+		
+		const parsedData = JSON.parse(data);
+		
+		// For objects, merge defaults with stored data to ensure new properties are included
+		// while preserving user's existing settings
+		if (typeof userDataDefaults[key] === 'object' && !Array.isArray(userDataDefaults[key])) {
+			return { ...userDataDefaults[key], ...parsedData };
+		}
+		
+		return parsedData;
 	} catch (error) {
 		console.error(`Error parsing user data for key ${key}:`, error);
 		return userDataDefaults[key];
