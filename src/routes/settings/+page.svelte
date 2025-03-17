@@ -73,17 +73,7 @@
 			</div>
 
 			<div class="flex-shrink-0">
-				{#if $deferredInstallPrompt}
-					<TouchableButton
-						onClick={installPWA}
-						ariaLabel={$t.settings.install}
-						circle={false}
-						buttonClassName="bg-base-100"
-					>
-						<Download class="mr-2 h-5 w-5" />
-						{$t.settings.install}
-					</TouchableButton>
-				{:else if $isInstalled}
+				{#if $isInstalled}
 					<TouchableButton
 						buttonClassName="text-success shadow-none"
 						onClick={() => {}}
@@ -95,8 +85,9 @@
 					>
 				{:else}
 					<TouchableButton
-						buttonClassName="text-info"
-						onClick={() => installInstructionsModal.open()}
+						buttonClassName="text-info bg-base-100"
+						onClick={() =>
+							$deferredInstallPrompt ? installPWA() : installInstructionsModal.open()}
 						circle={false}
 						ariaLabel={$t.settings.install}
 					>
