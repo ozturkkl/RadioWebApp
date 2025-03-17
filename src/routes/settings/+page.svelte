@@ -11,8 +11,13 @@
 	import TouchableButton from '$lib/components/TouchableButton.svelte';
 	import { Check, Download } from 'lucide-svelte';
 	import InstallInstructionsModal from '$lib/components/modals/InstallInstructionsModal.svelte';
+	import { languages, t } from '$lib/i18n';
 
 	const themeOptions = themes.map((theme) => ({ value: theme, label: theme }));
+	const languageOptions = Object.entries(languages).map(([code, name]) => ({
+		value: code,
+		label: name
+	}));
 	const skipOptions = [5, 10, 15, 30].map((seconds) => ({
 		value: seconds,
 		label: `${seconds} seconds`
@@ -57,14 +62,14 @@
 <InstallInstructionsModal bind:this={installInstructionsModal} />
 
 {#if $showSettingsPage}
-	<h1 class="mb-4 text-2xl font-bold sm:mb-6">Settings</h1>
+	<h1 class="mb-4 text-2xl font-bold sm:mb-6">{$t.settings.title}</h1>
 
 	<div class="space-y-4 rounded-lg bg-base-200 p-3 shadow-md sm:space-y-6 sm:p-6">
 		<!-- Install App Button -->
 		<label class="flex cursor-pointer items-center justify-between">
 			<div>
-				<h3 class="text-lg font-medium">Install App</h3>
-				<p class="text-base-content/70">Install this app on your device for easier access</p>
+				<h3 class="text-lg font-medium">{$t.settings.installApp}</h3>
+				<p class="text-base-content/70">{$t.settings.installAppDescription}</p>
 			</div>
 
 			<div class="flex-shrink-0">
@@ -76,7 +81,7 @@
 						buttonClassName="bg-base-100"
 					>
 						<Download class="mr-2 h-5 w-5" />
-						Install
+						{$t.settings.installApp}
 					</TouchableButton>
 				{:else if $isInstalled}
 					<TouchableButton
@@ -86,7 +91,7 @@
 						ariaLabel="App already installed"
 					>
 						<Check class="mr-2 h-5 w-5" />
-						Installed</TouchableButton
+						{$t.settings.alreadyInstalled}</TouchableButton
 					>
 				{:else}
 					<TouchableButton
@@ -96,16 +101,29 @@
 						ariaLabel="Install instructions"
 					>
 						<Download class="mr-2 h-5 w-5" />
-						Install</TouchableButton
+						{$t.settings.installApp}</TouchableButton
 					>
 				{/if}
 			</div>
 		</label>
 
+		<!-- Language Selector -->
+		<label class="flex cursor-pointer items-center justify-between">
+			<div>
+				<h3 class="text-lg font-medium">{$t.settings.language}</h3>
+				<p class="text-base-content/70">Choose your preferred language</p>
+			</div>
+			<DropdownSelect
+				value={$settings.language}
+				onChange={(value) => settings.updateSettings({ language: value as keyof typeof languages })}
+				options={languageOptions}
+			/>
+		</label>
+
 		<!-- Theme Selector -->
 		<label class="flex cursor-pointer items-center justify-between">
 			<div>
-				<h3 class="text-lg font-medium">Theme</h3>
+				<h3 class="text-lg font-medium">{$t.settings.theme}</h3>
 				<p class="text-base-content/70">Choose your preferred theme</p>
 			</div>
 			<DropdownSelect
@@ -118,8 +136,8 @@
 		<!-- Autoplay -->
 		<label class="flex cursor-pointer items-center justify-between">
 			<div>
-				<h3 class="text-lg font-medium">Autoplay</h3>
-				<p class="text-base-content/70">Automatically play next episode</p>
+				<h3 class="text-lg font-medium">{$t.settings.autoplay}</h3>
+				<p class="text-base-content/70">{$t.settings.autoplayDescription}</p>
 			</div>
 			<input
 				type="checkbox"
@@ -133,9 +151,9 @@
 		<!-- Autoplay Last Content -->
 		<label class="flex cursor-pointer items-center justify-between">
 			<div>
-				<h3 class="text-lg font-medium">Resume Last Content</h3>
+				<h3 class="text-lg font-medium">{$t.settings.resumeLastContent}</h3>
 				<p class="text-base-content/70">
-					Automatically play your last played radio or podcast when opening the app
+					{$t.settings.resumeLastContentDescription}
 				</p>
 			</div>
 			<input
@@ -152,8 +170,8 @@
 		<!-- Auto-close Collapse -->
 		<label class="flex cursor-pointer items-center justify-between">
 			<div>
-				<h3 class="text-lg font-medium">Auto-close Podcasts</h3>
-				<p class="text-base-content/70">Automatically close other podcasts when expanding one</p>
+				<h3 class="text-lg font-medium">{$t.settings.autoClosePodcasts}</h3>
+				<p class="text-base-content/70">{$t.settings.autoClosePodcastsDescription}</p>
 			</div>
 			<input
 				type="checkbox"
@@ -167,8 +185,8 @@
 		<!-- Skip Seconds -->
 		<label class="flex cursor-pointer items-center justify-between">
 			<div>
-				<h3 class="text-lg font-medium">Skip Duration</h3>
-				<p class="text-base-content/70">Amount of seconds to skip when using the skip buttons</p>
+				<h3 class="text-lg font-medium">{$t.settings.skipDuration}</h3>
+				<p class="text-base-content/70">{$t.settings.skipDurationDescription}</p>
 			</div>
 			<DropdownSelect
 				value={$settings.skipSeconds}

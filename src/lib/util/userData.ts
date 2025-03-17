@@ -24,6 +24,7 @@ export const userDataDefaults: UserData = {
 	'cached-radios': [],
 	'app-settings': {
 		theme: 'system',
+		language: 'tr',
 		autoplay: true,
 		autoCollapse: true,
 		skipSeconds: 5,

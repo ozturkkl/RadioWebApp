@@ -3,9 +3,11 @@ import { getUserData, setUserData } from '$lib/util/userData';
 import { refreshPWAThemeColor } from '$lib/stores/pwa';
 import { type Theme } from '$lib/util/theme';
 import { refreshStoreAfterGoogleFetch } from '$lib/util/googleDriveHelpers';
+import type { languages } from '$lib/i18n';
 
 export type Settings = {
 	theme: Theme;
+	language: keyof typeof languages;
 	autoplay: boolean;
 	autoCollapse: boolean;
 	skipSeconds: number;
