@@ -5,6 +5,17 @@ export const exampleConfig: Config = {
 		title: 'My Podcast & Radio Website',
 		description: 'My Podcast & Radio Website',
 		url: 'https://mywebsite.com',
+		keywords: [
+			'podcast',
+			'radio',
+			'streaming',
+			'music',
+			'audio',
+			'online radio',
+			'web radio',
+			'internet radio',
+			'podcast player'
+		],
 		links: [
 			{
 				iconLabel: 'Github',

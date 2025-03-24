@@ -7,7 +7,7 @@
 		"setup": "tsx scripts/setup.ts",
 		"deploy": "npm run build && tsx scripts/deploy.ts",
 		"dev": "vite dev",
-		"build": "vite build",
+		"build": "tsx scripts/generate-og-image.ts && tsx scripts/generate-sitemap.ts && vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

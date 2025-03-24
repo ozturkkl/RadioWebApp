@@ -4,6 +4,7 @@ export interface WebsiteConfig {
 	title: string;
 	description: string;
 	url: string;
+	keywords?: string[];
 	links: {
 		iconLabel: keyof typeof Icons;
 		url: string;

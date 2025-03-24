@@ -19,3 +19,7 @@ src/lib/config/config.ts
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Sitemap and OG Image
+static/sitemap.xml
+static/og-image.png
