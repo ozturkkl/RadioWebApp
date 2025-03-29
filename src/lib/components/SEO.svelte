@@ -39,6 +39,10 @@
 	<meta name="description" content={description} />
 	<meta name="keywords" content={keywords} />
 	<meta name="author" content={config.website.title} />
+	
+	<!-- Language Meta Tags -->
+	<meta name="content-language" content="tr, en" />
+	<meta name="language" content="Turkish, English" />
 
 	<!-- Open Graph / Facebook -->
 	<meta property="og:type" content="website" />
@@ -47,6 +51,8 @@
 	<meta property="og:description" content={description} />
 	<meta property="og:image" content={image} />
 	<meta property="og:site_name" content={config.website.title} />
+	<meta property="og:locale" content="tr_TR" />
+	<meta property="og:locale:alternate" content="en_US" />
 
 	<!-- Twitter -->
 	<meta property="twitter:card" content="summary_large_image" />
