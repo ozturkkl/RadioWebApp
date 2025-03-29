@@ -45,7 +45,7 @@
 		onClick={() => radioFavorites.toggleRadio(radio.title)}
 	/>
 	<div class={cardStyles.content.wrapper}>
-		<img src={radio.image} alt={radio.title} class={cardStyles.content.image} />
+		<img src={radio.image} alt={`${radio.title} radio image`} class={cardStyles.content.image} />
 		<div class={cardStyles.content.textContainer}>
 			<h3 class={cardStyles.content.title}>{radio.title}</h3>
 			{#if trackDescription}

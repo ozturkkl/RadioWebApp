@@ -107,6 +107,7 @@
 	<div class="collapse collapse-arrow rounded-lg">
 		<input
 			type="checkbox"
+			aria-label={`${podcast.title} podcast expand button`}
 			checked={expanded}
 			on:change={(e) => onExpand(podcast.id, e.currentTarget.checked)}
 		/>
@@ -114,7 +115,7 @@
 			<div class={cardStyles.content.wrapper}>
 				<img
 					src={podcast.imageUrl}
-					alt={podcast.title}
+					alt={`${podcast.title} podcast image`}
 					class={cardStyles.content.image}
 					loading="lazy"
 					decoding="async"
