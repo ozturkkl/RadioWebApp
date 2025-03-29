@@ -1,5 +1,0 @@
-User-agent: *
-Allow: /
-
-# Sitemap location
-Sitemap: ${config.website.url}/sitemap.xml 

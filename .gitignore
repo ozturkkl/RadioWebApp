@@ -23,3 +23,7 @@ vite.config.ts.timestamp-*
 # Sitemap and OG Image
 static/sitemap.xml
 static/og-image.png
+static/robots.txt
+
+# Podcast snapshot
+src/lib/stores/podcast/podcast-snapshot.json
