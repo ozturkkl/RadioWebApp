@@ -39,6 +39,7 @@
 	<meta name="description" content={description} />
 	<meta name="keywords" content={keywords} />
 	<meta name="author" content={config.website.title} />
+	<meta charset="utf-8" />
 	
 	<!-- Language Meta Tags -->
 	<meta name="content-language" content="tr, en" />
@@ -108,14 +109,13 @@
 
 <!-- Hidden SEO Content -->
 <div style="display:none;" aria-hidden="true">
-	<h1>Featured Podcasts</h1>
 	{#each podcastSnapshot as podcast}
 		<article>
 			<h2>{podcast.name}</h2>
 			<p>{podcast.description}</p>
 			{#if podcast.categories && podcast.categories.length > 0}
 				<div>
-					<h3>Categories:</h3>
+					<p>Categories:</p>
 					<ul>
 						{#each podcast.categories as category}
 							<li>{category}</li>
@@ -123,7 +123,7 @@
 					</ul>
 				</div>
 			{/if}
-			<h3>Episodes:</h3>
+			<p>Episodes:</p>
 			<ul>
 				{#each podcast.episodes as episode}
 					<li>{episode.name}</li>
@@ -132,7 +132,6 @@
 		</article>
 	{/each}
 	
-	<h1>Radio Stations</h1>
 	{#each config.radios as radio}
 		<article>
 			<h2>{radio.title}</h2>
@@ -141,7 +140,7 @@
 			{/if}
 			{#if radio.links && radio.links.length > 0}
 				<div>
-					<h3>Related Links:</h3>
+					<p>Related Links:</p>
 					<ul>
 						{#each radio.links as link}
 							<li>{link.iconLabel}: {link.url}</li>
