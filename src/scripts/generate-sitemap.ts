@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { config } from '../src/lib/config/config';
+import { config } from '../lib/config/config';
 
 const BASE_URL = config.website.url;
 
@@ -31,4 +31,17 @@ function generateSitemap() {
     console.log('Sitemap generated successfully!');
 }
 
-generateSitemap(); 
+function generateRobotsTxt() {
+    const robotsTxt = `User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: ${BASE_URL}/sitemap.xml
+`;
+
+    fs.writeFileSync(path.join(process.cwd(), 'static', 'robots.txt'), robotsTxt);
+    console.log('robots.txt generated successfully!');
+}
+
+generateSitemap();
+generateRobotsTxt(); 

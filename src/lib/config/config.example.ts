@@ -1,9 +1,11 @@
 import type { Config } from '.';
 
+// ICONS FROM: https://lucide.dev/icons/
+
 export const exampleConfig: Config = {
 	website: {
 		title: 'My Podcast & Radio Website',
-		description: 'My Podcast & Radio Website',
+		description: 'My Podcast & Radio Website - A platform for radio streams and audio archives',
 		url: 'https://mywebsite.com',
 		keywords: [
 			'podcast',
@@ -27,6 +29,16 @@ export const exampleConfig: Config = {
 				label: 'Youtube',
 				iconLabel: 'Youtube',
 				url: 'https://youtube.com/c/example'
+			},
+			{
+				label: 'Website',
+				iconLabel: 'Globe',
+				url: 'https://example.com'
+			},
+			{
+				label: 'Social Media',
+				iconLabel: 'Twitter',
+				url: 'https://x.com/example'
 			}
 		]
 	},
@@ -47,8 +59,12 @@ export const exampleConfig: Config = {
 					url: 'https://example.com/radio1'
 				},
 				{
-					iconLabel: 'Facebook',
-					url: 'https://facebook.com/radio1'
+					iconLabel: 'Youtube',
+					url: 'https://youtube.com/channel/example1'
+				},
+				{
+					iconLabel: 'Mail',
+					url: 'mailto:radio1@example.com'
 				}
 			],
 			trackInfo: 'https://example.com/radio1/track/current'
@@ -57,11 +73,27 @@ export const exampleConfig: Config = {
 			title: 'Radio 2',
 			image: '/radio2.jpg',
 			streamUrl: 'https://example.com/radio2/stream',
+			links: [
+				{
+					iconLabel: 'Globe',
+					url: 'https://example.com/radio2'
+				},
+				{
+					iconLabel: 'Twitter',
+					url: 'https://x.com/radio2'
+				}
+			],
 			trackInfo: {
 				cover: '/radio2.jpg',
 				artist: 'Radio 2',
 				title: 'Static Title'
 			}
+		},
+		{
+			title: 'Music Only',
+			image: '/music_radio.jpg',
+			streamUrl: 'https://example.com/music/stream',
+			trackInfo: 'https://example.com/music/track/current'
 		}
 	]
 };

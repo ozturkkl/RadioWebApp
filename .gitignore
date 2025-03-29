@@ -26,4 +26,4 @@ static/og-image.png
 static/robots.txt
 
 # Podcast snapshot
-src/lib/stores/podcast/podcast-snapshot.json
+src/lib/stores/podcast/podcast-snapshot-seo.json

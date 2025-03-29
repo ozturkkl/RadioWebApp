@@ -26,20 +26,35 @@ export interface Episode {
 	pubDate?: string;
 }
 
-// Cache invalidation time (10 minutes in milliseconds)
-const CACHE_INVALIDATION_TIME = 10 * 60 * 1000;
+export async function getPodcastRssUrls() {
+	const feedsUrl = config.podcast.feedUrlsEndpoint;
+	const res = await withBackoff(
+		async () => {
+			const response = await fetch(feedsUrl);
+			if (!response.ok) {
+				throw new Error(
+					`Failed to fetch podcast RSS URLs: ${response.status} ${response.statusText}`
+				);
+			}
+			return response;
+		},
+		2,
+		1000,
+		7
+	);
+	const text = await res.text();
+	const urls = text.split('\n').map((url) => url.trim());
+	return urls;
+}
 
-function createPodcastsStore() {
-	const { subscribe, set, update } = writable<Podcast[]>([]);
-
-	async function getPodcastRssUrls() {
-		const feedsUrl = config.podcast.feedUrlsEndpoint;
-		const res = await withBackoff(
+export async function fetchPodcast(url: string): Promise<Podcast | null> {
+	try {
+		const response = await withBackoff(
 			async () => {
-				const response = await fetch(feedsUrl);
+				const response = await fetch(url);
 				if (!response.ok) {
 					throw new Error(
-						`Failed to fetch podcast RSS URLs: ${response.status} ${response.statusText}`
+						`Failed to fetch podcast from ${url}: ${response.status} ${response.statusText}`
 					);
 				}
 				return response;
@@ -48,69 +63,56 @@ function createPodcastsStore() {
 			1000,
 			7
 		);
-		const text = await res.text();
-		const urls = text.split('\n').map((url) => url.trim());
-		return urls;
-	}
+		const xmlText = await response.text();
+		const parser = new XMLParser();
+		const parsed = parser.parse(xmlText);
 
-	async function fetchPodcast(url: string): Promise<Podcast | null> {
-		try {
-			const response = await withBackoff(
-				async () => {
-					const response = await fetch(url);
-					if (!response.ok) {
-						throw new Error(
-							`Failed to fetch podcast from ${url}: ${response.status} ${response.statusText}`
-						);
-					}
-					return response;
-				},
-				2,
-				1000,
-				7
-			);
-			const xmlText = await response.text();
-			const parser = new XMLParser();
-			const parsed = parser.parse(xmlText);
-
-			if (!parsed?.rss?.channel) {
-				console.error(`Skipping feed ${url}: Invalid RSS structure`);
-				return null;
-			}
-
-			const channel = parsed.rss.channel;
-			const podcast: Podcast = {
-				title: channel.title,
-				imageUrl: channel['itunes:image']?.href || channel.image?.url,
-				description: channel['itunes:summary'] || channel.description,
-				id: channel['podcast:guid'] || url, // Use URL as fallback ID
-				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				items: channel.item.map((item: any) => {
-					const episode: Episode = {
-						id: item.guid || item.enclosure?.url || item.link,
-						title: item.title,
-						url: item.enclosure?.url || item.link,
-						duration: item['itunes:duration'],
-						image: item['itunes:image']?.href || item.image?.url,
-						description: item.description || item['itunes:summary'],
-						pubDate: item.pubDate
-					};
-					return episode;
-				}),
-				categories: Array.isArray(channel.category)
-					? channel.category
-					: channel.category
-						? [channel.category]
-						: [],
-				rssUrl: url,
-				lastFetched: Date.now()
-			};
-			return podcast;
-		} catch (error) {
-			console.error(`Error processing RSS feed ${url}:`, error);
+		if (!parsed?.rss?.channel) {
+			console.error(`Skipping feed ${url}: Invalid RSS structure`);
 			return null;
 		}
+
+		const channel = parsed.rss.channel;
+		const podcast: Podcast = {
+			title: channel.title,
+			imageUrl: channel['itunes:image']?.href || channel.image?.url,
+			description: channel['itunes:summary'] || channel.description,
+			id: channel['podcast:guid'] || url, // Use URL as fallback ID
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			items: channel.item.map((item: any) => {
+				const episode: Episode = {
+					id: item.guid || item.enclosure?.url || item.link,
+					title: item.title,
+					url: item.enclosure?.url || item.link,
+					duration: item['itunes:duration'],
+					image: item['itunes:image']?.href || item.image?.url,
+					description: item.description || item['itunes:summary'],
+					pubDate: item.pubDate
+				};
+				return episode;
+			}),
+			categories: Array.isArray(channel.category)
+				? channel.category
+				: channel.category
+					? [channel.category]
+					: [],
+			rssUrl: url,
+			lastFetched: Date.now()
+		};
+		return podcast;
+	} catch (error) {
+		console.error(`Error processing RSS feed ${url}:`, error);
+		return null;
 	}
+}
+
+// Cache invalidation time (10 minutes in milliseconds)
+const CACHE_INVALIDATION_TIME = 10 * 60 * 1000;
+
+function createPodcastsStore() {
+	const { subscribe, set, update } = writable<Podcast[]>([]);
+
+
 
 	async function refresh() {
 		// Get cached podcasts

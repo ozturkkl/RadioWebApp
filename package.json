@@ -4,10 +4,11 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"setup": "tsx scripts/setup.ts",
-		"deploy": "npm run build && tsx scripts/deploy.ts",
+		"setup": "vite-node src/scripts/setup.ts",
+		"deploy": "npm run build && vite-node src/scripts/deploy.ts",
 		"dev": "vite dev",
-		"build": "tsx scripts/generate-og-image.ts && tsx scripts/generate-sitemap.ts && vite build",
+		"seo": "vite-node src/scripts/generate-og-image.ts && vite-node src/scripts/generate-sitemap.ts && vite-node src/scripts/generate-podcast-snapshot.ts",
+		"build": "npm run setup && npm run seo && vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
@@ -43,7 +44,8 @@
 		"tsx": "^4.19.2",
 		"typescript": "^5.0.0",
 		"typescript-eslint": "^8.0.0",
-		"vite": "^5.4.11"
+		"vite": "^5.4.11",
+		"vite-node": "^3.0.9"
 	},
 	"dependencies": {
 		"fast-xml-parser": "^4.5.1",
