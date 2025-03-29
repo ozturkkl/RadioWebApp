@@ -39,11 +39,9 @@
 	<meta name="description" content={description} />
 	<meta name="keywords" content={keywords} />
 	<meta name="author" content={config.website.title} />
-	<meta charset="utf-8" />
 	
 	<!-- Language Meta Tags -->
-	<meta name="content-language" content="tr, en" />
-	<meta name="language" content="Turkish, English" />
+	<meta name="language" content="tr, en" />
 
 	<!-- Open Graph / Facebook -->
 	<meta property="og:type" content="website" />
@@ -109,6 +107,7 @@
 
 <!-- Hidden SEO Content -->
 <div style="display:none;" aria-hidden="true">
+	<h1>Featured Podcasts</h1>
 	{#each podcastSnapshot as podcast}
 		<article>
 			<h2>{podcast.name}</h2>
@@ -132,6 +131,7 @@
 		</article>
 	{/each}
 	
+	<h1>Radio Stations</h1>
 	{#each config.radios as radio}
 		<article>
 			<h2>{radio.title}</h2>
