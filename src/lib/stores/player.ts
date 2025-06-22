@@ -172,7 +172,9 @@ function resetAudio() {
 		const currentTime = audio.currentTime;
 		audio.load();
 		setTimeout(() => {
-			audio!.play();
+			if (readyStateIsAbleToPlay(audio?.readyState ?? 0)) {
+				audio!.play();
+			}
 			audio!.currentTime = currentTime;
 		}, 0);
 	}
