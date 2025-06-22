@@ -40,19 +40,19 @@ export function getUserData<K extends keyof UserData>(key: K): UserData[K] {
 	if (typeof window === 'undefined') {
 		return userDataDefaults[key];
 	}
-	console.log(`Getting user data - ${key}`);
+	// console.log(`Getting user data - ${key}`);
 	try {
 		const data = localStorage.getItem(key);
 		if (!data) return userDataDefaults[key];
-		
+
 		const parsedData = JSON.parse(data);
-		
+
 		// For objects, merge defaults with stored data to ensure new properties are included
 		// while preserving user's existing settings
 		if (typeof userDataDefaults[key] === 'object' && !Array.isArray(userDataDefaults[key])) {
 			return { ...userDataDefaults[key], ...parsedData };
 		}
-		
+
 		return parsedData;
 	} catch (error) {
 		console.error(`Error parsing user data for key ${key}:`, error);
@@ -71,7 +71,7 @@ export function setUserData<K extends keyof UserData>(
 	try {
 		const currentData = getUserData(key);
 		if (JSON.stringify(currentData) === JSON.stringify(data)) return;
-		console.log(`Setting user data: ${saveToGoogle} - ${key} - ${JSON.stringify(data, null, 2)}`);
+		// console.log(`Setting user data: ${saveToGoogle} - ${key} - ${JSON.stringify(data, null, 2)}`);
 		localStorage.setItem(key, JSON.stringify(data));
 		if (saveToGoogle) {
 			saveUserDataToGoogle(key, data);

@@ -48,8 +48,18 @@ interface IdlePlayerState extends BasePlayerState {
 
 type PlayerState = RadioPlayerState | PodcastPlayerState | IdlePlayerState;
 
+function readyStateIsAbleToPlay(readyState: number) {
+	return (
+		readyState === HTMLMediaElement.HAVE_CURRENT_DATA ||
+		readyState === HTMLMediaElement.HAVE_FUTURE_DATA ||
+		readyState === HTMLMediaElement.HAVE_ENOUGH_DATA
+	);
+}
+
 // Initialize audio only in browser environment
 let audio: HTMLAudioElement | undefined;
+let resetAudioInterval: NodeJS.Timeout | undefined;
+
 if (typeof window !== 'undefined') {
 	initAudio();
 	if (get(settings).autoplayLastContent) {
@@ -63,6 +73,9 @@ function initAudio() {
 
 	audio.addEventListener('timeupdate', () => {
 		playerStore.updateCurrentTime();
+		if (resetAudioInterval && readyStateIsAbleToPlay(audio?.readyState ?? 0)) {
+			clearInterval(resetAudioInterval);
+		}
 
 		const currentState = get(playerStore);
 		if (currentState.type === 'podcast') {
@@ -99,14 +112,13 @@ function initAudio() {
 	// 	console.log(`suspend`);
 	// });
 
-	let resetAudioTimeout: NodeJS.Timeout | undefined;
 	audio.addEventListener('stalled', () => {
-		if (resetAudioTimeout) {
-			clearTimeout(resetAudioTimeout);
+		if (resetAudioInterval) {
+			clearInterval(resetAudioInterval);
 		}
-		resetAudioTimeout = setTimeout(() => {
+		resetAudioInterval = setInterval(() => {
 			resetAudio();
-		}, 1000);
+		}, 4000);
 	});
 
 	audio.addEventListener('error', () => {
@@ -153,13 +165,14 @@ function toggleAudioWhenReady(value?: boolean, retries: number = 0) {
 }
 function resetAudio() {
 	if (audio) {
+		if (audio.paused && get(playerStore).errored !== true) {
+			return;
+		}
+
 		const currentTime = audio.currentTime;
-		const currentPlaying = !audio.paused;
 		audio.load();
 		setTimeout(() => {
-			if (currentPlaying) {
-				audio!.play();
-			}
+			audio!.play();
 			audio!.currentTime = currentTime;
 		}, 0);
 	}

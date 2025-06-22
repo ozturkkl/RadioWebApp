@@ -165,10 +165,10 @@
 						onClick={togglePlayPause}
 						ariaLabel={$playerStore.isPlaying ? $t.player.pause : $t.player.play}
 					>
-						{#if $playerStore.isBuffering}
-							<span class="loading loading-spinner loading-lg h-8 w-8"></span>
-						{:else if $playerStore.errored}
+						{#if $playerStore.errored}
 							<TriangleAlert class="h-8 w-8 pb-px" />
+						{:else if $playerStore.isBuffering}
+							<span class="loading loading-spinner loading-lg h-8 w-8"></span>
 						{:else if $playerStore.isPlaying}
 							<Pause class="h-8 w-8" />
 						{:else}
