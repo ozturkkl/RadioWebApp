@@ -28,7 +28,7 @@
 	import { iosRangeTouchEventPolyfill } from '$lib/util/iosRangeTouchEventPolyfill';
 	import { radios } from '$lib/stores/radio/radios';
 	import { t } from '$lib/i18n';
-
+	
 	const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 	const speedSelectOptions = speedOptions.map((speed) => ({ value: speed, label: `${speed}x` }));
 
@@ -95,6 +95,7 @@
 					on:input|stopPropagation={(e) => seekTo(parseFloat(e.currentTarget.value))}
 					on:touchstart|stopPropagation={iosRangeTouchEventPolyfill}
 					on:touchmove|stopPropagation={iosRangeTouchEventPolyfill}
+					on:pointermove|stopPropagation
 				/>
 				<span class="w-10">{formatTime($playerStore.duration)}</span>
 			</div>
