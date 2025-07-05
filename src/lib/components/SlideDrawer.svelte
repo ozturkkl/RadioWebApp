@@ -1,9 +1,25 @@
 <script lang="ts">
 	import { spring } from 'svelte/motion';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
 
-	export let collapsedHeight: number = 190;
+	let containerEl: HTMLElement | null = null;
+	let miniEl: HTMLElement | null = null;
+	let resizeObserver: ResizeObserver | undefined;
+	let expandedPercentage = 0;
+
+	$: {
+		expandedPercentage = 100 - Math.min(Math.max($y / maxY, 0), 1) * 100;
+	}
+
+	function getCollapsedHeight() {
+		if (miniEl) {
+			return miniEl.offsetHeight;
+		}
+		return 200; // sensible default
+	}
+
+	let collapsedHeight: number = 0;
 
 	const VELOCITY_THRESHOLD = 0.2; // px/ms – quick flicks
 	const MOVEMENT_WINDOW = 120; // ms
@@ -15,6 +31,8 @@
 
 	function updatePositions() {
 		viewportHeight = window.innerHeight;
+		collapsedHeight = getCollapsedHeight();
+
 		maxY = viewportHeight - collapsedHeight;
 		if (!isExpanded) {
 			y.set(maxY, { hard: true });
@@ -22,9 +40,34 @@
 	}
 
 	onMount(() => {
-		updatePositions();
+		const init = async () => {
+			await tick();
+
+			if (containerEl) {
+				miniEl = containerEl.querySelector('[data-slide-drawer-mini]') as HTMLElement | null;
+				if (!miniEl) {
+					miniEl = containerEl.firstElementChild as HTMLElement | null;
+				}
+
+				if (miniEl) {
+					resizeObserver = new ResizeObserver(() => {
+						updatePositions();
+					});
+					resizeObserver.observe(miniEl);
+				}
+			}
+
+			updatePositions();
+		};
+
+		init();
+
 		window.addEventListener('resize', updatePositions);
-		return () => window.removeEventListener('resize', updatePositions);
+
+		return () => {
+			window.removeEventListener('resize', updatePositions);
+			resizeObserver?.disconnect();
+		};
 	});
 
 	// --- public helpers ---
@@ -113,6 +156,7 @@
 
 <!-- Sliding drawer container -->
 <div
+	bind:this={containerEl}
 	class="pointer-events-auto fixed left-0 right-0 top-0 z-50 flex h-dvh w-screen flex-col"
 	style="transform: translateY({$y}px); touch-action: none;"
 	on:pointerdown={onPointerDown}
@@ -124,5 +168,5 @@
 	on:touchend={onPointerUp}
 	on:touchcancel={onPointerCancel}
 >
-	<slot {isExpanded} {expand} {collapse} />
+	<slot {isExpanded} {expand} {collapse} {expandedPercentage} />
 </div>
