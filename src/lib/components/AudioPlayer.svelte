@@ -28,10 +28,7 @@
 	import { iosRangeTouchEventPolyfill } from '$lib/util/iosRangeTouchEventPolyfill';
 	import { radios } from '$lib/stores/radio/radios';
 	import { t } from '$lib/i18n';
-	import { spring } from 'svelte/motion';
-	import { onMount } from 'svelte';
-	import { get } from 'svelte/store';
-
+	import SlideDrawer from '$lib/components/SlideDrawer.svelte';
 	const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 	const speedSelectOptions = speedOptions.map((speed) => ({ value: speed, label: `${speed}x` }));
 
@@ -41,138 +38,11 @@
 			? $radios.find((r) => r.id === $playerStore.currentRadio.id)
 			: null;
 
-	// --- mini/full-screen drawer support ---
 	const MINI_HEIGHT = 190; // px height of collapsed mini-player
-	const VELOCITY_THRESHOLD = 0.2; // px/ms – quick flicks
-	const MOVEMENT_WINDOW = 120; // ms
-
-	let viewportHeight = 0;
-	let maxY = viewportHeight - MINI_HEIGHT; // distance the player can travel (collapsed position)
-	const y = spring(0, { stiffness: 0.08, damping: 0.3 });
-	let isExpanded = false;
-
-	function updatePositions() {
-		viewportHeight = window.innerHeight;
-		maxY = viewportHeight - MINI_HEIGHT;
-		if (!isExpanded) {
-			y.set(maxY, { hard: true });
-		}
-	}
-
-	onMount(() => {
-		updatePositions();
-		window.addEventListener('resize', updatePositions);
-		return () => window.removeEventListener('resize', updatePositions);
-	});
-
-	function expand() {
-		y.set(0);
-		isExpanded = true;
-	}
-	function collapse() {
-		y.set(maxY);
-		isExpanded = false;
-	}
-
-	let dragElement: HTMLElement | null = null;
-	let activePointerIds: number[] = [];
-
-	let dragStartY = 0;
-	let dragStartValue = 0;
-	// track recent movement to calculate velocity at release
-	let trail: { y: number; time: number }[] = [];
-
-	function onPointerDown(event: PointerEvent | TouchEvent) {
-		console.log('onPointerDown', event);
-		const clientY = 'clientY' in event ? event.clientY : event.changedTouches[0].clientY;
-		const pointerId = 'pointerId' in event ? event.pointerId : event.changedTouches[0].identifier;
-		dragStartY = clientY;
-		dragStartValue = get(y);
-		trail = [];
-		activePointerIds.push(pointerId);
-	}
-	function onPointerMove(event: PointerEvent | TouchEvent) {
-		console.log('onPointerMove', event);
-		const clientY = 'clientY' in event ? event.clientY : event.changedTouches[0].clientY;
-		const pointerId = 'pointerId' in event ? event.pointerId : event.changedTouches[0].identifier;
-		// Ignore moves from pointers we didn't start with
-		if (!activePointerIds.includes(pointerId)) return;
-
-		const deltaTotal = clientY - dragStartY;
-		console.log('deltaTotal', deltaTotal);
-		dragElement = event.currentTarget as HTMLElement;
-		dragElement?.setPointerCapture?.(pointerId);
-
-		let newY = dragStartValue + deltaTotal;
-		newY = Math.min(Math.max(newY, 0), maxY);
-		y.set(newY, { hard: true });
-
-		// record trail sample
-		const now = performance.now();
-		trail.push({ y: clientY, time: now });
-		while (trail.length && now - trail[0].time > MOVEMENT_WINDOW) {
-			trail.shift();
-		}
-	}
-	function endDrag() {
-		activePointerIds.forEach((id) => dragElement?.releasePointerCapture?.(id));
-		activePointerIds = [];
-	}
-
-	function onPointerUp(event: PointerEvent | TouchEvent) {
-		// continue with velocity logic, then call endDrag at bottom
-		console.log('onPointerUp', event);
-		const clientY = 'clientY' in event ? event.clientY : event.changedTouches[0].clientY;
-		const currentTime = performance.now();
-		// ensure current point included
-		trail.push({ y: clientY, time: currentTime });
-		// prune again
-		while (trail.length && currentTime - trail[0].time > MOVEMENT_WINDOW) {
-			trail.shift();
-		}
-		const first = trail[0];
-		const last = trail[trail.length - 1];
-		const delta = last.y - first.y;
-		const duration = Math.max(1, last.time - first.time); // avoid div by zero
-		const velocity = Math.abs(delta) / duration; // px per ms
-
-		// fallback if trail too short
-		const currentY = get(y);
-
-		// If velocity above threshold, use it to decide; delta sign based on recent movement
-
-		if (velocity > VELOCITY_THRESHOLD) {
-			delta < 0 ? expand() : collapse();
-		} else {
-			// Otherwise decide by distance
-			currentY > maxY / 2 ? collapse() : expand();
-		}
-		endDrag();
-	}
-
-	function onPointerCancel(event: PointerEvent | TouchEvent) {
-		const pointerId = 'pointerId' in event ? event.pointerId : event.changedTouches[0].identifier;
-		activePointerIds = activePointerIds.filter((id) => id !== pointerId);
-	}
 </script>
 
 {#if $playerStore.type}
-	<!-- Reserve space so page content isn't hidden behind fixed player -->
-	<div style="height: {MINI_HEIGHT}px;"></div>
-
-	<!-- Sliding drawer container -->
-	<div
-		class="pointer-events-auto fixed left-0 right-0 top-0 z-50 flex h-dvh w-screen flex-col"
-		style="transform: translateY({$y}px); touch-action: none;"
-		on:pointerdown={onPointerDown}
-		on:pointermove={onPointerMove}
-		on:pointerup={onPointerUp}
-		on:pointercancel={onPointerCancel}
-		on:touchstart={onPointerDown}
-		on:touchmove={onPointerMove}
-		on:touchend={onPointerUp}
-		on:touchcancel={onPointerCancel}
-	>
+	<SlideDrawer collapsedHeight={MINI_HEIGHT} let:isExpanded let:expand let:collapse>
 		<div class="flex h-full flex-col overflow-y-auto bg-base-300 shadow-md">
 			<!-- Now Playing / Tap to expand Row -->
 			<div
@@ -405,5 +275,5 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</SlideDrawer>
 {/if}
