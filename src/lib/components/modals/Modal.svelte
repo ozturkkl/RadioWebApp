@@ -1,5 +1,5 @@
 <script lang="ts">
-	import TouchableButton from '$lib/components/TouchableButton.svelte';
+	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { X } from 'lucide-svelte';
 
 	export let id: string;
@@ -60,7 +60,6 @@
 				onClick={() => close()}
 				ariaLabel="Close"
 				circle={false}
-				buttonClassName="bg-transparent border-none"
 				className="absolute right-0 top-0 z-10"
 			>
 				<X />

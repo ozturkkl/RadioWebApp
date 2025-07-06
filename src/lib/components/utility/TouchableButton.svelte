@@ -77,7 +77,7 @@
 		tabindex="-1"
 		class="btn {small ? 'btn-sm' : ''} {circle
 			? 'btn-circle border border-base-content/10 bg-base-100 shadow-md hover:shadow-lg'
-			: ''} pointer-events-none {buttonClassName}"
+			: 'bg-transparent shadow-none border-none'} pointer-events-none {buttonClassName}"
 		aria-hidden="true"
 	>
 		<slot />

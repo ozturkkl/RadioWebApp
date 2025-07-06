@@ -19,6 +19,22 @@
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import { playerStore } from '$lib/stores/player';
 	import type { Radio } from '$lib/stores/radio/radios';
+	import { buildRadioShareUrl, copyTextToClipboard } from '$lib/util/share';
+	import { t } from '$lib/i18n';
+	import { get } from 'svelte/store';
+	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
+	import { Link } from 'lucide-svelte';
+
+	async function shareRadio() {
+		if (typeof window === 'undefined') return;
+		const url = buildRadioShareUrl(window.location.origin, radio.id ?? radio.title);
+		const success = await copyTextToClipboard(url);
+		if (success) {
+			alert(get(t).player.linkCopied);
+		} else {
+			alert(get(t).player.linkCopyFailed);
+		}
+	}
 
 	export let radio: Radio;
 
@@ -55,24 +71,25 @@
 			{/if}
 		</div>
 		<div class="flex items-center">
-			{#if radio.links && radio.links.length > 0}
-				<div class="divider divider-horizontal m-0 w-1 p-0"></div>
+			<div class="divider divider-horizontal m-0 w-1 p-0"></div>
 
-				<div class="my-auto flex flex-col items-center">
+			<div class="my-auto grid grid-flow-col grid-rows-[repeat(2,_auto)] place-items-center">
+				<TouchableButton ariaLabel={$t.player.shareRadio} onClick={shareRadio} circle={false} small={true}>
+					<Link class="h-5 w-5" />
+				</TouchableButton>
+				{#if radio.links && radio.links.length > 0}
 					{#each radio.links as link}
-						<a
-							href={link.url}
-							target="_blank"
-							rel="noopener noreferrer"
-							class="flex items-center px-2 py-1 text-base-content/50 hover:text-base-content"
-							on:click|stopPropagation={() => {}}
-							aria-label="Visit {link.iconLabel.toLowerCase()} link"
+						<TouchableButton
+							onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
+							ariaLabel={link.iconLabel}
+							circle={false}
+							small={true}
 						>
 							<svelte:component this={getIconComponent(link.iconLabel)} class="h-5 w-5" />
-						</a>
+						</TouchableButton>
 					{/each}
-				</div>
-			{/if}
+				{/if}
+			</div>
 		</div>
 	</div>
 </div>

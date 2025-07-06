@@ -40,7 +40,14 @@ export const en = {
 		playbackSpeed: 'Playback speed',
 		volumeControl: 'Volume control',
 		goToPodcast: 'Go to podcast',
-		goToRadio: 'Go to radio'
+		goToRadio: 'Go to radio',
+		share: 'Share',
+		shareRadio: 'Share Radio',
+		sharePodcast: 'Share Podcast',
+		shareFromStart: 'Share from start',
+		shareFromCurrentTime: 'Share from current time',
+		linkCopied: 'Link copied to clipboard',
+		linkCopyFailed: 'Failed to copy link to clipboard'
 	},
 	podcast: {
 		showMoreInfo: 'Show more information',

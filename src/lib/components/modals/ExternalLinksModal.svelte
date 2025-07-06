@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Modal from '$lib/components/modals/Modal.svelte';
-	import TouchableButton from '$lib/components/TouchableButton.svelte';
+	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import { config } from '$lib/config';
 	import { t } from '$lib/i18n';

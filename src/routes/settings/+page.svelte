@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { settings } from '$lib/stores/settings';
 	import { user, signInWithGoogle } from '$lib/stores/auth';
-	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
+	import DropdownSelect from '$lib/components/utility/DropdownSelect.svelte';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { themes } from '$lib/util/theme';
 	import { autoplayLastContent } from '$lib/stores/player';
 	import { deferredInstallPrompt, isInstalled } from '$lib/stores/pwa';
-	import TouchableButton from '$lib/components/TouchableButton.svelte';
+	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { Check, Download } from 'lucide-svelte';
 	import InstallInstructionsModal from '$lib/components/modals/InstallInstructionsModal.svelte';
 	import { languages, t } from '$lib/i18n';
@@ -75,7 +75,7 @@
 			<div class="flex-shrink-0">
 				{#if $isInstalled}
 					<TouchableButton
-						buttonClassName="text-success shadow-none"
+						buttonClassName="text-success"
 						onClick={() => {}}
 						circle={false}
 						ariaLabel={$t.settings.alreadyInstalled}

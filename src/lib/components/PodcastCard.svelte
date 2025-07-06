@@ -4,12 +4,14 @@
 	import { cardStyles } from '$lib/components/RadioCard.svelte';
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
 	import { formatTime, formatDate } from '$lib/util/time';
-	import { ArrowDownNarrowWide, ArrowUpWideNarrow, Info } from 'lucide-svelte';
-	import TouchableButton from '$lib/components/TouchableButton.svelte';
+	import { ArrowDownNarrowWide, ArrowUpWideNarrow, Info, Link } from 'lucide-svelte';
+	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { fade } from 'svelte/transition';
 	import PodcastInfoModal from '$lib/components/modals/PodcastInfoModal.svelte';
 	import type { Episode, Podcast } from '$lib/stores/podcast/podcasts';
 	import { t } from '$lib/i18n';
+	import { buildPodcastShareUrl, copyTextToClipboard } from '$lib/util/share';
+	import { get } from 'svelte/store';
 
 	export let podcast: Podcast;
 	export let expanded = false;
@@ -53,7 +55,9 @@
 			$playerStore.currentPodcast?.id === podcast.id &&
 			$playerStore.currentEpisode
 		) {
-			const episodeIndex = podcast.items.findIndex((e: Episode) => e.id === $playerStore.currentEpisode?.id);
+			const episodeIndex = podcast.items.findIndex(
+				(e: Episode) => e.id === $playerStore.currentEpisode?.id
+			);
 			if (episodeIndex >= 0) {
 				const indexFromEnd = podcast.items.length - 1 - episodeIndex;
 				const batchesNeeded =
@@ -79,6 +83,17 @@
 		visibleEpisodes = episodes;
 		loadUpToCurrentEpisode();
 		togglePlaylist(podcast.id);
+	}
+
+	async function sharePodcast() {
+		if (typeof window === 'undefined') return;
+		const url = buildPodcastShareUrl(window.location.origin, podcast.id, podcast.items[0]?.id, 0);
+		const success = await copyTextToClipboard(url);
+		if (success) {
+			alert(get(t).player.linkCopied);
+		} else {
+			alert(get(t).player.linkCopyFailed);
+		}
 	}
 
 	$: if (expanded && visibleEpisodes.length === 0) {
@@ -139,6 +154,14 @@
 					small={true}
 				>
 					<Info class="h-5 w-5" />
+				</TouchableButton>
+				<TouchableButton
+					onClick={sharePodcast}
+					circle={false}
+					ariaLabel={$t.player.sharePodcast}
+					small={true}
+				>
+					<Link class="h-5 w-5" />
 				</TouchableButton>
 				<TouchableButton
 					onClick={reverseEpisodes}

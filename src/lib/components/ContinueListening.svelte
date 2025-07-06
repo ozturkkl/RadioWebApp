@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { playerStore } from '$lib/stores/player';
 	import { onMount } from 'svelte';
-	import TouchableButton from '$lib/components/TouchableButton.svelte';
+	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-svelte';
 	import { type Episode, type Podcast, podcasts } from '$lib/stores/podcast/podcasts';
 	import { type Radio, radios } from '$lib/stores/radio/radios';

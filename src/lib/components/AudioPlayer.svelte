@@ -9,7 +9,7 @@
 		restartRadio
 	} from '$lib/stores/player';
 	import { settings } from '$lib/stores/settings';
-	import TouchableButton from '$lib/components/TouchableButton.svelte';
+	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { formatTime } from '$lib/util/time';
 	import {
 		List,
@@ -21,14 +21,17 @@
 		Volume2,
 		VolumeOff,
 		ChevronsLeft,
-		TriangleAlert
+		TriangleAlert,
+		Link
 	} from 'lucide-svelte';
-	import DropdownSelect from '$lib/components/DropdownSelect.svelte';
+	import DropdownSelect from '$lib/components/utility/DropdownSelect.svelte';
 	import { isIOS } from '$lib/util/browserUtils';
 	import { iosRangeTouchEventPolyfill } from '$lib/util/iosRangeTouchEventPolyfill';
 	import { radios } from '$lib/stores/radio/radios';
 	import { t } from '$lib/i18n';
-	
+	import { get } from 'svelte/store';
+	import { copyTextToClipboard, buildPodcastShareUrl, buildRadioShareUrl } from '$lib/util/share';
+
 	const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 	const speedSelectOptions = speedOptions.map((speed) => ({ value: speed, label: `${speed}x` }));
 
@@ -37,6 +40,46 @@
 		$playerStore.type === 'radio' && $playerStore.currentRadio
 			? $radios.find((r) => r.id === $playerStore.currentRadio.id)
 			: null;
+
+	let shareValue = 'placeholder';
+	function selectedShareOption(value: string) {
+		if (value === 'current') {
+			share(true);
+		} else if (value === 'start') {
+			share(false);
+		}
+		shareValue = 'placeholder';
+	}
+
+	function getShareUrl(includeTime: boolean = false) {
+		if (typeof window === 'undefined') return '';
+		if (
+			$playerStore.type === 'podcast' &&
+			$playerStore.currentPodcast &&
+			$playerStore.currentEpisode
+		) {
+			const time = includeTime ? Math.floor($playerStore.currentTime) : 0;
+			return buildPodcastShareUrl(
+				window.location.origin,
+				$playerStore.currentPodcast.id,
+				$playerStore.currentEpisode.id,
+				time
+			);
+		} else if ($playerStore.type === 'radio' && $playerStore.currentRadio) {
+			return buildRadioShareUrl(window.location.origin, $playerStore.currentRadio.id);
+		}
+		return window.location.href;
+	}
+	async function share(includeTime: boolean = false) {
+		const url = getShareUrl(includeTime);
+		if (!url) return;
+		const success = await copyTextToClipboard(url);
+		if (success) {
+			alert(get(t).player.linkCopied);
+		} else {
+			alert(get(t).player.linkCopyFailed);
+		}
+	}
 </script>
 
 {#if $playerStore.type}
@@ -72,13 +115,41 @@
 			{/if}
 		</div>
 
-		<!-- Playlist Button -->
-		<TouchableButton
-			onClick={togglePlaylist}
-			ariaLabel={$playerStore.type === 'radio' ? $t.player.goToRadio : $t.player.goToPodcast}
-		>
-			<List class="h-6 w-6" />
-		</TouchableButton>
+		<!-- Playlist & Share Buttons -->
+		<div class="flex items-center">
+			<!-- Share Input -->
+			{#if $playerStore.type === 'podcast'}
+				<!-- Dropdown for podcast share options -->
+				<DropdownSelect
+					bind:value={shareValue}
+					options={[
+						{ value: 'start', label: $t.player.shareFromStart },
+						{ value: 'current', label: $t.player.shareFromCurrentTime }
+					]}
+					onChange={(value) => selectedShareOption(value)}
+					dropDirection="top"
+					limitHeight={false}
+					matchOptionWidth={false}
+					width="w-32"
+				>
+					<TouchableButton ariaLabel={$t.player.share} circle={false} slot="trigger">
+						<Link class="h-6 w-6" />
+					</TouchableButton>
+				</DropdownSelect>
+			{:else}
+				<!-- Simple share button for radios -->
+				<TouchableButton ariaLabel={$t.player.shareRadio} circle={false} onClick={() => share(false)}>
+					<Link class="h-6 w-6" />
+				</TouchableButton>
+			{/if}
+
+			<TouchableButton
+				onClick={togglePlaylist}
+				ariaLabel={$playerStore.type === 'radio' ? $t.player.goToRadio : $t.player.goToPodcast}
+			>
+				<List class="h-6 w-6" />
+			</TouchableButton>
+		</div>
 	</div>
 	<!-- Controls Row -->
 	<div class="flex flex-col border-t border-base-200 pb-5">

@@ -41,7 +41,14 @@ export const tr: TranslationType = {
     playbackSpeed: 'Oynatma hızı',
     volumeControl: 'Ses kontrolü',
     goToPodcast: 'Podcaste git',
-    goToRadio: 'Radyoya git'
+    goToRadio: 'Radyoya git',
+    share: 'Paylaş',
+    shareRadio: 'Radyoyu Paylaş',
+    sharePodcast: 'Podcastı Paylaş',
+    shareFromStart: 'Baştan Paylaş',
+    shareFromCurrentTime: 'Şu anki zamandan paylaş',
+    linkCopied: 'Bağlantı kopyalandı',
+    linkCopyFailed: 'Bağlantı kopyalama başarısız oldu!'
   },
   podcast: {
     showMoreInfo: 'Daha fazla bilgi göster',

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto, onNavigate } from '$app/navigation';
 	import { ChevronLeft, Settings, SquareArrowOutUpRight } from 'lucide-svelte';
-	import Logo from '$lib/components/Logo.svelte';
-	import TouchableButton from '$lib/components/TouchableButton.svelte';
+	import Logo from '$lib/components/utility/Logo.svelte';
+	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { config } from '$lib/config/config';
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import { writable } from 'svelte/store';
@@ -28,7 +28,7 @@
 			onClick={() => ($showBackButton ? window.history.back() : goto('/'))}
 			ariaLabel={$t.navbar.goBack}
 			circle={false}
-			buttonClassName="shadow-none px-1"
+			buttonClassName="px-1"
 			small
 		>
 			{#if $showBackButton}
@@ -47,7 +47,6 @@
 		{#each config.website.links as link}
 			<TouchableButton
 				onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
-				buttonClassName="shadow-none"
 				ariaLabel={link.iconLabel}
 				circle={false}
 				small
@@ -58,7 +57,6 @@
 
 		<TouchableButton
 			onClick={() => externalLinksModal.open()}
-			buttonClassName="shadow-none"
 			ariaLabel={$t.navbar.otherLinks}
 			circle={false}
 			small
@@ -69,7 +67,6 @@
 		<TouchableButton
 			onClick={() => goto('/settings')}
 			ariaLabel={$t.settings.title}
-			buttonClassName="shadow-none"
 			circle={false}
 			small
 		>

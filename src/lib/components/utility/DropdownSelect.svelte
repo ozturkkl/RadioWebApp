@@ -117,9 +117,7 @@
 			: 'max-h-[100dvh]'} cursor-pointer flex-col flex-nowrap overflow-y-auto border border-base-content/10 p-0 shadow-xl {optionTextCenter
 			? 'text-center'
 			: ''} {backgroundColor}"
-		style="border-radius: var(--rounded-btn, 0.5rem); {matchOptionWidth
-			? `min-width: ${dropdownRef?.clientWidth}px; max-width: ${dropdownRef?.clientWidth}px`
-			: ''} {dropdownRef?.clientWidth}px"
+		style={`border-radius: var(--rounded-btn, 0.5rem); ${matchOptionWidth && dropdownRef ? `min-width: ${dropdownRef.clientWidth}px; max-width: ${dropdownRef.clientWidth}px;` : 'width: max-content;'}`}
 	>
 		{#each options as option, index}
 			<div
