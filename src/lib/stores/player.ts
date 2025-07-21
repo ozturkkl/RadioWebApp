@@ -46,7 +46,7 @@ interface IdlePlayerState extends BasePlayerState {
 	duration: 0;
 }
 
-type PlayerState = RadioPlayerState | PodcastPlayerState | IdlePlayerState;
+export type PlayerState = RadioPlayerState | PodcastPlayerState | IdlePlayerState;
 
 function readyStateIsAbleToPlay(readyState: number) {
 	return (

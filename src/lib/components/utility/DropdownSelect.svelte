@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { scrollIntoViewPromise } from '$lib/util/scrollIntoViewPromised';
 	import { ChevronDown } from 'lucide-svelte';
+	import { onMount } from 'svelte';
 	export let value: string | number;
 	export let options: Array<{ value: string | number; label: string }>;
 	export let dropDirection: 'top' | 'bottom' = 'bottom';
@@ -78,6 +79,50 @@
 	$: if (typeof window !== 'undefined' && value) {
 		scrollToSelected();
 	}
+
+	let offsetX = 0;
+	let offsetY = 0;
+	let transform = 'translateX(-50%)';
+	async function adjustPosition() {
+		if (!dropdownContentRef) return;
+
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		const rect = dropdownContentRef.getBoundingClientRect();
+		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
+
+		const margin = 8;
+
+		if (rect.right > viewportWidth - margin) {
+			offsetX += viewportWidth - rect.right - margin;
+		} else if (rect.left < margin) {
+			offsetX += margin - rect.left;
+		}
+
+		if (rect.bottom > viewportHeight) {
+			offsetY += viewportHeight - rect.bottom;
+		} else if (rect.top < 0) {
+			offsetY -= rect.top;
+		}
+
+		if (offsetX !== 0 || offsetY !== 0) {
+			transform = `translateX(-50%) translate(${offsetX}px, ${offsetY}px)`;
+		}
+	}
+	onMount(() => {
+		if (typeof window === 'undefined' || !dropdownRef) return;
+
+		const handler = () => adjustPosition();
+		dropdownRef.addEventListener('animationend', handler);
+		window.addEventListener('resize', handler);
+		handler();
+
+		return () => {
+			dropdownRef?.removeEventListener('animationend', handler);
+			window.removeEventListener('resize', handler);
+		};
+	});
 </script>
 
 <div class="dropdown {dropDirection === 'top' ? 'dropdown-top' : ''}">
@@ -93,11 +138,14 @@
 	<div
 		bind:this={dropdownRef}
 		role="button"
-		tabindex="0"
+		tabindex={$$slots.trigger ? -1 : 0}
 		class="h-full w-full"
 		aria-label={`Select ${options.find((opt) => opt.value === value)?.label}`}
 		on:keydown={handleKeydown}
-		on:focus={scrollToContent}
+		on:focusin={() => {
+			scrollToContent();
+			adjustPosition();
+		}}
 	>
 		{#if $$slots.trigger}
 			<slot name="trigger" />
@@ -117,7 +165,7 @@
 			: 'max-h-[100dvh]'} cursor-pointer flex-col flex-nowrap overflow-y-auto border border-base-content/10 p-0 shadow-xl {optionTextCenter
 			? 'text-center'
 			: ''} {backgroundColor}"
-		style={`border-radius: var(--rounded-btn, 0.5rem); ${matchOptionWidth && dropdownRef ? `min-width: ${dropdownRef.clientWidth}px; max-width: ${dropdownRef.clientWidth}px;` : 'width: max-content;'}`}
+		style={`border-radius: var(--rounded-btn, 0.5rem); left: 50%; transform: ${transform}; ${matchOptionWidth && dropdownRef ? `min-width: ${dropdownRef.clientWidth}px; max-width: ${dropdownRef.clientWidth}px;` : 'width: max-content;'}`}
 	>
 		{#each options as option, index}
 			<div

@@ -30,10 +30,19 @@
 	import { radios } from '$lib/stores/radio/radios';
 	import { t } from '$lib/i18n';
 	import { get } from 'svelte/store';
-	import { copyTextToClipboard, buildPodcastShareUrl, buildRadioShareUrl } from '$lib/util/share';
+	import { sharePodcast, shareRadio } from '$lib/util/share';
 
 	const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 	const speedSelectOptions = speedOptions.map((speed) => ({ value: speed, label: `${speed}x` }));
+
+	//$: reactive share options for podcast sharing
+	$: shareOptions = [
+		{ value: 'start', label: $t.player.shareFromStart },
+		{
+			value: 'current',
+			label: `${$t.player.shareFromCurrentTime} (${formatTime($playerStore.currentTime)})`
+		}
+	];
 
 	// Get current radio with updated track info
 	$: currentRadio =
@@ -51,29 +60,16 @@
 		shareValue = 'placeholder';
 	}
 
-	function getShareUrl(includeTime: boolean = false) {
-		if (typeof window === 'undefined') return '';
-		if (
-			$playerStore.type === 'podcast' &&
-			$playerStore.currentPodcast &&
-			$playerStore.currentEpisode
-		) {
-			const time = includeTime ? Math.floor($playerStore.currentTime) : 0;
-			return buildPodcastShareUrl(
-				window.location.origin,
-				$playerStore.currentPodcast.id,
-				$playerStore.currentEpisode.id,
-				time
-			);
-		} else if ($playerStore.type === 'radio' && $playerStore.currentRadio) {
-			return buildRadioShareUrl(window.location.origin, $playerStore.currentRadio.id);
-		}
-		return window.location.href;
-	}
 	async function share(includeTime: boolean = false) {
-		const url = getShareUrl(includeTime);
-		if (!url) return;
-		const success = await copyTextToClipboard(url);
+		if (typeof window === 'undefined') return;
+		let success = false;
+		if ($playerStore.type === 'podcast' && $playerStore.currentPodcast) {
+			const episodeId = $playerStore.currentEpisode?.id;
+			const timeSeconds = includeTime ? Math.floor($playerStore.currentTime) : 0;
+			success = await sharePodcast($playerStore.currentPodcast.id, episodeId, timeSeconds);
+		} else if ($playerStore.type === 'radio' && $playerStore.currentRadio) {
+			success = await shareRadio($playerStore.currentRadio.id);
+		}
 		if (success) {
 			alert(get(t).player.linkCopied);
 		} else {
@@ -122,10 +118,7 @@
 				<!-- Dropdown for podcast share options -->
 				<DropdownSelect
 					bind:value={shareValue}
-					options={[
-						{ value: 'start', label: $t.player.shareFromStart },
-						{ value: 'current', label: $t.player.shareFromCurrentTime }
-					]}
+					options={shareOptions}
 					onChange={(value) => selectedShareOption(value)}
 					dropDirection="top"
 					limitHeight={false}
@@ -138,7 +131,11 @@
 				</DropdownSelect>
 			{:else}
 				<!-- Simple share button for radios -->
-				<TouchableButton ariaLabel={$t.player.shareRadio} circle={false} onClick={() => share(false)}>
+				<TouchableButton
+					ariaLabel={$t.player.shareRadio}
+					circle={false}
+					onClick={() => share(false)}
+				>
 					<Link class="h-6 w-6" />
 				</TouchableButton>
 			{/if}

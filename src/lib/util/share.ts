@@ -1,4 +1,4 @@
-export function buildPodcastShareUrl(
+function buildPodcastShareUrl(
 	origin: string,
 	podcastId: string,
 	episodeId: string,
@@ -13,10 +13,29 @@ export function buildPodcastShareUrl(
 	return url.toString();
 }
 
-export function buildRadioShareUrl(origin: string, radioId: string): string {
+function buildRadioShareUrl(origin: string, radioId: string): string {
 	const url = new URL('/', origin);
 	url.searchParams.set('radio', radioId);
 	return url.toString();
+}
+
+export async function sharePodcast(
+	podcastId: string,
+	episodeId?: string,
+	timeSeconds: number = 0
+): Promise<boolean> {
+	const origin = typeof window !== 'undefined' ? window.location.origin : '';
+	if (!origin) return false;
+	const firstEpisodeId = episodeId ?? '';
+	const url = buildPodcastShareUrl(origin, podcastId, firstEpisodeId, timeSeconds);
+	return copyTextToClipboard(url);
+}
+
+export async function shareRadio(radioId: string): Promise<boolean> {
+	const origin = typeof window !== 'undefined' ? window.location.origin : '';
+	if (!origin) return false;
+	const url = buildRadioShareUrl(origin, radioId);
+	return copyTextToClipboard(url);
 }
 
 export async function copyTextToClipboard(text: string) {

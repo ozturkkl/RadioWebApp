@@ -19,16 +19,15 @@
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import { playerStore } from '$lib/stores/player';
 	import type { Radio } from '$lib/stores/radio/radios';
-	import { buildRadioShareUrl, copyTextToClipboard } from '$lib/util/share';
+	import { shareRadio } from '$lib/util/share';
 	import { t } from '$lib/i18n';
 	import { get } from 'svelte/store';
 	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { Link } from 'lucide-svelte';
 
-	async function shareRadio() {
+	async function shareRadioLink() {
 		if (typeof window === 'undefined') return;
-		const url = buildRadioShareUrl(window.location.origin, radio.id ?? radio.title);
-		const success = await copyTextToClipboard(url);
+		const success = await shareRadio(radio.id ?? radio.title);
 		if (success) {
 			alert(get(t).player.linkCopied);
 		} else {
@@ -74,7 +73,7 @@
 			<div class="divider divider-horizontal m-0 w-1 p-0"></div>
 
 			<div class="my-auto grid grid-flow-col grid-rows-[repeat(2,_auto)] place-items-center">
-				<TouchableButton ariaLabel={$t.player.shareRadio} onClick={shareRadio} circle={false} small={true}>
+				<TouchableButton ariaLabel={$t.player.shareRadio} onClick={shareRadioLink} circle={false} small={true}>
 					<Link class="h-5 w-5" />
 				</TouchableButton>
 				{#if radio.links && radio.links.length > 0}

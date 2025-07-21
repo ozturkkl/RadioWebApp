@@ -10,7 +10,7 @@
 	import PodcastInfoModal from '$lib/components/modals/PodcastInfoModal.svelte';
 	import type { Episode, Podcast } from '$lib/stores/podcast/podcasts';
 	import { t } from '$lib/i18n';
-	import { buildPodcastShareUrl, copyTextToClipboard } from '$lib/util/share';
+	import { sharePodcast } from '$lib/util/share';
 	import { get } from 'svelte/store';
 
 	export let podcast: Podcast;
@@ -85,10 +85,13 @@
 		togglePlaylist(podcast.id);
 	}
 
-	async function sharePodcast() {
+	async function sharePodcastLink() {
 		if (typeof window === 'undefined') return;
-		const url = buildPodcastShareUrl(window.location.origin, podcast.id, podcast.items[0]?.id, 0);
-		const success = await copyTextToClipboard(url);
+		const success = await sharePodcast(
+			podcast.id,
+			podcast.items[0]?.id,
+			0
+		);
 		if (success) {
 			alert(get(t).player.linkCopied);
 		} else {
@@ -156,7 +159,7 @@
 					<Info class="h-5 w-5" />
 				</TouchableButton>
 				<TouchableButton
-					onClick={sharePodcast}
+					onClick={sharePodcastLink}
 					circle={false}
 					ariaLabel={$t.player.sharePodcast}
 					small={true}
