@@ -6,6 +6,8 @@
 	export let circle = true;
 	export let className = '';
 	export let buttonClassName = '';
+	// Forward DOM element ref to parent via bind:el
+	export let el: HTMLElement | null = null;
 
 	let isPressed = false;
 	let isHovered = false;
@@ -55,6 +57,7 @@
 
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
 <div
+    bind:this={el}
 	class="touchable-button flex cursor-pointer items-center p-2 transition-all duration-75 ease-out focus-visible:scale-110 focus-visible:brightness-110 w-max {disabled
 		? 'pointer-events-none opacity-50'
 		: ''} {isHovered ? 'scale-110 brightness-110' : ''} {isPressed ? 'scale-95' : ''} {isClicked

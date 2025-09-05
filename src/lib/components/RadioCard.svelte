@@ -19,20 +19,21 @@
 	import { getIconComponent } from '$lib/util/getIconComponent';
 	import { playerStore } from '$lib/stores/player';
 	import type { Radio } from '$lib/stores/radio/radios';
-	import { shareRadio } from '$lib/util/share';
+	import { shareRadio, copyTextToClipboard } from '$lib/util/share';
+	import { showTooltip } from '$lib/util/tooltip';
 	import { t } from '$lib/i18n';
 	import { get } from 'svelte/store';
 	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { Link } from 'lucide-svelte';
 
+	let shareTooltipAnchorEl: HTMLElement | undefined;
+
 	async function shareRadioLink() {
 		if (typeof window === 'undefined') return;
-		const success = await shareRadio(radio.id ?? radio.title);
-		if (success) {
-			alert(get(t).player.linkCopied);
-		} else {
-			alert(get(t).player.linkCopyFailed);
-		}
+		const url = await shareRadio(radio.id ?? radio.title);
+		if (!url) return;
+		await copyTextToClipboard(url);
+		showTooltip(get(t).player.linkCopied, 3000, shareTooltipAnchorEl);
 	}
 
 	export let radio: Radio;
@@ -73,7 +74,7 @@
 			<div class="divider divider-horizontal m-0 w-1 p-0"></div>
 
 			<div class="my-auto grid grid-flow-col grid-rows-[repeat(2,_auto)] place-items-center">
-				<TouchableButton ariaLabel={$t.player.shareRadio} onClick={shareRadioLink} circle={false} small={true}>
+				<TouchableButton bind:el={shareTooltipAnchorEl} ariaLabel={$t.player.shareRadio} onClick={shareRadioLink} circle={false} small={true}>
 					<Link class="h-5 w-5" />
 				</TouchableButton>
 				{#if radio.links && radio.links.length > 0}

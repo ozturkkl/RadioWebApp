@@ -30,7 +30,8 @@
 	import { radios } from '$lib/stores/radio/radios';
 	import { t } from '$lib/i18n';
 	import { get } from 'svelte/store';
-	import { sharePodcast, shareRadio } from '$lib/util/share';
+	import { sharePodcast, shareRadio, copyTextToClipboard } from '$lib/util/share';
+	import { showTooltip } from '$lib/util/tooltip';
 
 	const speedOptions = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 	const speedSelectOptions = speedOptions.map((speed) => ({ value: speed, label: `${speed}x` }));
@@ -50,6 +51,8 @@
 			? $radios.find((r) => r.id === $playerStore.currentRadio.id)
 			: null;
 
+	let shareTooltipAnchorEl: HTMLElement | undefined;
+
 	let shareValue = 'placeholder';
 	function selectedShareOption(value: string) {
 		if (value === 'current') {
@@ -62,19 +65,16 @@
 
 	async function share(includeTime: boolean = false) {
 		if (typeof window === 'undefined') return;
-		let success = false;
+		let url = '';
 		if ($playerStore.type === 'podcast' && $playerStore.currentPodcast) {
 			const episodeId = $playerStore.currentEpisode?.id;
 			const timeSeconds = includeTime ? Math.floor($playerStore.currentTime) : 0;
-			success = await sharePodcast($playerStore.currentPodcast.id, episodeId, timeSeconds);
+			url = await sharePodcast($playerStore.currentPodcast.id, episodeId, timeSeconds);
 		} else if ($playerStore.type === 'radio' && $playerStore.currentRadio) {
-			success = await shareRadio($playerStore.currentRadio.id);
+			url = await shareRadio($playerStore.currentRadio.id);
 		}
-		if (success) {
-			alert(get(t).player.linkCopied);
-		} else {
-			alert(get(t).player.linkCopyFailed);
-		}
+		await copyTextToClipboard(url);
+		showTooltip(get(t).player.linkCopied, 3000, shareTooltipAnchorEl);
 	}
 </script>
 
@@ -119,19 +119,25 @@
 				<DropdownSelect
 					bind:value={shareValue}
 					options={shareOptions}
-					onChange={(value) => selectedShareOption(value)}
+					onChange={selectedShareOption}
 					dropDirection="top"
 					limitHeight={false}
 					matchOptionWidth={false}
 					width="w-32"
 				>
-					<TouchableButton ariaLabel={$t.player.share} circle={false} slot="trigger">
+					<TouchableButton
+						slot="trigger"
+						bind:el={shareTooltipAnchorEl}
+						ariaLabel={$t.player.share}
+						circle={false}
+					>
 						<Link class="h-6 w-6" />
 					</TouchableButton>
 				</DropdownSelect>
 			{:else}
 				<!-- Simple share button for radios -->
 				<TouchableButton
+					bind:el={shareTooltipAnchorEl}
 					ariaLabel={$t.player.shareRadio}
 					circle={false}
 					onClick={() => share(false)}

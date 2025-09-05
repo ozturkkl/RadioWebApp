@@ -72,7 +72,7 @@
 
 	async function scrollToContent() {
 		if (!dropdownContentRef) return;
-		await scrollIntoViewPromise(dropdownContentRef, { behavior: 'smooth', block: 'center' });
+		await scrollIntoViewPromise(dropdownContentRef, { behavior: 'smooth', block: 'nearest' });
 		scrollToSelected();
 	}
 

@@ -491,7 +491,8 @@ export function togglePlaylist(targetPodcastId?: string) {
 				if (collapseContent) {
 					if (collapseContent.getAnimations().length > 0) {
 						// Listen for the transition end
-						const onTransitionEnd = () => {
+						const onTransitionEnd = (ev: Event) => {
+							if (ev.target !== collapseContent) return;
 							collapseContent.removeEventListener('transitionend', onTransitionEnd);
 							scrollToEpisode();
 						};

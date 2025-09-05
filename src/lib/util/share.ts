@@ -19,30 +19,23 @@ function buildRadioShareUrl(origin: string, radioId: string): string {
 	return url.toString();
 }
 
-export async function sharePodcast(
-	podcastId: string,
-	episodeId?: string,
-	timeSeconds: number = 0
-): Promise<boolean> {
+export async function sharePodcast(podcastId: string, episodeId?: string, timeSeconds: number = 0) {
 	const origin = typeof window !== 'undefined' ? window.location.origin : '';
-	if (!origin) return false;
+	if (!origin) return '';
 	const firstEpisodeId = episodeId ?? '';
 	const url = buildPodcastShareUrl(origin, podcastId, firstEpisodeId, timeSeconds);
-	return copyTextToClipboard(url);
+	return url;
 }
 
-export async function shareRadio(radioId: string): Promise<boolean> {
+export async function shareRadio(radioId: string) {
 	const origin = typeof window !== 'undefined' ? window.location.origin : '';
-	if (!origin) return false;
+	if (!origin) return '';
 	const url = buildRadioShareUrl(origin, radioId);
-	return copyTextToClipboard(url);
+	return url;
 }
 
 export async function copyTextToClipboard(text: string) {
-	try {
-		await navigator.clipboard.writeText(text);
-		return true;
-	} catch {
-		return false;
-	}
+	if (!text) return;
+	await navigator.clipboard.writeText(text);
+	return text;
 }

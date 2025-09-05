@@ -10,7 +10,8 @@
 	import PodcastInfoModal from '$lib/components/modals/PodcastInfoModal.svelte';
 	import type { Episode, Podcast } from '$lib/stores/podcast/podcasts';
 	import { t } from '$lib/i18n';
-	import { sharePodcast } from '$lib/util/share';
+	import { sharePodcast, copyTextToClipboard } from '$lib/util/share';
+	import { showTooltip } from '$lib/util/tooltip';
 	import { get } from 'svelte/store';
 
 	export let podcast: Podcast;
@@ -21,6 +22,7 @@
 	let isReversed = false;
 	const BATCH_SIZE = 20;
 	let infoModal: { open: () => void; close: () => void };
+	let shareTooltipAnchorEl: HTMLElement | undefined;
 
 	function getEpisodeClasses(episode: Episode, podcast: Podcast) {
 		const isActive =
@@ -87,16 +89,14 @@
 
 	async function sharePodcastLink() {
 		if (typeof window === 'undefined') return;
-		const success = await sharePodcast(
+		const url = await sharePodcast(
 			podcast.id,
 			podcast.items[0]?.id,
 			0
 		);
-		if (success) {
-			alert(get(t).player.linkCopied);
-		} else {
-			alert(get(t).player.linkCopyFailed);
-		}
+		if (!url) return;
+		await copyTextToClipboard(url);
+		showTooltip(get(t).player.linkCopied, 3000, shareTooltipAnchorEl);
 	}
 
 	$: if (expanded && visibleEpisodes.length === 0) {
@@ -159,6 +159,7 @@
 					<Info class="h-5 w-5" />
 				</TouchableButton>
 				<TouchableButton
+					bind:el={shareTooltipAnchorEl}
 					onClick={sharePodcastLink}
 					circle={false}
 					ariaLabel={$t.player.sharePodcast}
