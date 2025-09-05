@@ -3,10 +3,17 @@ import { defineConfig } from 'vite';
 import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import { config } from './src/lib/config/config';
 
-export default defineConfig({
-	plugins: [
-		sveltekit(),
-		SvelteKitPWA({
+export default defineConfig(({ mode }) => {
+	const isProd = mode === 'production';
+
+	return {
+		esbuild: {
+			drop: isProd ? ['debugger'] : [],
+			pure: isProd ? ['console.log', 'console.debug', 'console.info', 'console.trace', 'console.warn'] : []
+		},
+		plugins: [
+			sveltekit(),
+			SvelteKitPWA({
 			registerType: 'autoUpdate',
 			strategies: 'generateSW',
 			manifestFilename: 'manifest.json',
@@ -49,15 +56,16 @@ export default defineConfig({
 					}
 				]
 			}
-		})
-	],
-	build: {
-		chunkSizeWarningLimit: 1000,
-		rollupOptions: {
-			onwarn(warning, warn) {
-				if (warning.message.includes('but also statically imported by')) return;
-				warn(warning);
+			})
+		],
+		build: {
+			chunkSizeWarningLimit: 1000,
+			rollupOptions: {
+				onwarn(warning, warn) {
+					if (warning.message.includes('but also statically imported by')) return;
+					warn(warning);
+				}
 			}
 		}
-	}
+	};
 });
