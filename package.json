@@ -8,12 +8,16 @@
 		"deploy": "npm run build && vite-node src/scripts/deploy.ts",
 		"dev": "vite dev",
 		"seo": "vite-node src/scripts/generate-og-image.ts && vite-node src/scripts/generate-sitemap.ts && vite-node src/scripts/generate-podcast-snapshot.ts",
-		"build": "npm run setup && npm run seo && vite build",
+		"assetlinks": "vite-node src/scripts/generate-assetlinks.ts",
+		"build": "npm run setup && npm run seo && npm run assetlinks && vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint ."
+		"lint": "prettier --check . && eslint .",
+		"twa:init": "vite-node src/scripts/twa.ts init",
+		"twa:update": "vite-node src/scripts/twa.ts update",
+		"twa:build": "vite-node src/scripts/twa.ts build"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.3",
@@ -33,6 +37,7 @@
 		"eslint-plugin-svelte": "^2.36.0",
 		"fs-extra": "^11.2.0",
 		"globals": "^15.0.0",
+		"image-size": "^2.0.2",
 		"node-fetch": "^3.3.2",
 		"prettier": "^3.3.2",
 		"prettier-plugin-svelte": "^3.2.6",
