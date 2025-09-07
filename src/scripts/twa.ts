@@ -42,19 +42,30 @@ function runBubblewrap(cmd: Command) {
 		cwd: execCwd,
 		env
 	});
+}
 
+function memoryConstrainedGradle() {
 	// Ensure Gradle runs under constrained memory; Bubblewrap init overwrites gradle.properties
 	try {
+		const directory = getEnv('TWA_DIRECTORY');
+		if (!fs.existsSync(directory)) {
+			fs.mkdirSync(directory, { recursive: true });
+		}
+
 		const propsPath = `${directory}/gradle.properties`;
 		if (fs.existsSync(propsPath)) {
 			let content = fs.readFileSync(propsPath, 'utf8');
-			content = content.replace(/org\.gradle\.jvmargs=.*\n?/, 'org.gradle.jvmargs=-Xmx512m -XX:+UseParallelGC\n');
+			content = content.replace(
+				/org\.gradle\.jvmargs=.*\n?/,
+				'org.gradle.jvmargs=-Xmx512m -XX:+UseParallelGC\n'
+			);
 			if (!/org\.gradle\.daemon=/.test(content)) content += '\norg.gradle.daemon=false\n';
 			if (!/org\.gradle\.workers\.max=/.test(content)) content += 'org.gradle.workers.max=1\n';
 			fs.writeFileSync(propsPath, content, 'utf8');
 		}
-	} catch {
-		// ignore
+	} catch (error) {
+		console.error('Error during Bubblewrap build');
+		throw error;
 	}
 }
 
@@ -63,6 +74,7 @@ function main() {
 	if (!sub || !['init', 'update', 'build'].includes(sub)) {
 		throw new Error('Usage: vite-node src/scripts/twa.ts <init|update|build>');
 	}
+	memoryConstrainedGradle();
 	runBubblewrap(sub);
 }
 

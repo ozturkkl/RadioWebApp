@@ -35,6 +35,7 @@ async function generatePwaIcons() {
         const target = path.join(outDir, file);
         await sharp(baseSvg)
             .resize(size, size, { fit: 'contain', background: iconPaddingBg })
+            .flatten({ background: iconPaddingBg })
             .png()
             .toFile(target);
         console.log(`Icon generated: ${target}`);
@@ -53,6 +54,7 @@ async function generatePwaIcons() {
             create: { width: size, height: size, channels: 4, background: iconPaddingBg }
         })
             .composite([{ input: innerBuffer, left: leftTop, top: leftTop }])
+            .flatten({ background: iconPaddingBg })
             .png()
             .toBuffer();
         await fs.writeFile(maskable, composite);
