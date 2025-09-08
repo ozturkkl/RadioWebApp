@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto, onNavigate } from '$app/navigation';
 	import { ChevronLeft, Settings, SquareArrowOutUpRight } from 'lucide-svelte';
-	import Logo from '$lib/components/utility/Logo.svelte';
 	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { config } from '$lib/config/config';
 	import { getIconComponent } from '$lib/util/getIconComponent';
@@ -34,7 +33,7 @@
 			{#if $showBackButton}
 				<ChevronLeft class="w-[32px]" />
 			{:else}
-				<Logo className="h-full w-[32px] text-base-content" />
+				<img src="/favicon.png" alt="Logo" class="h-full w-[32px] rounded-full border border-base-content/30" draggable="false" />
 			{/if}
 		</TouchableButton>
 		<a href="/" class={`text-l z-10 pl-0 font-bold text-base-content sm:text-2xl`}>

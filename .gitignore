@@ -24,6 +24,7 @@ vite.config.ts.timestamp-*
 static/sitemap.xml
 static/og-image.png
 static/robots.txt
+static/favicon.*
 
 # Podcast snapshot
 src/lib/stores/podcast/podcast-snapshot-seo.json

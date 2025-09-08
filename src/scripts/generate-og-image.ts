@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 
 async function generateOGImage() {
     try {
-        await sharp(path.join(process.cwd(), 'static', 'favicon.svg'))
+        await sharp(path.join(process.cwd(), 'static', 'favicon.png'))
             .resize(1200, 630, {
                 fit: 'contain',
                 background: { r: 38, g: 38, b: 38, alpha: 1 } // #262626 background
@@ -19,7 +19,7 @@ async function generateOGImage() {
 }
 
 async function generatePwaIcons() {
-    const baseSvg = path.join(process.cwd(), 'static', 'favicon.svg');
+    const baseSvg = path.join(process.cwd(), 'static', 'favicon.png');
     const outDir = path.join(process.cwd(), 'static', 'pwa');
     const paddingRatio = Number(process.env.ICON_PADDING_RATIO || '0.2');
     const iconPaddingBg = { r: 38, g: 38, b: 38, alpha: 1 }; // #262626
