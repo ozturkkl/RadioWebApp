@@ -7,6 +7,7 @@ import { blinkClasses } from '$lib/util/blinkClassess';
 import { scrollIntoViewPromise } from '$lib/util/scrollIntoViewPromised';
 import { podcastProgress } from '$lib/stores/podcast/podcastProgress';
 import { radioProgress } from '$lib/stores/radio/radioProgress';
+import { initMediaSession, updateMediaSessionMetadata } from '$lib/util/media_session';
 
 interface BasePlayerState {
 	isPlaying: boolean;
@@ -70,6 +71,20 @@ function initAudio() {
 	if (audio) return;
 
 	audio = new Audio();
+
+	// Register minimal Media Session controls
+	initMediaSession({
+		onSeekForward: () => skipForward(),
+		onSeekBackward: () => skipBackward(),
+		onNextTrack: () => playerStore.nextTrack(),
+		onPreviousTrack: () => playerStore.previousTrack(),
+		onStop: () => {
+			togglePlayPause(false);
+			if (audio) {
+				audio.src = '';
+			}
+		}
+	});
 
 	audio.addEventListener('timeupdate', () => {
 		playerStore.updateCurrentTime();
@@ -238,6 +253,9 @@ function createPlayerStore() {
 		) {
 			audio.playbackRate = state.playbackRate;
 		}
+
+		// Minimal Media Session metadata update
+		updateMediaSessionMetadata(state);
 	});
 
 	function playRadio(radio: Radio) {
@@ -377,6 +395,15 @@ function createPlayerStore() {
 		});
 	}
 
+	function updateCurrentRadio(radio: Radio) {
+		update((state) => {
+			if (state.type === 'radio' && state.currentRadio?.id === radio.id) {
+				return { ...state, currentRadio: radio };
+			}
+			return state;
+		});
+	}
+
 	function updateIsPlaying() {
 		update((state) => ({
 			...state,
@@ -402,7 +429,8 @@ function createPlayerStore() {
 		playPodcast,
 		nextTrack,
 		previousTrack,
-		setPlaybackRate
+		setPlaybackRate,
+		updateCurrentRadio
 	};
 }
 
@@ -414,6 +442,17 @@ settings.subscribe((settings) => {
 	}
 	if (settings.volume !== get(playerStore).volume) {
 		playerStore.setVolume(settings.volume);
+	}
+});
+
+// Keep radio metadata (artwork/title/artist) in sync with live track updates
+radios.subscribe((list) => {
+	const state = get(playerStore);
+	if (state.type === 'radio' && state.currentRadio) {
+		const updated = list.find((r) => r.id === state.currentRadio?.id);
+		if (updated) {
+			playerStore.updateCurrentRadio(updated);
+		}
 	}
 });
 
