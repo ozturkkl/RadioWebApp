@@ -61,7 +61,7 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 			},
 			2,
 			1000,
-			7
+			3
 		);
 		const xmlText = await response.text();
 		const parser = new XMLParser();
