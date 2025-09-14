@@ -22,7 +22,7 @@ export function refreshPWAThemeColor() {
 
 // Function to get the current theme's background color
 function getCurrentThemeColor(): string {
-	if (typeof window === 'undefined') return '#262626';
+	if (typeof window === 'undefined') return '#000000';
 
 	// Create a temporary element with bg-base-100 to get the computed background color
 	const temp = document.createElement('div');

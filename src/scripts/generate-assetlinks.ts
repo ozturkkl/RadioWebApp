@@ -1,21 +1,14 @@
 import 'dotenv/config';
+import { getEnv } from '$lib/util/env';
 import fs from 'fs-extra';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 
-function getEnv(name: string, fallback?: string): string {
-    const value = process.env[name] ?? fallback;
-    if (value === undefined || value === '') {
-        throw new Error(`${name} is required`);
-    }
-    return value;
-}
-
 function extractSha256FromKeystore(): string {
     const keystorePath = getEnv('KEYSTORE_PATH');
     const keystoreAlias = getEnv('KEYSTORE_ALIAS');
-    const storePassword = getEnv('KEYSTORE_STORE_PASSWORD');
-    const keyPassword = getEnv('KEYSTORE_KEY_PASSWORD');
+    const storePassword = getEnv('BUBBLEWRAP_KEYSTORE_PASSWORD');
+    const keyPassword = getEnv('BUBBLEWRAP_KEY_PASSWORD');
 
     try {
         const output = execFileSync(

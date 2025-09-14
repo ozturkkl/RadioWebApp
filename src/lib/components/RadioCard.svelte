@@ -7,7 +7,7 @@
 			wrapper: 'flex min-w-0 gap-2 sm:gap-4',
 			image: 'h-24 w-24 rounded-lg object-cover',
 			textContainer: 'w-0 flex-1',
-			title: 'truncate text-lg font-bold text-base-content pr-5 mt-1',
+			title: 'truncate text-lg font-bold text-base-content mt-1',
 			description: 'text-base-content-secondary line-clamp-2 pr-2'
 		}
 	} as const;
@@ -70,12 +70,19 @@
 				</p>
 			{/if}
 		</div>
-		<div class="flex items-center">
+		<div class="flex items-stretch">
 			<div class="divider divider-horizontal m-0 w-1 p-0"></div>
 
-			<div class="my-auto grid grid-flow-col grid-rows-[repeat(2,_auto)] place-items-center">
-				<TouchableButton bind:el={shareTooltipAnchorEl} ariaLabel={$t.player.shareRadio} onClick={shareRadioLink} circle={false} small={true}>
-					<Link class="h-5 w-5" />
+			<div class="my-auto flex h-full flex-col items-center">
+				<TouchableButton
+					bind:el={shareTooltipAnchorEl}
+					ariaLabel={$t.player.shareRadio}
+					onClick={shareRadioLink}
+					circle={false}
+					size="xs"
+					className="flex-1"
+				>
+					<Link class="h-4 w-4" />
 				</TouchableButton>
 				{#if radio.links && radio.links.length > 0}
 					{#each radio.links as link}
@@ -83,9 +90,10 @@
 							onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
 							ariaLabel={link.iconLabel}
 							circle={false}
-							small={true}
+							size="xs"
+							className="flex-1"
 						>
-							<svelte:component this={getIconComponent(link.iconLabel)} class="h-5 w-5" />
+							<svelte:component this={getIconComponent(link.iconLabel)} class="h-4 w-4" />
 						</TouchableButton>
 					{/each}
 				{/if}

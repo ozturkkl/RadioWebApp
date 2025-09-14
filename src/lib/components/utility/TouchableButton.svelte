@@ -2,7 +2,7 @@
 	export let onClick: () => void = () => {};
 	export let disabled = false;
 	export let ariaLabel: string;
-	export let small = false;
+	export let size: 'xs' | 'sm' | 'md' = 'md';
 	export let circle = true;
 	export let className = '';
 	export let buttonClassName = '';
@@ -57,12 +57,11 @@
 
 <!-- svelte-ignore a11y_mouse_events_have_key_events -->
 <div
-    bind:this={el}
-	class="touchable-button flex cursor-pointer items-center p-2 transition-all duration-75 ease-out focus-visible:scale-110 focus-visible:brightness-110 w-max {disabled
-		? 'pointer-events-none opacity-50'
-		: ''} {isHovered ? 'scale-110 brightness-110' : ''} {isPressed ? 'scale-95' : ''} {isClicked
-		? 'pop-back'
-		: ''}
+	bind:this={el}
+	class="touchable-button flex w-max cursor-pointer items-center transition-all duration-75 ease-out focus-visible:scale-110 focus-visible:brightness-110
+	{size !== 'xs' && 'p-2'} {disabled ? 'pointer-events-none opacity-50' : ''} {isHovered
+		? 'scale-110 brightness-110'
+		: ''} {isPressed ? 'scale-95' : ''} {isClicked ? 'pop-back' : ''}
 		 {className}"
 	on:keydown={handleKeyDown}
 	on:click={handleEvent}
@@ -78,9 +77,9 @@
 >
 	<button
 		tabindex="-1"
-		class="btn {small ? 'btn-sm' : ''} {circle
+		class="btn {size === 'xs' ? 'btn-xs' : size === 'sm' ? 'btn-sm' : ''} {circle
 			? 'btn-circle border border-base-content/10 bg-base-100 shadow-md hover:shadow-lg'
-			: 'bg-transparent shadow-none border-none'} pointer-events-none {buttonClassName}"
+			: 'border-none bg-transparent shadow-none'} pointer-events-none {buttonClassName}"
 		aria-hidden="true"
 	>
 		<slot />

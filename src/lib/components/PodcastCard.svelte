@@ -154,7 +154,7 @@
 					onClick={() => infoModal.open()}
 					circle={false}
 					ariaLabel={$t.podcast.showMoreInfo}
-					small={true}
+					size="sm"
 				>
 					<Info class="h-5 w-5" />
 				</TouchableButton>
@@ -163,7 +163,7 @@
 					onClick={sharePodcastLink}
 					circle={false}
 					ariaLabel={$t.player.sharePodcast}
-					small={true}
+					size="sm"
 				>
 					<Link class="h-5 w-5" />
 				</TouchableButton>
@@ -171,7 +171,7 @@
 					onClick={reverseEpisodes}
 					circle={false}
 					ariaLabel={isReversed ? $t.podcast.showOldestFirst : $t.podcast.showNewestFirst}
-					small={true}
+					size="sm"
 				>
 					<svelte:component this={isReversed ? ArrowUpWideNarrow : ArrowDownNarrowWide} />
 				</TouchableButton>

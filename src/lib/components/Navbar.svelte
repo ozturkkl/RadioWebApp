@@ -28,7 +28,7 @@
 			ariaLabel={$t.navbar.goBack}
 			circle={false}
 			buttonClassName="px-1"
-			small
+			size="sm"
 		>
 			{#if $showBackButton}
 				<ChevronLeft class="w-[32px]" />
@@ -48,7 +48,7 @@
 				onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
 				ariaLabel={link.iconLabel}
 				circle={false}
-				small
+				size="sm"
 			>
 				<svelte:component this={getIconComponent(link.iconLabel)} class="h-5 w-5 sm:h-6 sm:w-6" />
 			</TouchableButton>
@@ -58,7 +58,7 @@
 			onClick={() => externalLinksModal.open()}
 			ariaLabel={$t.navbar.otherLinks}
 			circle={false}
-			small
+			size="sm"
 		>
 			<SquareArrowOutUpRight class="h-5 w-5 sm:h-6 sm:w-6" />
 		</TouchableButton>
@@ -67,7 +67,7 @@
 			onClick={() => goto('/settings')}
 			ariaLabel={$t.settings.title}
 			circle={false}
-			small
+			size="sm"
 		>
 			<Settings class="h-5 w-5 sm:h-6 sm:w-6" />
 		</TouchableButton>

@@ -192,7 +192,7 @@
 					>
 						<TouchableButton
 							ariaLabel={$t.player.playbackSpeed}
-							small
+							size="sm"
 							className="pl-3 h-full w-full"
 							slot="trigger"
 						>
@@ -204,7 +204,7 @@
 						</TouchableButton>
 					</DropdownSelect>
 				{:else if $playerStore.type === 'radio'}
-					<TouchableButton onClick={restartRadio} ariaLabel={$t.player.refreshRadio} small>
+					<TouchableButton onClick={restartRadio} ariaLabel={$t.player.refreshRadio} size="sm">
 						<RotateCcw class="h-6 w-6" />
 					</TouchableButton>
 				{/if}
@@ -221,7 +221,7 @@
 									(ep) => ep.id === $playerStore.currentEpisode?.id
 								) === 0}
 							ariaLabel={$t.player.previousTrack}
-							small
+							size="sm"
 						>
 							<SkipBack class="h-6 w-6" />
 						</TouchableButton>
@@ -231,7 +231,7 @@
 						onClick={skipBackward}
 						disabled={$playerStore.currentTime === 0 && $playerStore.duration !== 0}
 						ariaLabel={`${$t.player.skipBackward} ${$settings.skipSeconds} ${$t.settings.seconds}`}
-						small
+						size="sm"
 					>
 						<ChevronsLeft class="h-6 w-6" />
 					</TouchableButton>
@@ -256,7 +256,7 @@
 						disabled={$playerStore.duration === $playerStore.currentTime &&
 							$playerStore.duration !== 0}
 						ariaLabel={`${$t.player.skipForward} ${$settings.skipSeconds} ${$t.settings.seconds}`}
-						small
+						size="sm"
 					>
 						<ChevronsLeft class="h-6 w-6" style="transform: scaleX(-1)" />
 					</TouchableButton>
@@ -270,7 +270,7 @@
 								) ===
 									$playerStore.playlist.length - 1}
 							ariaLabel={$t.player.nextTrack}
-							small
+							size="sm"
 						>
 							<SkipForward class="h-6 w-6" />
 						</TouchableButton>
@@ -284,7 +284,7 @@
 				{#if isIOS()}
 					<TouchableButton
 						ariaLabel={$t.player.volumeControl}
-						small
+						size="sm"
 						className="h-full pr-3"
 						onClick={() => playerStore.toggleMuted()}
 					>
@@ -298,7 +298,7 @@
 					<div class="dropdown dropdown-top" on:click|stopPropagation role="presentation">
 						<TouchableButton
 							ariaLabel={$t.player.volumeControl}
-							small
+							size="sm"
 							className="h-full pr-3"
 							onClick={() => {
 								if ($playerStore.muted && $playerStore.volume > 0) {

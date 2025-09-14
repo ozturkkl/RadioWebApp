@@ -1,19 +1,14 @@
 import 'dotenv/config';
+import { getEnv } from '$lib/util/env';
 import { execFileSync } from 'node:child_process';
 import fs from 'fs';
 import path from 'node:path';
-
-function getEnv(name: string): string {
-	const value = process.env[name];
-	if (!value) throw new Error(`${name} is required`);
-	return value;
-}
 
 type Command = 'init' | 'update' | 'build';
 
 function runBubblewrap(cmd: Command) {
 	const directory = getEnv('TWA_DIRECTORY');
-	const manifestUrl = process.env.TWA_MANIFEST_URL; // public website manifest url
+	const manifestUrl = getEnv('TWA_MANIFEST_URL');
 
 	// Always operate inside the Android project directory; treat it as Bubblewrap's root.
 	if (!fs.existsSync(directory)) {
@@ -21,12 +16,15 @@ function runBubblewrap(cmd: Command) {
 	}
 	const args: string[] = [cmd, `--directory=.`];
 	if (cmd === 'init') {
-		if (!manifestUrl) throw new Error('TWA_MANIFEST_URL is required for init');
 		args.push(`--manifest=${manifestUrl}`);
 	}
 	if (cmd !== 'init') {
-		// We run with cwd set to the android project directory, so pass a relative path here.
 		args.push(`--manifest=twa-manifest.json`);
+	}
+	if (cmd === 'update') {
+		// get the first passed in arg as the version name
+		const versionName = process.argv[3];
+		args.push(`--appVersionName=${versionName}`);
 	}
 
 	const execCwd = directory;
