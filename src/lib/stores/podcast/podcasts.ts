@@ -73,6 +73,12 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 		}
 
 		const channel = parsed.rss.channel;
+
+		if (!channel.item?.length) {
+			console.error(`Skipping feed ${url}: No episodes found`);
+			return null;
+		}
+
 		const podcast: Podcast = {
 			title: channel.title,
 			imageUrl: channel['itunes:image']?.href || channel.image?.url,
@@ -111,8 +117,6 @@ const CACHE_INVALIDATION_TIME = 10 * 60 * 1000;
 
 function createPodcastsStore() {
 	const { subscribe, set, update } = writable<Podcast[]>([]);
-
-
 
 	async function refresh() {
 		// Get cached podcasts
@@ -158,7 +162,7 @@ function createPodcastsStore() {
 					}
 
 					// Save to local storage with throttling
-					setUserData('cached-podcasts', orderedPodcasts);
+					setUserData('cached-podcasts', orderedPodcasts.slice(0, 5));
 
 					return orderedPodcasts;
 				});

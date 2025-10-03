@@ -22,8 +22,13 @@ export default defineConfig(({ mode }) => {
 		plugins: [
 			sveltekit(),
 			SvelteKitPWA({
-				registerType: 'autoUpdate',
+				registerType: 'prompt',
 				strategies: 'generateSW',
+				workbox: {
+					clientsClaim: false,
+					skipWaiting: false,
+					navigateFallback: undefined
+				},
 				manifestFilename: 'manifest.json',
 				manifest: {
 					name: config.website.title,
