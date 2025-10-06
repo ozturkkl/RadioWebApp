@@ -2,7 +2,8 @@
 <script lang="ts">
 	import { config } from '$lib/config/config';
 	import podcastSnapshotSeo from '$lib/stores/podcast/podcast-snapshot-seo.json';
-	
+	import { clampText } from '$lib/util/text';
+
 	// Define the expected type for the imported podcast snapshot
 	interface MinifiedPodcast {
 		name: string;
@@ -12,9 +13,15 @@
 			name: string;
 		}[];
 	}
-	
-	// Cast the imported data to the correct type
-	const podcastSnapshot = podcastSnapshotSeo as MinifiedPodcast[];
+
+	// Cast the imported data to the correct type and limit to reduce DOM/JSON-LD size
+	const podcastSnapshot = (podcastSnapshotSeo as MinifiedPodcast[]).map((p) => ({
+		...p,
+		// Clamp description length to keep head small
+		description: clampText(p.description, 120),
+		// Limit episodes listed per podcast for SEO
+		episodes: (p.episodes ?? []).slice(0, 50)
+	}));
 
 	const title: string = config.website.title;
 	const description: string = config.website.description;
@@ -25,11 +32,11 @@
 		// Base keywords from config
 		...(config.website.keywords ?? []),
 		// Podcast keywords
-		...podcastSnapshot.map(podcast => podcast.name),
+		...podcastSnapshot.map((podcast) => podcast.name),
 		// Podcast categories
-		...podcastSnapshot.flatMap(podcast => podcast.categories || []),
+		...podcastSnapshot.flatMap((podcast) => podcast.categories || []),
 		// Radio keywords
-		...config.radios.map(radio => radio.title)
+		...config.radios.map((radio) => radio.title)
 	].join(', ');
 </script>
 
@@ -39,7 +46,7 @@
 	<meta name="description" content={description} />
 	<meta name="keywords" content={keywords} />
 	<meta name="author" content={config.website.title} />
-	
+
 	<!-- Language Meta Tags -->
 	<meta name="language" content="tr, en" />
 
@@ -105,49 +112,4 @@
 	</script>
 </svelte:head>
 
-<!-- Hidden SEO Content -->
-<div style="display:none;" aria-hidden="true">
-	<h1>Featured Podcasts</h1>
-	{#each podcastSnapshot as podcast}
-		<article>
-			<h2>{podcast.name}</h2>
-			<p>{podcast.description}</p>
-			{#if podcast.categories && podcast.categories.length > 0}
-				<div>
-					<p>Categories:</p>
-					<ul>
-						{#each podcast.categories as category}
-							<li>{category}</li>
-						{/each}
-					</ul>
-				</div>
-			{/if}
-			<p>Episodes:</p>
-			<ul>
-				{#each podcast.episodes as episode}
-					<li>{episode.name}</li>
-				{/each}
-			</ul>
-		</article>
-	{/each}
-	
-	<h1>Radio Stations</h1>
-	{#each config.radios as radio}
-		<article>
-			<h2>{radio.title}</h2>
-			{#if radio.trackInfo && typeof radio.trackInfo === 'object' && radio.trackInfo.title}
-				<p>Currently playing: {radio.trackInfo.title}</p>
-			{/if}
-			{#if radio.links && radio.links.length > 0}
-				<div>
-					<p>Related Links:</p>
-					<ul>
-						{#each radio.links as link}
-							<li>{link.iconLabel}: {link.url}</li>
-						{/each}
-					</ul>
-				</div>
-			{/if}
-		</article>
-	{/each}
-</div>
+<!-- Intentionally no hidden duplicate content; rely on SSR fallback and JSON-LD -->

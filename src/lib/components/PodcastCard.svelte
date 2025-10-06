@@ -13,6 +13,7 @@
 	import { sharePodcast, copyTextToClipboard } from '$lib/util/share';
 	import { showTooltip } from '$lib/util/tooltip';
 	import { get } from 'svelte/store';
+	import { clampText } from '$lib/util/text';
 
 	export let podcast: Podcast;
 	export let expanded = false;
@@ -89,11 +90,7 @@
 
 	async function sharePodcastLink() {
 		if (typeof window === 'undefined') return;
-		const url = await sharePodcast(
-			podcast.id,
-			podcast.items[0]?.id,
-			0
-		);
+		const url = await sharePodcast(podcast.id, podcast.items[0]?.id, 0);
 		if (!url) return;
 		await copyTextToClipboard(url);
 		showTooltip(get(t).player.linkCopied, 3000, shareTooltipAnchorEl);
@@ -143,7 +140,7 @@
 						{podcast.title}
 					</h3>
 					<p class={cardStyles.content.description}>
-						{podcast.description}
+						{clampText(podcast.description, 120)}
 					</p>
 				</div>
 			</div>
@@ -197,7 +194,7 @@
 								{/if}
 								{#if episode.description}
 									<p class="text-base-content-secondary line-clamp-2 text-sm">
-										{episode.description}
+										{clampText(episode.description, 100)}
 									</p>
 								{/if}
 								{#if episode.pubDate}
