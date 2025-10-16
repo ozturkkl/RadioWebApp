@@ -1,14 +1,24 @@
 import 'dotenv/config';
 import fs from 'fs-extra';
+import path from 'node:path';
 
 async function deploy() {
     try {
         const buildPath = 'build';
-        const deployPath = process.env.DEPLOY_BUILD_PATH;
+        const args = process.argv.slice(2);
+        const isBeta = args.includes('--beta');
+        const envPath = process.env.DEPLOY_BUILD_PATH;
 
-        if (!deployPath) {
+        if (!envPath) {
             throw new Error('DEPLOY_BUILD_PATH environment variable is not set');
         }
+
+        // Normalize env path and optionally append -beta to last folder name
+        const normalizedEnvPath = envPath.replace(/[\\/]+$/, '');
+        const parsed = path.parse(normalizedEnvPath);
+        const baseFolder = parsed.base;
+        const betaFolder = `${baseFolder}-beta`;
+        const deployPath = isBeta ? path.join(parsed.dir || parsed.root, betaFolder) : normalizedEnvPath;
 
         // Ensure the deployment directory exists
         fs.ensureDirSync(deployPath);

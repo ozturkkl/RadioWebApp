@@ -6,6 +6,7 @@
 	"scripts": {
 		"setup": "npx tsx src/scripts/setup.ts",
 		"deploy": "npm run build && vite-node src/scripts/deploy.ts",
+		"deploy:beta": "npm run build && vite-node src/scripts/deploy.ts --beta",
 		"dev": "vite dev",
 		"seo": "vite-node src/scripts/generate-og-image.ts && vite-node src/scripts/generate-sitemap.ts && vite-node src/scripts/generate-podcast-snapshot.ts",
 		"assetlinks": "vite-node src/scripts/generate-assetlinks.ts",
