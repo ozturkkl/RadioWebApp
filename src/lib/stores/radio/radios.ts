@@ -1,6 +1,5 @@
 import { writable } from 'svelte/store';
 import { config } from '$lib/config';
-import * as Icons from 'lucide-svelte';
 import { getUserData, setUserData } from '$lib/util/userData';
 
 export interface Radio {
@@ -8,10 +7,10 @@ export interface Radio {
 	title: string;
 	image: string;
 	streamUrl: string;
-	links?: {
-		iconLabel: keyof typeof Icons;
-		url: string;
-	}[];
+    links?: {
+        iconLabel: string;
+        url: string;
+    }[];
 	trackInfo: {
 		cover: string;
 		artist: string;

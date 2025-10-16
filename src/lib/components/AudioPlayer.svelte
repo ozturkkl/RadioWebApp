@@ -98,12 +98,12 @@
 						</p>
 					{/if}
 				</div>
-			{:else if $playerStore.type === 'podcast' && $playerStore.currentEpisode}
-				<img
-					src={$playerStore.currentEpisode.image || $playerStore.currentPodcast?.imageUrl}
-					alt={$playerStore.currentEpisode.title}
-					class="h-8 w-8 rounded object-cover"
-				/>
+            {:else if $playerStore.type === 'podcast' && $playerStore.currentEpisode}
+                <img
+                    src={$playerStore.currentPodcast?.imageUrl}
+                    alt={$playerStore.currentEpisode.title}
+                    class="h-8 w-8 rounded object-cover"
+                />
 				<div class="min-w-0 flex-1">
 					<h3 class="truncate text-sm font-medium">{$playerStore.currentPodcast?.title}</h3>
 					<p class="truncate text-xs opacity-75">{$playerStore.currentEpisode.title}</p>

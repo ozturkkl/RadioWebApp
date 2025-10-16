@@ -209,11 +209,7 @@
 										{formatTime(Number(episode.duration))}
 									</div>
 								{/if}
-								{#if episode.description}
-									<p class="text-base-content-secondary line-clamp-2 text-sm">
-										{clampText(episode.description, 100)}
-									</p>
-								{/if}
+                                <!-- Episode descriptions are intentionally omitted to save memory -->
 								{#if episode.pubDate}
 									<div class="text-base-content-secondary text-right text-sm">
 										{formatDate(episode.pubDate)}

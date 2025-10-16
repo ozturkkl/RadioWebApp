@@ -1,19 +1,18 @@
-import * as Icons from 'lucide-svelte';
 
 export interface WebsiteConfig {
 	title: string;
 	description: string;
 	url: string;
 	keywords?: string[];
-	links: {
-		iconLabel: keyof typeof Icons;
-		url: string;
-	}[];
-	externalLinks: {
-		label: string;
-		iconLabel: keyof typeof Icons;
-		url: string;
-	}[];
+    links: {
+        iconLabel: string;
+        url: string;
+    }[];
+    externalLinks: {
+        label: string;
+        iconLabel: string;
+        url: string;
+    }[];
 }
 
 export interface PodcastConfig {
@@ -25,10 +24,10 @@ export interface RadioConfig {
 	title: string;
 	image: string;
 	streamUrl: string;
-	links?: {
-		iconLabel: keyof typeof Icons;
-		url: string;
-	}[];
+    links?: {
+        iconLabel: string;
+        url: string;
+    }[];
 	trackInfo:
 		| string
 		| {
