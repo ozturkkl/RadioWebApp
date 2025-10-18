@@ -14,6 +14,7 @@
 	import { playerStore } from '$lib/stores/player';
 	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
+	import VirtualList from '$lib/components/utility/VirtualList.svelte';
 
 	let expandedPodcasts = new Set<string>();
 	let headerClasses = 'mb-2 sm:mb-4';
@@ -22,84 +23,8 @@
 	let filteredPodcasts: Podcast[] = [];
 	const ALL_CATEGORY = 'All'; // Keep this as a constant for comparison
 
-	// Windowing/lightweight activation for archive podcasts
-	let visibleStartIndex = 0;
-	let visibleEndIndex = 0;
-	const ACTIVE_BUFFER = 0; // render a small buffer around viewport for smoothness
-	let intersectionObserver: IntersectionObserver;
-	const visibleIndexSet = new Set<number>();
-
-	// Map podcast id to index for O(1) lookup
-	$: otherPodcastIdToIndex = new Map(otherPodcasts.map((p, i) => [p.id, i] as const));
-
-	function updateVisibleRange() {
-		if (visibleIndexSet.size === 0) return;
-		let minIdx = Number.POSITIVE_INFINITY;
-		let maxIdx = -1;
-		for (const idx of visibleIndexSet) {
-			if (idx < minIdx) minIdx = idx;
-			if (idx > maxIdx) maxIdx = idx;
-		}
-		if (minIdx === Number.POSITIVE_INFINITY || maxIdx === -1) return;
-		const newStart = Math.max(0, minIdx - ACTIVE_BUFFER);
-		const newEnd = Math.min(otherPodcasts.length - 1, maxIdx + ACTIVE_BUFFER);
-		if (newStart !== visibleStartIndex || newEnd !== visibleEndIndex) {
-			visibleStartIndex = newStart;
-			visibleEndIndex = newEnd;
-		}
-	}
-
-	function setupIntersectionObserver() {
-		if (intersectionObserver) {
-			intersectionObserver.disconnect();
-		}
-		visibleIndexSet.clear();
-
-		if (typeof window === 'undefined') return;
-
-		const cards = document.querySelectorAll('.podcast-card[data-podcast-id]');
-		const rootEl = cards[0]?.closest('.overflow-y-auto') as Element;
-
-		if (!rootEl) return;
-
-		intersectionObserver = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					const target = entry.target as HTMLElement;
-					const id = target.getAttribute('data-podcast-id');
-					if (!id) continue;
-					const idx = otherPodcastIdToIndex.get(id);
-					if (idx === undefined) continue;
-					if (entry.isIntersecting) {
-						visibleIndexSet.add(idx);
-					} else {
-						visibleIndexSet.delete(idx);
-					}
-				}
-				updateVisibleRange();
-			},
-			{
-				root: rootEl,
-				rootMargin: '0px',
-				threshold: 0
-			}
-		);
-
-		cards.forEach((el) => intersectionObserver.observe(el));
-	}
-
-	onMount(() => {
-		if (typeof window === 'undefined') return;
-		return () => {
-			intersectionObserver?.disconnect();
-		};
-	});
-
-	$: otherPodcasts,
-		(async () => {
-			await tick();
-			setupIntersectionObserver();
-		})();
+	// Virtual list ref for archive scrolling
+	let archiveListRef: any;
 
 	let sharedPodcastId: string | null = null;
 	let sharedEpisodeId: string | null = null;
@@ -135,6 +60,10 @@
 	$: otherRadios = $radios.filter((radio) => !$radioFavorites[radio.title]);
 	$: favoritePodcasts = $podcasts.filter((podcast) => !!$podcastFavorites[podcast.id]);
 	$: otherPodcasts = filteredPodcasts;
+	$: favoriteItems = [
+		...favoriteRadios.map((radio) => ({ kind: 'radio', key: radio.title, radio })),
+		...favoritePodcasts.map((podcast) => ({ kind: 'podcast', key: podcast.id, podcast }))
+	];
 
 	function tryHandleShare() {
 		if (sharedPodcastId) {
@@ -145,7 +74,16 @@
 				);
 				if (episode) {
 					playerStore.playPodcast(podcast, episode, sharedTimeSeconds);
-					togglePlaylist(sharedPodcastId);
+					// Expand and scroll into view with virtualization
+					expandedPodcasts.add(sharedPodcastId!);
+					// Defer scroll to next frame to avoid await inside reactive function
+					requestAnimationFrame(() => {
+						const id = sharedPodcastId as string;
+						const idx = new Map(otherPodcasts.map((p, i) => [p.id, i] as const)).get(id);
+						if (idx !== undefined) {
+							archiveListRef?.scrollToIndex(idx, 'smooth');
+						}
+					});
 					return true;
 				}
 			}
@@ -211,19 +149,29 @@
 	}
 </script>
 
-{#if favoriteRadios.length > 0 || favoritePodcasts.length > 0}
+{#if favoriteItems.length > 0}
 	<h2 class={[headerClasses, headerTextClasses]}>{$t.home.favorites}</h2>
 	<div class={sectionClasses}>
-		{#each favoriteRadios as radio (radio.title)}
-			<RadioCard {radio} />
-		{/each}
-		{#each favoritePodcasts as podcast (podcast.id)}
-			<PodcastCard
-				{podcast}
-				expanded={expandedPodcasts.has(podcast.id)}
-				onExpand={handlePodcastExpand}
-			/>
-		{/each}
+		<VirtualList
+			items={favoriteItems}
+			estimatedRowHeight={100}
+			buffer={0}
+			keyFn={(it) => `${it.kind}:${it.key}`}
+			getScrollRoot={() => document.querySelector('.overflow-y-auto') as HTMLElement}
+			debug={true}
+		>
+			<svelte:fragment slot="item" let:item>
+				{#if item.kind === 'radio'}
+					<RadioCard radio={item.radio} />
+				{:else}
+					<PodcastCard
+						podcast={item.podcast}
+						expanded={expandedPodcasts.has(item.podcast.id)}
+						onExpand={handlePodcastExpand}
+					/>
+				{/if}
+			</svelte:fragment>
+		</VirtualList>
 	</div>
 	<div class="divider"></div>
 {/if}
@@ -263,15 +211,22 @@
 	{:else if otherPodcasts.length === 0}
 		<p class="text-base-content-secondary">{$t.home.allArchiveInFavorites}</p>
 	{:else}
-		{#each otherPodcasts as podcast, index (podcast.id)}
-			<PodcastCard
-				{podcast}
-				expanded={expandedPodcasts.has(podcast.id)}
-				active={expandedPodcasts.has(podcast.id) ||
-					($playerStore.type === 'podcast' && $playerStore.currentPodcast?.id === podcast.id) ||
-					(index >= visibleStartIndex && index <= visibleEndIndex)}
-				onExpand={handlePodcastExpand}
-			/>
-		{/each}
+		<VirtualList
+			bind:this={archiveListRef}
+			items={otherPodcasts}
+			estimatedRowHeight={100}
+			buffer={0}
+			keyFn={(p) => p.id}
+			getScrollRoot={() => document.querySelector('.overflow-y-auto') as HTMLElement}
+			debug={true}
+		>
+			<svelte:fragment slot="item" let:item>
+				<PodcastCard
+					podcast={item}
+					expanded={expandedPodcasts.has(item.id)}
+					onExpand={handlePodcastExpand}
+				/>
+			</svelte:fragment>
+		</VirtualList>
 	{/if}
 </div>

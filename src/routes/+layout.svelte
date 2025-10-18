@@ -5,12 +5,13 @@
 	import InitializePWA from '$lib/components/InitializePWA.svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import SEO from '$lib/components/SEO.svelte';
+	export let data: { seo: { keywords: string; jsonLd: Record<string, unknown> } };
 
 	const outerDivStyle = 'flex flex-col items-center';
 	const innerDivStyle = 'container mx-0 sm:mx-5 w-auto flex-col fill-available grow';
 </script>
 
-<SEO />
+<SEO keywords={data?.seo?.keywords} jsonLd={data?.seo?.jsonLd} />
 
 <InitializePWA />
 
