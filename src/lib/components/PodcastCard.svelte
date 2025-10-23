@@ -19,6 +19,8 @@
 	export let expanded = false;
 	export let onExpand: (podcastId: string, isExpanded: boolean) => void;
 
+	let imageLoaded = false;
+
 	let visibleEpisodes: Episode[] = [];
 	let isReversed = false;
 	const BATCH_SIZE = 20;
@@ -131,9 +133,11 @@
 				<img
 					src={podcast.imageUrl}
 					alt={`${podcast.title} podcast image`}
-					class={cardStyles.content.image}
+					class="{cardStyles.content.image} {imageLoaded ? '' : 'invisible'}"
 					loading="lazy"
 					decoding="async"
+					draggable="false"
+					on:load={() => (imageLoaded = true)}
 				/>
 				<div class={cardStyles.content.textContainer}>
 					<h3 class={cardStyles.content.title}>
