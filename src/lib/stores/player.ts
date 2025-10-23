@@ -498,7 +498,10 @@ export function togglePlaylist(targetPodcastId?: string) {
 
 	if (podcastId) {
 		// Navigate to main page using SvelteKit's goto
-		goto('/').then(() => {
+		goto('/').then(async () => {
+			// Ask VirtualLists to ensure the podcast is visible and await completion
+			await ensureVisibleById(podcastId);
+
 			const podcast = podcastId ? get(podcasts).find((p) => p.id === podcastId) : null;
 			// After navigation, find and expand the podcast
 			const podcastElement = document.querySelector(`[data-podcast-id="${podcastId}"]`);
@@ -559,6 +562,11 @@ export function togglePlaylist(targetPodcastId?: string) {
 	} else if (state.type === 'radio' && state.currentRadio) {
 		// Navigate to main page using SvelteKit's goto
 		goto('/').then(async () => {
+			// Ask VirtualLists to ensure the radio is visible and await completion
+			if (state.currentRadio) {
+				await ensureVisibleById(state.currentRadio.id);
+			}
+
 			// Find the radio card by title
 			const radioCard = Array.from(document.querySelectorAll('[role="button"]')).find(
 				(element) => element.querySelector('h3')?.textContent === state.currentRadio?.title
@@ -575,6 +583,27 @@ export function togglePlaylist(targetPodcastId?: string) {
 			}
 		});
 	}
+}
+
+// Fire-and-wait helper: single-event with resolver
+async function ensureVisibleById(id: string, timeoutMs = 4000) {
+	return await new Promise<void>((resolve) => {
+		const timer = setTimeout(() => resolve(), timeoutMs);
+		// Defer dispatch to next tick to allow route/dom to settle
+		setTimeout(() => {
+			window.dispatchEvent(
+				new CustomEvent('virtual-list-ensure-visible', {
+					detail: {
+						id,
+						resolve: () => {
+							clearTimeout(timer);
+							resolve();
+						}
+					}
+				})
+			);
+		}, 0);
+	});
 }
 export async function autoplayLastContent() {
 	// Get the last played times for radios and podcasts

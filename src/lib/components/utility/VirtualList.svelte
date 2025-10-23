@@ -107,23 +107,76 @@
 		}
 	}
 
-	let pending = false;
-	function scheduleUpdate() {
-		if (pending) return;
-		pending = true;
-		requestAnimationFrame(() => {
-			pending = false;
-			listOffsetTop = computeListOffsetTop();
-			readScrollState();
-			computeViewport();
-			recomputeSpacers();
-			logState('raf');
+	let pendingPromise: Promise<void> | null = null;
+	async function scheduleUpdate() {
+		if (pendingPromise) return pendingPromise;
+		return await new Promise<void>((resolve) => {
+			requestAnimationFrame(() => {
+				pendingPromise = null;
+				listOffsetTop = computeListOffsetTop();
+				readScrollState();
+				computeViewport();
+				recomputeSpacers();
+				logState('raf');
+				resolve();
+			});
 		});
 	}
 
 	function recomputeSpacers() {
 		topSpacer = rowOffsets[startRow] || 0;
 		bottomSpacer = totalHeight - (rowOffsets[endRow] || 0);
+	}
+
+	function findIndexById(id: string) {
+		if (!id) return -1;
+		return items.findIndex(
+			(it) => typeof it === 'object' && it !== null && 'id' in it && it.id === id
+		);
+	}
+	// Imperative API: scroll a given index into view and await visibility
+	async function scrollIndexIntoView(index: number, timeoutMs = 4000): Promise<void> {
+		let startTime = performance.now();
+		while (performance.now() - startTime < timeoutMs) {
+			if (index < 0) return;
+			if (typeof window === 'undefined' || !parentEl) {
+				await new Promise((r) => setTimeout(r, 100));
+				continue;
+			}
+
+			await scheduleUpdate();
+
+			const cols = Math.max(1, columns | 0);
+			const clampedIndex = Math.max(0, Math.min(items.length - 1, index | 0));
+			const targetRow = Math.floor(clampedIndex / cols);
+			const rowTop = rowOffsets[targetRow] || 0;
+			const rowHeight = rowHeights[targetRow] || estimatedItemHeight;
+
+			let targetTop = Math.max(0, rowTop - Math.max(0, (viewportHeight - rowHeight) / 2));
+
+			const absoluteTopForWindow = listOffsetTop + targetTop;
+
+			const scrollElement = scrollRoot === window ? window : (scrollRoot as Element);
+			scrollElement.scrollTo({ top: absoluteTopForWindow, behavior: 'smooth' });
+
+			await waitForIndexInView(index, timeoutMs);
+			return;
+		}
+	}
+
+	async function waitForIndexInView(index: number, timeoutMs: number) {
+		// dead simple: wait until the index is rendered (has a [data-index]) and in range
+		if (index < 0 || index >= items.length) return;
+		const startTime = performance.now();
+		while (performance.now() - startTime < timeoutMs) {
+			await scheduleUpdate();
+			const inRange = index >= startIndex && index < endIndex;
+			const node = parentEl?.querySelector(`[data-index="${index}"]`);
+			if (inRange && node) {
+				return;
+			}
+			await new Promise((r) => setTimeout(r, 16));
+		}
 	}
 
 	onMount(() => {
@@ -162,10 +215,24 @@
 				}
 			});
 
+			// listen for playlist ensure visible event
+			const onEnsureVisible = async (ev: Event) => {
+				const e = ev as CustomEvent<{ id: string; resolve?: () => void }>;
+				if (!e?.detail?.id) return;
+				const idx = findIndexById(e.detail.id);
+				if (idx >= 0) {
+					await scrollIndexIntoView(idx, 4000);
+					// notify caller via provided resolver
+					e.detail?.resolve?.();
+				}
+			};
+			window.addEventListener('virtual-list-ensure-visible', onEnsureVisible as EventListener);
+
 			return () => {
 				const scrollTarget = scrollRoot === window ? window : (scrollRoot as Element);
 				(scrollTarget as Window | Element).removeEventListener('scroll', onScroll as EventListener);
 				window.removeEventListener('resize', onResize);
+				window.removeEventListener('virtual-list-ensure-visible', onEnsureVisible as EventListener);
 				ro?.disconnect();
 			};
 		}
