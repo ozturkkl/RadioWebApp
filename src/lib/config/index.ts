@@ -1,4 +1,4 @@
-import * as Icons from 'lucide-svelte';
+import type { IconLabel } from '$lib/util/getIconComponent';
 
 export interface WebsiteConfig {
 	title: string;
@@ -6,12 +6,12 @@ export interface WebsiteConfig {
 	url: string;
 	keywords?: string[];
 	links: {
-		iconLabel: keyof typeof Icons;
+		iconLabel: IconLabel;
 		url: string;
 	}[];
 	externalLinks: {
 		label: string;
-		iconLabel: keyof typeof Icons;
+		iconLabel: IconLabel;
 		url: string;
 	}[];
 }
@@ -26,7 +26,7 @@ export interface RadioConfig {
 	image: string;
 	streamUrl: string;
 	links?: {
-		iconLabel: keyof typeof Icons;
+		iconLabel: IconLabel;
 		url: string;
 	}[];
 	trackInfo:

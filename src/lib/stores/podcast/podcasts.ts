@@ -114,6 +114,9 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 
 // Cache invalidation time (10 minutes in milliseconds)
 const CACHE_INVALIDATION_TIME = 10 * 60 * 1000;
+// Limit how many RSS feeds are fetched/parsed at the same time to reduce peak
+// memory usage on low-RAM devices.
+const FETCH_CONCURRENCY = 4;
 
 function createPodcastsStore() {
 	const { subscribe, set, update } = writable<Podcast[]>([]);
@@ -162,7 +165,7 @@ function createPodcastsStore() {
 					}
 
 					// Save to local storage with throttling
-					setUserData('cached-podcasts', orderedPodcasts.slice(0, 5));
+					setUserData('cached-podcasts', orderedPodcasts.slice(0, 100));
 
 					return orderedPodcasts;
 				});
@@ -172,36 +175,45 @@ function createPodcastsStore() {
 			true // Trailing call
 		);
 
-		// Process all feed URLs concurrently
-		feedUrls.forEach(async (url) => {
-			try {
-				// Check if we have a cached version and if it's still valid
-				const cachedPodcast = cachedPodcastMap.get(url);
-				const isCacheValid =
-					cachedPodcast &&
-					cachedPodcast.lastFetched &&
-					Date.now() - cachedPodcast.lastFetched < CACHE_INVALIDATION_TIME;
+		// Process all feed URLs with limited concurrency to cap peak memory
+		let nextIndex = 0;
+		async function worker() {
+			while (nextIndex < feedUrls.length) {
+				const url = feedUrls[nextIndex++];
+				try {
+					// Check if we have a cached version and if it's still valid
+					const cachedPodcast = cachedPodcastMap.get(url);
+					const isCacheValid =
+						cachedPodcast &&
+						cachedPodcast.lastFetched &&
+						Date.now() - cachedPodcast.lastFetched < CACHE_INVALIDATION_TIME;
 
-				let podcast: Podcast | null = null;
+					let podcast: Podcast | null = null;
 
-				if (isCacheValid) {
-					// Use cached version
-					podcast = cachedPodcast;
-				} else {
-					// No valid cache, fetch
-					podcast = await fetchPodcast(url);
+					if (isCacheValid) {
+						// Use cached version
+						podcast = cachedPodcast;
+					} else {
+						// No valid cache, fetch
+						podcast = await fetchPodcast(url);
+					}
+
+					if (podcast) {
+						// Add to processed podcasts
+						fetchedPodcastMap.set(url, podcast);
+						// Update the UI
+						throttledUpdate();
+					}
+				} catch (error) {
+					console.error(`Error processing podcast ${url}:`, error);
 				}
-
-				if (podcast) {
-					// Add to processed podcasts
-					fetchedPodcastMap.set(url, podcast);
-					// Update the UI
-					throttledUpdate();
-				}
-			} catch (error) {
-				console.error(`Error processing podcast ${url}:`, error);
 			}
-		});
+		}
+
+		const workers = Array.from({ length: Math.min(FETCH_CONCURRENCY, feedUrls.length) }, () =>
+			worker()
+		);
+		await Promise.all(workers);
 	}
 
 	// Initial load

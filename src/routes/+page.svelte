@@ -8,12 +8,13 @@
 	import DropdownSelect from '$lib/components/utility/DropdownSelect.svelte';
 	import { config } from '$lib/config';
 	import { togglePlaylist } from '$lib/stores/player';
-	import { radios } from '$lib/stores/radio/radios';
+	import { radios, type Radio } from '$lib/stores/radio/radios';
 	import { podcasts, type Podcast } from '$lib/stores/podcast/podcasts';
 	import { t } from '$lib/i18n';
 	import { playerStore } from '$lib/stores/player';
 	import { onMount, tick } from 'svelte';
 	import { get } from 'svelte/store';
+	import VirtualList from '$lib/components/utility/VirtualList.svelte';
 
 	let expandedPodcasts = new Set<string>();
 	let headerClasses = 'mb-2 sm:mb-4';
@@ -21,85 +22,6 @@
 	let sectionClasses = 'grid grid-cols-1 items-start gap-2 sm:gap-4 lg:grid-cols-2 2xl:grid-cols-3';
 	let filteredPodcasts: Podcast[] = [];
 	const ALL_CATEGORY = 'All'; // Keep this as a constant for comparison
-
-	// Windowing/lightweight activation for archive podcasts
-	let visibleStartIndex = 0;
-	let visibleEndIndex = 0;
-	const ACTIVE_BUFFER = 0; // render a small buffer around viewport for smoothness
-	let intersectionObserver: IntersectionObserver;
-	const visibleIndexSet = new Set<number>();
-
-	// Map podcast id to index for O(1) lookup
-	$: otherPodcastIdToIndex = new Map(otherPodcasts.map((p, i) => [p.id, i] as const));
-
-	function updateVisibleRange() {
-		if (visibleIndexSet.size === 0) return;
-		let minIdx = Number.POSITIVE_INFINITY;
-		let maxIdx = -1;
-		for (const idx of visibleIndexSet) {
-			if (idx < minIdx) minIdx = idx;
-			if (idx > maxIdx) maxIdx = idx;
-		}
-		if (minIdx === Number.POSITIVE_INFINITY || maxIdx === -1) return;
-		const newStart = Math.max(0, minIdx - ACTIVE_BUFFER);
-		const newEnd = Math.min(otherPodcasts.length - 1, maxIdx + ACTIVE_BUFFER);
-		if (newStart !== visibleStartIndex || newEnd !== visibleEndIndex) {
-			visibleStartIndex = newStart;
-			visibleEndIndex = newEnd;
-		}
-	}
-
-	function setupIntersectionObserver() {
-		if (intersectionObserver) {
-			intersectionObserver.disconnect();
-		}
-		visibleIndexSet.clear();
-
-		if (typeof window === 'undefined') return;
-
-		const cards = document.querySelectorAll('.podcast-card[data-podcast-id]');
-		const rootEl = cards[0]?.closest('.overflow-y-auto') as Element;
-
-		if (!rootEl) return;
-
-		intersectionObserver = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					const target = entry.target as HTMLElement;
-					const id = target.getAttribute('data-podcast-id');
-					if (!id) continue;
-					const idx = otherPodcastIdToIndex.get(id);
-					if (idx === undefined) continue;
-					if (entry.isIntersecting) {
-						visibleIndexSet.add(idx);
-					} else {
-						visibleIndexSet.delete(idx);
-					}
-				}
-				updateVisibleRange();
-			},
-			{
-				root: rootEl,
-				rootMargin: '0px',
-				threshold: 0
-			}
-		);
-
-		cards.forEach((el) => intersectionObserver.observe(el));
-	}
-
-	onMount(() => {
-		if (typeof window === 'undefined') return;
-		return () => {
-			intersectionObserver?.disconnect();
-		};
-	});
-
-	$: otherPodcasts,
-		(async () => {
-			await tick();
-			setupIntersectionObserver();
-		})();
 
 	let sharedPodcastId: string | null = null;
 	let sharedEpisodeId: string | null = null;
@@ -217,13 +139,15 @@
 		{#each favoriteRadios as radio (radio.title)}
 			<RadioCard {radio} />
 		{/each}
-		{#each favoritePodcasts as podcast (podcast.id)}
-			<PodcastCard
-				{podcast}
-				expanded={expandedPodcasts.has(podcast.id)}
-				onExpand={handlePodcastExpand}
-			/>
-		{/each}
+		<VirtualList items={favoritePodcasts} estimatedItemHeight={97.5}>
+			<svelte:fragment let:item>
+				<PodcastCard
+					podcast={item as Podcast}
+					expanded={expandedPodcasts.has((item as Podcast).id)}
+					onExpand={handlePodcastExpand}
+				/>
+			</svelte:fragment>
+		</VirtualList>
 	</div>
 	<div class="divider"></div>
 {/if}
@@ -237,9 +161,11 @@
 	{:else if otherRadios.length === 0}
 		<p class="text-base-content-secondary">{$t.home.allStationsInFavorites}</p>
 	{:else}
-		{#each otherRadios as radio (radio.title)}
-			<RadioCard {radio} />
-		{/each}
+		<VirtualList items={otherRadios} estimatedItemHeight={97.5}>
+			<svelte:fragment let:item>
+				<RadioCard radio={item as Radio} />
+			</svelte:fragment>
+		</VirtualList>
 	{/if}
 </div>
 
@@ -263,15 +189,14 @@
 	{:else if otherPodcasts.length === 0}
 		<p class="text-base-content-secondary">{$t.home.allArchiveInFavorites}</p>
 	{:else}
-		{#each otherPodcasts as podcast, index (podcast.id)}
-			<PodcastCard
-				{podcast}
-				expanded={expandedPodcasts.has(podcast.id)}
-				active={expandedPodcasts.has(podcast.id) ||
-					($playerStore.type === 'podcast' && $playerStore.currentPodcast?.id === podcast.id) ||
-					(index >= visibleStartIndex && index <= visibleEndIndex)}
-				onExpand={handlePodcastExpand}
-			/>
-		{/each}
+		<VirtualList items={otherPodcasts} estimatedItemHeight={97.5}>
+			<svelte:fragment let:item>
+				<PodcastCard
+					podcast={item as Podcast}
+					expanded={expandedPodcasts.has((item as Podcast).id)}
+					onExpand={handlePodcastExpand}
+				/>
+			</svelte:fragment>
+		</VirtualList>
 	{/if}
 </div>

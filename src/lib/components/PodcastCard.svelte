@@ -18,8 +18,6 @@
 	export let podcast: Podcast;
 	export let expanded = false;
 	export let onExpand: (podcastId: string, isExpanded: boolean) => void;
-	// When inactive (and not expanded), render a very light stub: skeleton + title only to save on performance
-	export let active = true;
 
 	let visibleEpisodes: Episode[] = [];
 	let isReversed = false;
@@ -117,12 +115,10 @@
 	class="podcast-card {cardStyles.container} {!expanded ? cardStyles.hoverScale : ''}"
 	data-podcast-id={podcast.id}
 >
-	{#if active || expanded}
-		<FavoriteButton
-			isFavorite={$podcastFavorites[podcast.id]}
-			onClick={() => podcastFavorites.togglePodcast(podcast.id)}
-		/>
-	{/if}
+	<FavoriteButton
+		isFavorite={$podcastFavorites[podcast.id]}
+		onClick={() => podcastFavorites.togglePodcast(podcast.id)}
+	/>
 	<div class="collapse collapse-arrow rounded-lg">
 		<input
 			type="checkbox"
@@ -131,65 +127,52 @@
 			on:change={(e) => onExpand(podcast.id, e.currentTarget.checked)}
 		/>
 		<div class="collapse-title p-0">
-			{#if active || expanded}
-				<div class={cardStyles.content.wrapper}>
-					<img
-						src={podcast.imageUrl}
-						alt={`${podcast.title} podcast image`}
-						class={cardStyles.content.image}
-						loading="lazy"
-						decoding="async"
-					/>
-					<div class={cardStyles.content.textContainer}>
-						<h3 class={cardStyles.content.title}>
-							{podcast.title}
-						</h3>
-						<p class={cardStyles.content.description}>
-							{clampText(podcast.description, 120)}
-						</p>
-					</div>
+			<div class={cardStyles.content.wrapper}>
+				<img
+					src={podcast.imageUrl}
+					alt={`${podcast.title} podcast image`}
+					class={cardStyles.content.image}
+					loading="lazy"
+					decoding="async"
+				/>
+				<div class={cardStyles.content.textContainer}>
+					<h3 class={cardStyles.content.title}>
+						{podcast.title}
+					</h3>
+					<p class={cardStyles.content.description}>
+						{clampText(podcast.description, 120)}
+					</p>
 				</div>
-			{:else}
-				<div class={cardStyles.content.wrapper}>
-					<div class="h-24 w-24 shrink-0 rounded-lg bg-base-300"></div>
-					<div class={cardStyles.content.textContainer}>
-						<h3 class={cardStyles.content.title}>{podcast.title}</h3>
-						<div class="mt-2 h-4 w-3/4 rounded bg-base-300"></div>
-						<div class="mt-2 h-4 w-1/2 rounded bg-base-300"></div>
-					</div>
-				</div>
-			{/if}
+			</div>
 		</div>
 		<div class="collapse-content relative">
-			{#if active || expanded}
-				<div class="flex justify-end">
-					<TouchableButton
-						onClick={() => infoModal.open()}
-						circle={false}
-						ariaLabel={$t.podcast.showMoreInfo}
-						size="sm"
-					>
-						<Info class="h-5 w-5" />
-					</TouchableButton>
-					<TouchableButton
-						bind:el={shareTooltipAnchorEl}
-						onClick={sharePodcastLink}
-						circle={false}
-						ariaLabel={$t.player.sharePodcast}
-						size="sm"
-					>
-						<Link class="h-5 w-5" />
-					</TouchableButton>
-					<TouchableButton
-						onClick={reverseEpisodes}
-						circle={false}
-						ariaLabel={isReversed ? $t.podcast.showOldestFirst : $t.podcast.showNewestFirst}
-						size="sm"
-					>
-						<svelte:component this={isReversed ? ArrowUpWideNarrow : ArrowDownNarrowWide} />
-					</TouchableButton>
-				</div>
-			{/if}
+			<div class="flex justify-end">
+				<TouchableButton
+					onClick={() => infoModal.open()}
+					circle={false}
+					ariaLabel={$t.podcast.showMoreInfo}
+					size="sm"
+				>
+					<Info class="h-5 w-5" />
+				</TouchableButton>
+				<TouchableButton
+					bind:el={shareTooltipAnchorEl}
+					onClick={sharePodcastLink}
+					circle={false}
+					ariaLabel={$t.player.sharePodcast}
+					size="sm"
+				>
+					<Link class="h-5 w-5" />
+				</TouchableButton>
+				<TouchableButton
+					onClick={reverseEpisodes}
+					circle={false}
+					ariaLabel={isReversed ? $t.podcast.showOldestFirst : $t.podcast.showNewestFirst}
+					size="sm"
+				>
+					<svelte:component this={isReversed ? ArrowUpWideNarrow : ArrowDownNarrowWide} />
+				</TouchableButton>
+			</div>
 			{#if expanded}
 				<div
 					transition:fade={{ duration: 200 }}

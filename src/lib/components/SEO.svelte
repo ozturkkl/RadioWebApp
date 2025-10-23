@@ -112,4 +112,46 @@
 	</script>
 </svelte:head>
 
-<!-- Intentionally no hidden duplicate content; rely on SSR fallback and JSON-LD -->
+<!-- Hidden SEO Content -->
+<div style="display:none;" aria-hidden="true">
+	<h1>Featured Podcasts</h1>
+	{#each podcastSnapshot as podcast}
+		<article>
+			<h2>{podcast.name}</h2>
+			<p>{podcast.description}</p>
+			{#if podcast.categories && podcast.categories.length > 0}
+				<div>
+					<p>Categories:</p>
+					<ul>
+						{#each podcast.categories as category}
+							<li>{category}</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+			<p>Episodes:</p>
+			<ul>
+				{#each podcast.episodes as episode}
+					<li>{episode.name}</li>
+				{/each}
+			</ul>
+		</article>
+	{/each}
+
+	<h1>Radio Stations</h1>
+	{#each config.radios as radio}
+		<article>
+			<h2>{radio.title}</h2>
+			{#if radio.links && radio.links.length > 0}
+				<div>
+					<p>Related Links:</p>
+					<ul>
+						{#each radio.links as link}
+							<li>{link.iconLabel}: {link.url}</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+		</article>
+	{/each}
+</div>
