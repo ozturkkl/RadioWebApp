@@ -116,7 +116,7 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 const CACHE_INVALIDATION_TIME = 10 * 60 * 1000;
 // Limit how many RSS feeds are fetched/parsed at the same time to reduce peak
 // memory usage on low-RAM devices.
-const FETCH_CONCURRENCY = 4;
+const FETCH_CONCURRENCY = 10;
 
 function createPodcastsStore() {
 	const { subscribe, set, update } = writable<Podcast[]>([]);
@@ -165,7 +165,7 @@ function createPodcastsStore() {
 					}
 
 					// Save to local storage with throttling
-					setUserData('cached-podcasts', orderedPodcasts.slice(0, 100));
+					setUserData('cached-podcasts', orderedPodcasts.slice(0, 150));
 
 					return orderedPodcasts;
 				});
