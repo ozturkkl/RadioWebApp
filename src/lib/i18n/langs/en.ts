@@ -27,7 +27,15 @@ export const en = {
 		allStationsInFavorites: 'All stations are in favorites',
 		allArchiveInFavorites: 'All of this archive is in favorites',
 		scrollForMoreEpisodes: 'Scroll for more episodes',
-		allCategories: 'All'
+		allCategories: 'All',
+		searchPlaceholder: 'Search podcasts or episodes…',
+		searchLabel: 'Search archive',
+		searchClear: 'Clear search',
+		searchNoResults: 'No results found',
+		searchMatchTitle: 'Title',
+		searchMatchEpisodes: '{count} episode',
+		searchExactMatches: 'Exact matches',
+		searchSimilarMatches: 'Similar results'
 	},
 	player: {
 		skipBackward: 'Skip backward',

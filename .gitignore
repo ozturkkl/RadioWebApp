@@ -14,7 +14,12 @@ Thumbs.db
 
 # Config
 src/lib/config/config.ts
+src/lib/config/config.local.ts
 .env
+
+# Local station content (do not push)
+static/feed_urls.txt
+static/favicon.local.png
 
 # Vite
 vite.config.js.timestamp-*

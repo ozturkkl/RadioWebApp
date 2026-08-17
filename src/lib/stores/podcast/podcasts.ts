@@ -26,6 +26,13 @@ export interface Episode {
 	pubDate?: string;
 }
 
+function proxyUrl(url: string) {
+	if (typeof window === 'undefined' || url.startsWith('/') || url.startsWith(window.location.origin)) {
+		return url;
+	}
+	return `/api/rss?url=${encodeURIComponent(url)}`;
+}
+
 export async function getPodcastRssUrls() {
 	const feedsUrl = config.podcast.feedUrlsEndpoint;
 	const res = await withBackoff(
@@ -43,15 +50,17 @@ export async function getPodcastRssUrls() {
 		7
 	);
 	const text = await res.text();
-	const urls = text.split('\n').map((url) => url.trim());
-	return urls;
+	return text
+		.split('\n')
+		.map((url) => url.trim())
+		.filter((url) => url.length > 0 && !url.startsWith('#'));
 }
 
 export async function fetchPodcast(url: string): Promise<Podcast | null> {
 	try {
 		const response = await withBackoff(
 			async () => {
-				const response = await fetch(url);
+				const response = await fetch(proxyUrl(url));
 				if (!response.ok) {
 					throw new Error(
 						`Failed to fetch podcast from ${url}: ${response.status} ${response.statusText}`

@@ -51,7 +51,11 @@ function createRadiosStore() {
 		const configRadio = config.radios.find((r) => r.title === radio.title);
 		if (typeof configRadio?.trackInfo === 'string') {
 			try {
-				const response = await fetch(configRadio.trackInfo);
+				const trackInfoUrl =
+					typeof window === 'undefined'
+						? configRadio.trackInfo
+						: `/api/rss?url=${encodeURIComponent(configRadio.trackInfo)}`;
+				const response = await fetch(trackInfoUrl);
 				const data = await response.json();
 				return {
 					...radio,
