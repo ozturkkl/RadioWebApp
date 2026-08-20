@@ -43,8 +43,10 @@ export async function getPodcastRssUrls() {
 		7
 	);
 	const text = await res.text();
-	const urls = text.split('\n').map((url) => url.trim());
-	return urls;
+	return text
+		.split('\n')
+		.map((url) => url.trim())
+		.filter((url) => url.length > 0 && !url.startsWith('#'));
 }
 
 export async function fetchPodcast(url: string): Promise<Podcast | null> {
