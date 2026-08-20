@@ -27,7 +27,16 @@ export const en = {
 		allStationsInFavorites: 'All stations are in favorites',
 		allArchiveInFavorites: 'All of this archive is in favorites',
 		scrollForMoreEpisodes: 'Scroll for more episodes',
-		allCategories: 'All'
+		allCategories: 'All',
+		searchPlaceholder: 'Search podcasts or episodes…',
+		searchLabel: 'Search archive',
+		searchClear: 'Clear search',
+		searchNoResults: 'No results found',
+		searchMatchTitle: 'Title',
+		searchMatchEpisode: '1 episode',
+		searchMatchEpisodes: '{count} episodes',
+		searchExactMatches: 'Exact matches',
+		searchSimilarMatches: 'Similar results'
 	},
 	player: {
 		skipBackward: 'Skip backward',
@@ -71,7 +80,9 @@ export const en = {
 	},
 	navbar: {
 		goBack: 'Go back',
-		otherLinks: 'Other Links'
+		otherLinks: 'Other Links',
+		search: 'Search',
+		closeSearch: 'Close search'
 	},
 	modals: {
 		externalLinks: 'Other Resources'

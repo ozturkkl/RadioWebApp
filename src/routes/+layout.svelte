@@ -27,7 +27,7 @@
 		</div>
 	</div>
 
-	<div class="{outerDivStyle} grow overflow-y-auto overflow-x-hidden">
+	<div class="{outerDivStyle} grow overflow-y-auto overflow-x-hidden" data-main-scroller>
 		<div class="{innerDivStyle} space-y-1 px-3 py-2 sm:py-3 sm:py-5">
 			<slot></slot>
 		</div>

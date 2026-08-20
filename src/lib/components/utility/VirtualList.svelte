@@ -339,7 +339,7 @@
 			<div style="height: {topSpacer}px"></div>
 		{/each}
 		{#each items.slice(startIndex, endIndex) as item, i (startIndex + i)}
-			<div style="width: 100%" use:observeRowAction={startIndex + i}>
+			<div style="width: 100%; min-width: 0" use:observeRowAction={startIndex + i}>
 				<slot {item} index={startIndex + i} />
 			</div>
 		{/each}

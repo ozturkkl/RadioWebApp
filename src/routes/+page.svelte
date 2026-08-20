@@ -12,16 +12,19 @@
 	import { podcasts, type Podcast } from '$lib/stores/podcast/podcasts';
 	import { t } from '$lib/i18n';
 	import { playerStore } from '$lib/stores/player';
-	import { onMount, tick } from 'svelte';
+	import { onMount } from 'svelte';
 	import { get } from 'svelte/store';
 	import VirtualList from '$lib/components/utility/VirtualList.svelte';
+	import { searchPodcasts, type SearchHit } from '$lib/util/search';
+	import { searchQuery } from '$lib/stores/search';
 
 	let expandedPodcasts = new Set<string>();
 	let headerClasses = 'mb-2 sm:mb-4';
 	let headerTextClasses = 'text-2xl font-bold';
 	let sectionClasses = 'grid grid-cols-1 items-start gap-2 sm:gap-4 lg:grid-cols-2 2xl:grid-cols-3';
-	let filteredPodcasts: Podcast[] = [];
 	const ALL_CATEGORY = 'All'; // Keep this as a constant for comparison
+
+	let lastSearchKey = '';
 
 	let sharedPodcastId: string | null = null;
 	let sharedEpisodeId: string | null = null;
@@ -31,15 +34,6 @@
 
 	// Create a locale-aware sorter based on the current language
 	$: localeSorter = new Intl.Collator($settings.language, { sensitivity: 'base' });
-
-	$: {
-		filteredPodcasts = $podcasts.filter((podcast) => !$podcastFavorites[podcast.id]);
-		if (selectedCategory !== ALL_CATEGORY) {
-			filteredPodcasts = filteredPodcasts.filter((podcast) => {
-				return podcast.categories.includes(selectedCategory);
-			});
-		}
-	}
 
 	$: selectedCategory = $settings.selectedCategory;
 	$: categoryList = [
@@ -56,7 +50,39 @@
 	$: favoriteRadios = $radios.filter((radio) => !!$radioFavorites[radio.title]);
 	$: otherRadios = $radios.filter((radio) => !$radioFavorites[radio.title]);
 	$: favoritePodcasts = $podcasts.filter((podcast) => !!$podcastFavorites[podcast.id]);
+
+	$: isSearching = $searchQuery.trim().length > 0;
+	$: categoryPodcasts =
+		selectedCategory === ALL_CATEGORY
+			? $podcasts
+			: $podcasts.filter((podcast) => podcast.categories.includes(selectedCategory));
+	$: filteredPodcasts = categoryPodcasts.filter((podcast) => !$podcastFavorites[podcast.id]);
 	$: otherPodcasts = filteredPodcasts;
+	$: searchHits = isSearching
+		? searchPodcasts(categoryPodcasts, $searchQuery)
+		: [];
+	$: searchHitById = new Map(searchHits.map((hit) => [hit.podcast.id, hit]));
+	$: exactPodcasts = searchHits.filter((hit) => hit.matchKind === 'exact').map((hit) => hit.podcast);
+	$: similarPodcasts = searchHits
+		.filter((hit) => hit.matchKind === 'similar')
+		.map((hit) => hit.podcast);
+	$: archivePodcasts = isSearching ? searchHits.map((hit) => hit.podcast) : otherPodcasts;
+
+	$: if ($searchQuery !== lastSearchKey) {
+		lastSearchKey = $searchQuery;
+		expandedPodcasts = new Set();
+	}
+
+	$: if (typeof window !== 'undefined' && $searchQuery.trim()) {
+		queueMicrotask(() => {
+			const scroller = document.querySelector<HTMLElement>('[data-main-scroller]');
+			scroller?.scrollTo({ top: 0 });
+		});
+	}
+
+	function searchMatch(podcast: Podcast): SearchHit | undefined {
+		return searchHitById.get(podcast.id);
+	}
 
 	function tryHandleShare() {
 		if (sharedPodcastId) {
@@ -133,45 +159,47 @@
 	}
 </script>
 
-{#if favoriteRadios.length > 0 || favoritePodcasts.length > 0}
-	<h2 class={[headerClasses, headerTextClasses]}>{$t.home.favorites}</h2>
+{#if !isSearching}
+	{#if favoriteRadios.length > 0 || favoritePodcasts.length > 0}
+		<h2 class={[headerClasses, headerTextClasses]}>{$t.home.favorites}</h2>
+		<div class={sectionClasses}>
+			{#each favoriteRadios as radio (radio.title)}
+				<RadioCard {radio} />
+			{/each}
+			<VirtualList items={favoritePodcasts} estimatedItemHeight={97.5}>
+				<svelte:fragment let:item>
+					<PodcastCard
+						podcast={item as Podcast}
+						expanded={expandedPodcasts.has((item as Podcast).id)}
+						onExpand={handlePodcastExpand}
+					/>
+				</svelte:fragment>
+			</VirtualList>
+		</div>
+		<div class="divider"></div>
+	{/if}
+
+	<h2 class={[headerClasses, headerTextClasses]}>{$t.home.radio}</h2>
 	<div class={sectionClasses}>
-		{#each favoriteRadios as radio (radio.title)}
-			<RadioCard {radio} />
-		{/each}
-		<VirtualList items={favoritePodcasts} estimatedItemHeight={97.5}>
-			<svelte:fragment let:item>
-				<PodcastCard
-					podcast={item as Podcast}
-					expanded={expandedPodcasts.has((item as Podcast).id)}
-					onExpand={handlePodcastExpand}
-				/>
-			</svelte:fragment>
-		</VirtualList>
+		{#if $radios.length === 0}
+			{#each Array(4) as _}
+				<SkeletonCard />
+			{/each}
+		{:else if otherRadios.length === 0}
+			<p class="text-base-content-secondary">{$t.home.allStationsInFavorites}</p>
+		{:else}
+			<VirtualList items={otherRadios} estimatedItemHeight={97.5}>
+				<svelte:fragment let:item>
+					<RadioCard radio={item as Radio} />
+				</svelte:fragment>
+			</VirtualList>
+		{/if}
 	</div>
+
 	<div class="divider"></div>
 {/if}
 
-<h2 class={[headerClasses, headerTextClasses]}>{$t.home.radio}</h2>
-<div class={sectionClasses}>
-	{#if $radios.length === 0}
-		{#each Array(4) as _}
-			<SkeletonCard />
-		{/each}
-	{:else if otherRadios.length === 0}
-		<p class="text-base-content-secondary">{$t.home.allStationsInFavorites}</p>
-	{:else}
-		<VirtualList items={otherRadios} estimatedItemHeight={97.5}>
-			<svelte:fragment let:item>
-				<RadioCard radio={item as Radio} />
-			</svelte:fragment>
-		</VirtualList>
-	{/if}
-</div>
-
-<div class="divider"></div>
-
-<div class="flex items-start items-center justify-between {headerClasses}">
+<div class="flex items-center justify-between {headerClasses}">
 	<h2 class={[headerTextClasses]}>{$t.home.archive}</h2>
 	<DropdownSelect
 		value={$settings.selectedCategory}
@@ -181,22 +209,49 @@
 		specialFirstOption={true}
 	/>
 </div>
-<div class={sectionClasses}>
-	{#if $podcasts.length === 0}
-		{#each Array(6) as _}
-			<SkeletonCard />
-		{/each}
-	{:else if otherPodcasts.length === 0}
-		<p class="text-base-content-secondary">{$t.home.allArchiveInFavorites}</p>
-	{:else}
-		<VirtualList items={otherPodcasts} estimatedItemHeight={97.5}>
+{#snippet podcastGrid(items: Podcast[])}
+	<div class={sectionClasses}>
+		<VirtualList {items} estimatedItemHeight={97.5}>
 			<svelte:fragment let:item>
+				{@const podcast = item as Podcast}
+				{@const hit = searchMatch(podcast)}
 				<PodcastCard
-					podcast={item as Podcast}
-					expanded={expandedPodcasts.has((item as Podcast).id)}
+					{podcast}
+					expanded={expandedPodcasts.has(podcast.id)}
 					onExpand={handlePodcastExpand}
+					matchField={hit?.matchField}
+					matchedEpisodeIds={hit?.matchedEpisodeIds}
+					highlightQuery={isSearching ? $searchQuery : ''}
 				/>
 			</svelte:fragment>
 		</VirtualList>
+	</div>
+{/snippet}
+
+{#if $podcasts.length === 0}
+	<div class={sectionClasses}>
+		{#each Array(6) as _}
+			<SkeletonCard />
+		{/each}
+	</div>
+{:else if isSearching}
+	{#if archivePodcasts.length === 0}
+		<p class="text-base-content-secondary">{$t.home.searchNoResults}</p>
+	{:else}
+		{#if exactPodcasts.length > 0}
+			<h3 class="mb-2 text-lg font-semibold sm:mb-4">{$t.home.searchExactMatches}</h3>
+			{@render podcastGrid(exactPodcasts)}
+		{/if}
+		{#if similarPodcasts.length > 0}
+			{#if exactPodcasts.length > 0}
+				<div class="divider"></div>
+			{/if}
+			<h3 class="mb-2 text-lg font-semibold sm:mb-4">{$t.home.searchSimilarMatches}</h3>
+			{@render podcastGrid(similarPodcasts)}
+		{/if}
 	{/if}
-</div>
+{:else if archivePodcasts.length === 0}
+	<p class="text-base-content-secondary">{$t.home.allArchiveInFavorites}</p>
+{:else}
+	{@render podcastGrid(archivePodcasts)}
+{/if}
