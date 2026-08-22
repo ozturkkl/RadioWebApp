@@ -2,6 +2,7 @@
 // <svelte:component this={getIconComponent(link.iconLabel)} class="h-4 w-4" />
 import {
     Youtube,
+    Twitter,
     Globe,
     HeartHandshake,
     Newspaper,
@@ -18,6 +19,7 @@ import {
 
 export type IconLabel =
     | 'Youtube'
+    | 'Twitter'
     | 'Globe'
     | 'HeartHandshake'
     | 'Newspaper'
@@ -35,6 +37,8 @@ export function getIconComponent(name: IconLabel) {
     switch (name) {
         case 'Youtube':
             return Youtube;
+        case 'Twitter':
+            return Twitter;
         case 'Globe':
             return Globe;
         case 'HeartHandshake':
