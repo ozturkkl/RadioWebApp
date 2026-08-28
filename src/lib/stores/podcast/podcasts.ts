@@ -26,6 +26,36 @@ export interface Episode {
 	pubDate?: string;
 }
 
+function rssText(value: unknown): string | undefined {
+	if (typeof value === 'string') return value;
+	if (value && typeof value === 'object' && '#text' in value) {
+		return String((value as { '#text': unknown })['#text']);
+	}
+	return undefined;
+}
+
+export function findEpisodeForProgress(
+	items: Episode[],
+	progress: { episodeId: string; episodePubDate?: string; episodeDuration?: string }
+): Episode | undefined {
+	const byId = items.find((ep) => ep.id === progress.episodeId);
+	if (byId) return byId;
+
+	if (progress.episodePubDate && progress.episodeDuration) {
+		return items.find(
+			(ep) =>
+				ep.pubDate === progress.episodePubDate && ep.duration === progress.episodeDuration
+		);
+	}
+
+	if (progress.episodePubDate) {
+		const matches = items.filter((ep) => ep.pubDate === progress.episodePubDate);
+		if (matches.length === 1) return matches[0];
+	}
+
+	return undefined;
+}
+
 export async function getPodcastRssUrls() {
 	const feedsUrl = config.podcast.feedUrlsEndpoint;
 	const res = await withBackoff(
@@ -89,7 +119,7 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			items: channel.item.map((item: any) => {
 				const episode: Episode = {
-					id: item.guid || item.enclosure?.url || item.link,
+					id: rssText(item.guid) || item.enclosure?.url || item.link,
 					title: item.title,
 					url: item.enclosure?.url || item.link,
 					duration: item['itunes:duration'],

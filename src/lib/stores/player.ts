@@ -4,11 +4,16 @@ import { settings } from '$lib/stores/settings';
 import { clearSearch } from '$lib/stores/search';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
-import { podcasts, type Episode, type Podcast } from '$lib/stores/podcast/podcasts';
+import {
+	podcasts,
+	findEpisodeForProgress,
+	type Episode,
+	type Podcast
+} from '$lib/stores/podcast/podcasts';
 import { radios, type Radio } from '$lib/stores/radio/radios';
 import { blinkClasses } from '$lib/util/blinkClassess';
 import { scrollIntoViewPromise } from '$lib/util/scrollIntoViewPromised';
-import { podcastProgress } from '$lib/stores/podcast/podcastProgress';
+import { podcastProgress, type EpisodeProgress } from '$lib/stores/podcast/podcastProgress';
 import { radioProgress } from '$lib/stores/radio/radioProgress';
 import { initMediaSession, updateMediaSessionMetadata } from '$lib/util/media_session';
 
@@ -100,7 +105,9 @@ function initAudio() {
 			podcastProgress.updatePodcastProgress(
 				currentState.currentPodcast.id,
 				currentState.currentEpisode.id,
-				audio?.currentTime ?? 0
+				audio?.currentTime ?? 0,
+				currentState.currentEpisode.pubDate,
+				currentState.currentEpisode.duration
 			);
 		}
 	});
@@ -239,7 +246,13 @@ function createPlayerStore() {
 			} else if (state.type === 'podcast') {
 				console.log('playing podcast', state.currentEpisode.url);
 				audio.src = state.currentEpisode.url;
-				podcastProgress.updatePodcastProgress(state.currentPodcast.id, state.currentEpisode.id, 0);
+				podcastProgress.updatePodcastProgress(
+					state.currentPodcast.id,
+					state.currentEpisode.id,
+					0,
+					state.currentEpisode.pubDate,
+					state.currentEpisode.duration
+				);
 			}
 			// Wait for the source to be loaded
 			audio.load();
@@ -631,17 +644,12 @@ export async function autoplayLastContent() {
 
 	const lastPlayedPodcast = Object.entries(get(podcastProgress)).reduce(
 		(latest, [id, progress]) => {
-			if (!latest || progress.lastPlayed > latest.lastPlayed) {
-				return {
-					id,
-					lastPlayed: progress.lastPlayed,
-					episodeId: progress.episodeId,
-					timestamp: progress.timestamp
-				};
+			if (!latest || progress.lastPlayed > latest.progress.lastPlayed) {
+				return { id, progress };
 			}
 			return latest;
 		},
-		null as { id: string; lastPlayed: number; episodeId: string; timestamp: number } | null
+		null as { id: string; progress: EpisodeProgress } | null
 	);
 
 	// If neither exists, return
@@ -649,15 +657,15 @@ export async function autoplayLastContent() {
 
 	// If both exist, play the most recently played one
 	if (lastPlayedRadio && lastPlayedPodcast) {
-		if (lastPlayedRadio.lastPlayed > lastPlayedPodcast.lastPlayed) {
+		if (lastPlayedRadio.lastPlayed > lastPlayedPodcast.progress.lastPlayed) {
 			const radio = await get(radios).find((r) => r.id === lastPlayedRadio.id);
 			if (radio) playerStore.playRadio(radio);
 		} else {
 			const podcast = await get(podcasts).find((p: Podcast) => p.id === lastPlayedPodcast.id);
 			if (podcast) {
-				const episode = podcast.items.find((e: Episode) => e.id === lastPlayedPodcast.episodeId);
+				const episode = findEpisodeForProgress(podcast.items, lastPlayedPodcast.progress);
 				if (episode) {
-					playerStore.playPodcast(podcast, episode, lastPlayedPodcast.timestamp);
+					playerStore.playPodcast(podcast, episode, lastPlayedPodcast.progress.timestamp);
 				}
 			}
 		}
@@ -675,9 +683,9 @@ export async function autoplayLastContent() {
 	if (lastPlayedPodcast) {
 		const podcast = await get(podcasts).find((p: Podcast) => p.id === lastPlayedPodcast.id);
 		if (podcast) {
-			const episode = podcast.items.find((e: Episode) => e.id === lastPlayedPodcast.episodeId);
+			const episode = findEpisodeForProgress(podcast.items, lastPlayedPodcast.progress);
 			if (episode) {
-				playerStore.playPodcast(podcast, episode, lastPlayedPodcast.timestamp);
+				playerStore.playPodcast(podcast, episode, lastPlayedPodcast.progress.timestamp);
 			}
 		}
 	}

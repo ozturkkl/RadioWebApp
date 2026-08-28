@@ -3,9 +3,9 @@
 	import { onMount } from 'svelte';
 	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-svelte';
-	import { type Episode, type Podcast, podcasts } from '$lib/stores/podcast/podcasts';
+	import { type Podcast, podcasts, findEpisodeForProgress } from '$lib/stores/podcast/podcasts';
 	import { type Radio, radios } from '$lib/stores/radio/radios';
-	import { podcastProgress } from '$lib/stores/podcast/podcastProgress';
+	import { podcastProgress, type EpisodeProgress } from '$lib/stores/podcast/podcastProgress';
 	import { radioProgress } from '$lib/stores/radio/radioProgress';
 	import { t } from '$lib/i18n';
 	import { isTouchDevice } from '$lib/util/browserUtils';
@@ -13,7 +13,8 @@
 	type ContinueListeningItem =
 		| {
 				type: 'podcast';
-				item: Podcast & { episodeId: string; timestamp: number };
+				item: Podcast;
+				progress: EpisodeProgress;
 				lastPlayed: number;
 		  }
 		| {
@@ -114,11 +115,8 @@
 			.filter((p) => $podcastProgress[p.id])
 			.map((p) => ({
 				type: 'podcast' as const,
-				item: {
-					...p,
-					episodeId: $podcastProgress[p.id].episodeId,
-					timestamp: $podcastProgress[p.id].timestamp
-				},
+				item: p,
+				progress: $podcastProgress[p.id],
 				lastPlayed: $podcastProgress[p.id].lastPlayed
 			}));
 
@@ -142,9 +140,9 @@
 			return;
 		}
 		if (item.type === 'podcast') {
-			const episode = item.item.items.find((ep: Episode) => ep.id === item.item.episodeId);
+			const episode = findEpisodeForProgress(item.item.items, item.progress);
 			if (episode) {
-				playerStore.playPodcast(item.item, episode, item.item.timestamp);
+				playerStore.playPodcast(item.item, episode, item.progress.timestamp);
 			}
 		} else {
 			playerStore.playRadio(item.item);
@@ -162,17 +160,18 @@
 		}
 	}
 
-	function getEpisodeNumber(podcast: Podcast & { episodeId: string }) {
-		const episode = podcast.items.find((ep) => ep.id === podcast.episodeId);
-		const index = podcast.items.indexOf(episode!) + 1;
+	function getEpisodeNumber(podcast: Podcast, progress: EpisodeProgress) {
+		const episode = findEpisodeForProgress(podcast.items, progress);
+		if (!episode) return '';
+		const index = podcast.items.indexOf(episode) + 1;
 		return `${index}/${podcast.items.length}`;
 	}
 
-	function getCompletionPercentage(podcast: Podcast & { episodeId: string; timestamp: number }) {
-		const episode = podcast.items.find((ep) => ep.id === podcast.episodeId);
+	function getCompletionPercentage(podcast: Podcast, progress: EpisodeProgress) {
+		const episode = findEpisodeForProgress(podcast.items, progress);
 		const duration = Number(episode?.duration);
 		if (!duration) return 0;
-		return Math.round((podcast.timestamp / duration) * 100);
+		return Math.round((progress.timestamp / duration) * 100);
 	}
 </script>
 
@@ -227,8 +226,8 @@
 					/>
 					{#if item.type === 'podcast' && !isEditMode}
 						<div class="flex flex-col pl-[.2rem] pr-2 text-xs">
-							<span class="whitespace-nowrap">{getEpisodeNumber(item.item)}</span>
-							<span class="whitespace-nowrap">{getCompletionPercentage(item.item)}%</span>
+							<span class="whitespace-nowrap">{getEpisodeNumber(item.item, item.progress)}</span>
+							<span class="whitespace-nowrap">{getCompletionPercentage(item.item, item.progress)}%</span>
 						</div>
 					{:else if isEditMode}
 						<button

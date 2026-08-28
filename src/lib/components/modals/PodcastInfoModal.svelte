@@ -2,6 +2,7 @@
 	import Modal from '$lib/components/modals/Modal.svelte';
 	import { podcastProgress } from '$lib/stores/podcast/podcastProgress';
 	import type { Podcast } from '$lib/stores/podcast/podcasts';
+	import { findEpisodeForProgress } from '$lib/stores/podcast/podcasts';
 	import { t } from '$lib/i18n';
 
 	export let podcast: Podcast;
@@ -37,7 +38,7 @@
 	}
 
 	$: progress = $podcastProgress[podcast.id];
-	$: currentEpisode = progress ? podcast.items.find((ep) => ep.id === progress.episodeId) : null;
+	$: currentEpisode = progress ? findEpisodeForProgress(podcast.items, progress) : null;
 	$: currentEpisodeIndex = currentEpisode
 		? podcast.items.findIndex((ep) => ep.id === currentEpisode.id)
 		: -1;
