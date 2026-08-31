@@ -147,23 +147,42 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 // Limit how many RSS feeds are fetched/parsed at the same time to reduce peak
 // memory usage on low-RAM devices.
 const FETCH_CONCURRENCY = 10;
+const REFRESH_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+const LAST_REFRESH_KEY = 'podcasts-last-refresh';
+
+function readLastRefreshAt(): number {
+	if (typeof window === 'undefined') return 0;
+	const raw = localStorage.getItem(LAST_REFRESH_KEY);
+	const parsed = raw ? Number(raw) : 0;
+	return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function writeLastRefreshAt(timestamp: number) {
+	if (typeof window === 'undefined') return;
+	localStorage.setItem(LAST_REFRESH_KEY, String(timestamp));
+}
 
 function createPodcastsStore() {
 	const { subscribe, set, update } = writable<Podcast[]>([]);
 	let refreshInFlight = false;
+	let lastRefreshAt = readLastRefreshAt();
 
-	async function refresh() {
+	function hydrateFromCache() {
+		const cachedPodcasts = getUserData('cached-podcasts') as Podcast[];
+		if (cachedPodcasts.length > 0) {
+			set(cachedPodcasts);
+		}
+	}
+
+	async function refresh(force = false) {
 		if (refreshInFlight) return;
+		if (!force && Date.now() - lastRefreshAt < REFRESH_INTERVAL_MS) return;
+
 		refreshInFlight = true;
 
 		try {
-			// Get cached podcasts
-			const cachedPodcasts = getUserData('cached-podcasts') as Podcast[];
-
 			// Immediately set cached podcasts to provide instant content
-			if (cachedPodcasts.length > 0) {
-				set(cachedPodcasts);
-			}
+			hydrateFromCache();
 
 			// Get all feed URLs
 			const feedUrls = await getPodcastRssUrls();
@@ -228,6 +247,9 @@ function createPodcastsStore() {
 				worker()
 			);
 			await Promise.all(workers);
+
+			lastRefreshAt = Date.now();
+			writeLastRefreshAt(lastRefreshAt);
 		} finally {
 			refreshInFlight = false;
 		}
@@ -235,6 +257,7 @@ function createPodcastsStore() {
 
 	// Initial load and refresh when returning from background
 	if (typeof window !== 'undefined') {
+		hydrateFromCache();
 		refresh();
 		document.addEventListener('visibilitychange', () => {
 			if (document.visibilityState === 'visible') refresh();
