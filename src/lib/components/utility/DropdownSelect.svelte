@@ -87,14 +87,12 @@
 
 		resetTransform();
 
-		// Let layout settle before measuring
 		await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
 		const rect = dropdownContentRef.getBoundingClientRect();
 		const margin = 8;
 		const viewportWidth = window.innerWidth;
 
-		// Keep opening in the configured direction; only nudge horizontally if clipped
 		if (rect.right > viewportWidth - margin) {
 			offsetX = viewportWidth - rect.right - margin;
 		} else if (rect.left < margin) {

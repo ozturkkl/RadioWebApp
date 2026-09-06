@@ -73,8 +73,6 @@
 		lastSearchKey = $searchQuery;
 		expandedPodcasts = new Set();
 
-		// New/changed search should cover all categories; keep category only for the
-		// current query (user may narrow results after searching).
 		const next = $searchQuery.trim();
 		const prev = previousQuery.trim();
 		if (next && next !== prev && selectedCategory !== ALL_CATEGORY) {

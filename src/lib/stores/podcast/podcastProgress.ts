@@ -3,12 +3,10 @@ import { throttleDebounce } from '$lib/util/throttleDebounce';
 import { getUserData, setUserData } from '$lib/util/userData';
 import { writable } from 'svelte/store';
 
-export interface EpisodeProgress {
+interface EpisodeProgress {
 	episodeId: string;
 	timestamp: number;
 	lastPlayed: number; // Unix timestamp
-	episodePubDate?: string;
-	episodeDuration?: string;
 }
 
 export interface PodcastProgress {
@@ -27,21 +25,13 @@ function createPodcastProgressStore() {
 	refreshStoreAfterGoogleFetch('podcast-progress', update);
 
 	const updatePodcastProgress = throttleDebounce(
-		(
-			podcastId: string,
-			episodeId: string,
-			timestamp: number,
-			episodePubDate?: string,
-			episodeDuration?: string
-		) => {
+		(podcastId: string, episodeId: string, timestamp: number) => {
 			update((progress) => ({
 				...progress,
 				[podcastId]: {
 					episodeId,
 					timestamp,
-					lastPlayed: Date.now(),
-					...(episodePubDate && { episodePubDate }),
-					...(episodeDuration && { episodeDuration })
+					lastPlayed: Date.now()
 				}
 			}));
 		},

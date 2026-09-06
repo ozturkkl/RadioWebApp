@@ -34,28 +34,6 @@ function rssText(value: unknown): string | undefined {
 	return undefined;
 }
 
-export function findEpisodeForProgress(
-	items: Episode[],
-	progress: { episodeId: string; episodePubDate?: string; episodeDuration?: string }
-): Episode | undefined {
-	const byId = items.find((ep) => ep.id === progress.episodeId);
-	if (byId) return byId;
-
-	if (progress.episodePubDate && progress.episodeDuration) {
-		return items.find(
-			(ep) =>
-				ep.pubDate === progress.episodePubDate && ep.duration === progress.episodeDuration
-		);
-	}
-
-	if (progress.episodePubDate) {
-		const matches = items.filter((ep) => ep.pubDate === progress.episodePubDate);
-		if (matches.length === 1) return matches[0];
-	}
-
-	return undefined;
-}
-
 export async function getPodcastRssUrls() {
 	const feedsUrl = config.podcast.feedUrlsEndpoint;
 	const res = await withBackoff(
@@ -181,28 +159,20 @@ function createPodcastsStore() {
 		refreshInFlight = true;
 
 		try {
-			// Immediately set cached podcasts to provide instant content
-			hydrateFromCache();
-
-			// Get all feed URLs
 			const feedUrls = await getPodcastRssUrls();
 
 			const fetchedPodcastMap = new Map<string, Podcast>();
 
-			// Create a throttled version of the update function
 			const throttledUpdate = throttleDebounce(
 				() => {
 					update((podcasts) => {
-						// Create a new array that will maintain the order from feedUrls
 						const orderedPodcasts: Podcast[] = [];
 
-						// Create a map of existing podcasts by ID for quick lookup
 						const existingPodcastsMap = new Map<string, Podcast>();
 						podcasts.forEach((podcast) => {
 							existingPodcastsMap.set(podcast.rssUrl, podcast);
 						});
 
-						// Process all fetched podcasts in the order they appear in feedUrls
 						for (let i = 0; i < feedUrls.length; i++) {
 							const url = feedUrls[i];
 							const podcast = fetchedPodcastMap.get(url) ?? existingPodcastsMap.get(url);
@@ -212,18 +182,16 @@ function createPodcastsStore() {
 							}
 						}
 
-						// Save to local storage with throttling
 						setUserData('cached-podcasts', orderedPodcasts.slice(0, 150));
 
 						return orderedPodcasts;
 					});
 				},
-				500, // Update UI at most every 500ms
-				false, // Leading call
-				true // Trailing call
+				500,
+				false,
+				true
 			);
 
-			// Process all feed URLs with limited concurrency to cap peak memory
 			let nextIndex = 0;
 			async function worker() {
 				while (nextIndex < feedUrls.length) {
@@ -232,9 +200,7 @@ function createPodcastsStore() {
 						const podcast = await fetchPodcast(url);
 
 						if (podcast) {
-							// Add to processed podcasts
 							fetchedPodcastMap.set(url, podcast);
-							// Update the UI
 							throttledUpdate();
 						}
 					} catch (error) {
@@ -255,7 +221,6 @@ function createPodcastsStore() {
 		}
 	}
 
-	// Initial load and refresh when returning from background
 	if (typeof window !== 'undefined') {
 		hydrateFromCache();
 		refresh();
