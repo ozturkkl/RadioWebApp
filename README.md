@@ -3,7 +3,7 @@
 A configurable radio and podcast player for live streams and RSS archives.
 Listeners get lock-screen controls, continue-listening, Turkish-aware search,
 and Google Drive sync of progress and favorites. Ships as a PWA/TWA, IOS, and Android
-app.
+app stores.
 
 <p align="center">
   <img src="demo/combined.png" alt="RadioWebApp on mobile — show list, player, and program details" width="800" />
