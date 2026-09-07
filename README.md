@@ -1,7 +1,7 @@
 # RadioWebApp
 
-A configurable radio and podcast player for live streams and RSS archives shipped as a PWA/TWA mobile app in IOS, and Android
-app stores.
+A configurable radio and podcast player for live streams and RSS archives shipped as a PWA on the web. 
+Packaged and released as a TWA in IOS AppStore, and Android Google Play Store.
 Listeners get lock-screen controls, continue-listening, Turkish-aware search,
 and Google Drive sync of progress and favorites.
 
