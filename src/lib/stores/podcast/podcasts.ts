@@ -27,9 +27,9 @@ export interface Episode {
 }
 
 function rssText(value: unknown): string | undefined {
-	if (typeof value === 'string') return value;
+	if (typeof value === 'string' || typeof value === 'number') return String(value);
 	if (value && typeof value === 'object' && '#text' in value) {
-		return String((value as { '#text': unknown })['#text']);
+		return rssText((value as { '#text': unknown })['#text']);
 	}
 	return undefined;
 }
@@ -214,8 +214,10 @@ function createPodcastsStore() {
 			);
 			await Promise.all(workers);
 
-			lastRefreshAt = Date.now();
-			writeLastRefreshAt(lastRefreshAt);
+			if (fetchedPodcastMap.size > 0) {
+				lastRefreshAt = Date.now();
+				writeLastRefreshAt(lastRefreshAt);
+			}
 		} finally {
 			refreshInFlight = false;
 		}

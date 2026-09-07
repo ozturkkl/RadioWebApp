@@ -75,10 +75,12 @@
 	}
 
 	let offsetX = 0;
+	let offsetY = 0;
 	let transform = 'translateX(-50%)';
 
 	function resetTransform() {
 		offsetX = 0;
+		offsetY = 0;
 		transform = 'translateX(-50%)';
 	}
 
@@ -92,6 +94,7 @@
 		const rect = dropdownContentRef.getBoundingClientRect();
 		const margin = 8;
 		const viewportWidth = window.innerWidth;
+		const viewportHeight = window.innerHeight;
 
 		if (rect.right > viewportWidth - margin) {
 			offsetX = viewportWidth - rect.right - margin;
@@ -99,8 +102,18 @@
 			offsetX = margin - rect.left;
 		}
 
+		if (dropDirection === 'top') {
+			if (rect.bottom > viewportHeight - margin) {
+				offsetY = viewportHeight - margin - rect.bottom;
+			} else if (rect.top < margin) {
+				offsetY = margin - rect.top;
+			}
+		}
+
 		transform =
-			offsetX !== 0 ? `translateX(-50%) translateX(${offsetX}px)` : 'translateX(-50%)';
+			offsetX !== 0 || offsetY !== 0
+				? `translateX(-50%) translate(${offsetX}px, ${offsetY}px)`
+				: 'translateX(-50%)';
 	}
 
 	async function handleFocusIn(event: FocusEvent) {
