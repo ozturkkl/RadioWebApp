@@ -58,22 +58,16 @@
 		}
 	}
 
-	function scrollToSelected() {
+	async function scrollToSelected() {
 		const selectedOption = options.find((opt) => opt.value === value);
 		if (selectedOption) {
 			const optionElement = dropdownContentRef?.querySelector(
 				`[data-value="${selectedOption.value}"]`
 			);
 			if (optionElement) {
-				scrollIntoViewPromise(optionElement, { behavior: 'smooth', block: 'nearest' });
+				await scrollIntoViewPromise(optionElement, { behavior: 'smooth', block: 'nearest' });
 			}
 		}
-	}
-
-	async function scrollToContent() {
-		if (!dropdownContentRef) return;
-		await scrollIntoViewPromise(dropdownContentRef, { behavior: 'smooth', block: 'nearest' });
-		scrollToSelected();
 	}
 
 	$: if (typeof window !== 'undefined' && value) {
@@ -83,49 +77,80 @@
 	let offsetX = 0;
 	let offsetY = 0;
 	let transform = 'translateX(-50%)';
+
+	function resetTransform() {
+		offsetX = 0;
+		offsetY = 0;
+		transform = 'translateX(-50%)';
+	}
+
 	async function adjustPosition() {
 		if (!dropdownContentRef) return;
 
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		resetTransform();
+
+		await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
 		const rect = dropdownContentRef.getBoundingClientRect();
+		const margin = 8;
 		const viewportWidth = window.innerWidth;
 		const viewportHeight = window.innerHeight;
 
-		const margin = 8;
-
 		if (rect.right > viewportWidth - margin) {
-			offsetX += viewportWidth - rect.right - margin;
+			offsetX = viewportWidth - rect.right - margin;
 		} else if (rect.left < margin) {
-			offsetX += margin - rect.left;
+			offsetX = margin - rect.left;
 		}
 
-		if (rect.bottom > viewportHeight) {
-			offsetY += viewportHeight - rect.bottom;
-		} else if (rect.top < 0) {
-			offsetY -= rect.top;
+		if (dropDirection === 'top') {
+			if (rect.bottom > viewportHeight - margin) {
+				offsetY = viewportHeight - margin - rect.bottom;
+			} else if (rect.top < margin) {
+				offsetY = margin - rect.top;
+			}
 		}
 
-		if (offsetX !== 0 || offsetY !== 0) {
-			transform = `translateX(-50%) translate(${offsetX}px, ${offsetY}px)`;
-		}
+		transform =
+			offsetX !== 0 || offsetY !== 0
+				? `translateX(-50%) translate(${offsetX}px, ${offsetY}px)`
+				: 'translateX(-50%)';
 	}
+
+	async function handleFocusIn(event: FocusEvent) {
+		const root = event.currentTarget as HTMLElement;
+		const prev = event.relatedTarget;
+		if (prev instanceof Node && root.contains(prev)) return;
+
+		await scrollToSelected();
+		await adjustPosition();
+	}
+
+	function handleFocusOut(event: FocusEvent) {
+		const root = event.currentTarget as HTMLElement;
+		const next = event.relatedTarget;
+		if (next instanceof Node && root.contains(next)) return;
+		resetTransform();
+	}
+
 	onMount(() => {
 		if (typeof window === 'undefined' || !dropdownRef) return;
 
-		const handler = () => adjustPosition();
-		dropdownRef.addEventListener('animationend', handler);
+		const handler = () => {
+			void adjustPosition();
+		};
 		window.addEventListener('resize', handler);
-		handler();
 
 		return () => {
-			dropdownRef?.removeEventListener('animationend', handler);
 			window.removeEventListener('resize', handler);
 		};
 	});
 </script>
 
-<div class="dropdown {dropDirection === 'top' ? 'dropdown-top' : ''}">
+<div
+	class="dropdown {dropDirection === 'top' ? 'dropdown-top' : 'dropdown-bottom'}"
+	on:focusin={handleFocusIn}
+	on:focusout={handleFocusOut}
+>
 	<button
 		tabindex="-1"
 		aria-hidden="true"
@@ -142,10 +167,6 @@
 		class="h-full w-full"
 		aria-label={`Select ${options.find((opt) => opt.value === value)?.label}`}
 		on:keydown={handleKeydown}
-		on:focusin={() => {
-			scrollToContent();
-			adjustPosition();
-		}}
 	>
 		{#if $$slots.trigger}
 			<slot name="trigger" />

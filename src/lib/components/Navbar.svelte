@@ -19,12 +19,6 @@
 	let logoEl: HTMLElement | null = null;
 	let titleMeasureEl: HTMLSpanElement | null = null;
 	let titleFits = false;
-	let scrolled = false;
-	let isMobile = false;
-
-	const MOBILE_MQ = '(max-width: 639px)';
-	const SCROLL_COMPACT_PX = 24;
-	const SCROLL_EXPAND_PX = 8;
 
 	function measureTitleFit() {
 		if (!leftGroupEl || !titleMeasureEl) return;
@@ -33,16 +27,7 @@
 		titleFits = titleMeasureEl.offsetWidth <= available;
 	}
 
-	function syncScrollerState(scroller: HTMLElement) {
-		const top = scroller.scrollTop;
-		if (top > SCROLL_COMPACT_PX) scrolled = true;
-		else if (top < SCROLL_EXPAND_PX) scrolled = false;
-	}
-
 	$: searchOpenOnHome = !$showBackButton && $searchOpen;
-	$: compactSearch = isMobile && !$showBackButton && scrolled;
-	$: showSearchField = searchOpenOnHome || compactSearch;
-	$: hideChrome = isMobile && showSearchField;
 	$: searchOpenOnHome, $showBackButton, void tick().then(measureTitleFit);
 
 	$: {
@@ -61,25 +46,9 @@
 		window.addEventListener('resize', measureTitleFit);
 		void tick().then(measureTitleFit);
 
-		const mediaQuery = window.matchMedia(MOBILE_MQ);
-		const syncMobile = () => {
-			isMobile = mediaQuery.matches;
-		};
-		syncMobile();
-		mediaQuery.addEventListener('change', syncMobile);
-
-		const scroller = document.querySelector<HTMLElement>('[data-main-scroller]');
-		const onScroll = () => {
-			if (scroller) syncScrollerState(scroller);
-		};
-		scroller?.addEventListener('scroll', onScroll, { passive: true });
-		if (scroller) syncScrollerState(scroller);
-
 		return () => {
 			resizeObserver.disconnect();
 			window.removeEventListener('resize', measureTitleFit);
-			mediaQuery.removeEventListener('change', syncMobile);
-			scroller?.removeEventListener('scroll', onScroll);
 		};
 	});
 
@@ -118,14 +87,12 @@
 		}
 	}
 
-	function handleDesktopSearchBlur() {
-		if (isMobile) return;
+	function handleSearchBlur() {
 		if ($searchQuery.trim()) return;
 		closeSearch();
 	}
 
-	function handleDesktopSearchClear() {
-		if (isMobile) return;
+	function handleSearchClear() {
 		closeSearch();
 	}
 </script>
@@ -137,7 +104,7 @@
 		bind:this={leftGroupEl}
 		class="relative flex min-w-0 flex-1 items-center overflow-hidden {searchOpenOnHome
 			? 'max-sm:hidden'
-			: ''} {compactSearch ? 'hidden' : ''}"
+			: ''}"
 	>
 		<TouchableButton
 			bind:el={logoEl}
@@ -174,39 +141,34 @@
 	</div>
 
 	<div
-		class="ml-auto flex items-center justify-end {showSearchField
+		class="ml-auto flex items-center justify-end {searchOpenOnHome
 			? 'min-w-0 flex-1'
 			: 'shrink-0'}"
 	>
-		{#if showSearchField}
+		{#if searchOpenOnHome}
 			<div
 				role="search"
 				aria-label={$t.home.searchLabel}
-				class="flex min-w-0 flex-1 items-center gap-1 {searchOpenOnHome
-					? 'sm:flex-none sm:w-72 md:w-80 lg:w-96'
-					: ''}"
+				class="flex min-w-0 flex-1 items-center gap-1 sm:w-72 sm:flex-none md:w-80 lg:w-96"
 			>
-				{#if searchOpenOnHome}
-					<TouchableButton
-						onClick={closeSearch}
-						ariaLabel={$t.navbar.closeSearch}
-						circle={false}
-						buttonClassName="px-1"
-						className="sm:hidden"
-						size="sm"
-					>
-						<ChevronLeft class="w-[32px]" />
-					</TouchableButton>
-				{/if}
+				<TouchableButton
+					onClick={closeSearch}
+					ariaLabel={$t.navbar.closeSearch}
+					circle={false}
+					buttonClassName="px-1"
+					className="sm:hidden"
+					size="sm"
+				>
+					<ChevronLeft class="w-[32px]" />
+				</TouchableButton>
 				<SearchInput
 					bind:value={$searchQuery}
 					placeholder={$t.home.searchPlaceholder}
 					ariaLabel={$t.home.searchLabel}
 					clearLabel={$t.home.searchClear}
-					focusOnMount={searchOpenOnHome}
 					onFocus={openSearch}
-					onBlur={handleDesktopSearchBlur}
-					onClear={handleDesktopSearchClear}
+					onBlur={handleSearchBlur}
+					onClear={handleSearchClear}
 				/>
 			</div>
 		{:else if !$showBackButton}
@@ -221,7 +183,7 @@
 			</TouchableButton>
 		{/if}
 
-		{#if !hideChrome}
+		<div class="flex items-center {searchOpenOnHome ? 'max-sm:hidden' : ''}">
 			{#each config.website.links as link (link.url)}
 				<TouchableButton
 					onClick={() => window.open(link.url, '_blank', 'noopener,noreferrer')}
@@ -250,7 +212,7 @@
 			>
 				<Settings class="h-5 w-5 sm:h-6 sm:w-6" />
 			</TouchableButton>
-		{/if}
+		</div>
 	</div>
 </div>
 

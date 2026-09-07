@@ -31,11 +31,13 @@
 	let infoModal: { open: () => void; close: () => void };
 	let shareTooltipAnchorEl: HTMLElement | undefined;
 
-	function getEpisodeClasses(episode: Episode, podcast: Podcast) {
-		const isActive =
-			$playerStore.type === 'podcast' &&
-			$playerStore.currentEpisode?.id === episode.id &&
-			$playerStore.currentPodcast?.id === podcast.id;
+	$: activeEpisodeId =
+		$playerStore.type === 'podcast' && $playerStore.currentPodcast?.id === podcast.id
+			? ($playerStore.currentEpisode?.id ?? null)
+			: null;
+
+	function getEpisodeClasses(episode: Episode, activeId: string | null) {
+		const isActive = episode.id === activeId;
 		const baseClasses =
 			'w-full rounded-lg border border-base-300 p-2 text-left shadow hover:shadow-xl mr-2 scroll-m-8';
 		return `${baseClasses} ${isActive ? 'bg-base-300 shadow-xl outline outline-2 outline-offset-1 outline-primary' : 'bg-base-100 hover:bg-base-300'}`;
@@ -232,7 +234,7 @@
 					{#each visibleEpisodes as episode (episode.id)}
 						<button
 							data-episode-id={episode.id}
-							class={getEpisodeClasses(episode, podcast)}
+							class={getEpisodeClasses(episode, activeEpisodeId)}
 							on:click={() => playerStore.playPodcast(podcast, episode)}
 						>
 							<div class="grid grid-cols-[1fr_auto] gap-x-0 gap-y-2">

@@ -26,11 +26,19 @@ export interface Episode {
 	pubDate?: string;
 }
 
+function rssText(value: unknown): string | undefined {
+	if (typeof value === 'string' || typeof value === 'number') return String(value);
+	if (value && typeof value === 'object' && '#text' in value) {
+		return rssText((value as { '#text': unknown })['#text']);
+	}
+	return undefined;
+}
+
 export async function getPodcastRssUrls() {
 	const feedsUrl = config.podcast.feedUrlsEndpoint;
 	const res = await withBackoff(
 		async () => {
-			const response = await fetch(feedsUrl);
+			const response = await fetch(feedsUrl, { cache: 'no-store' });
 			if (!response.ok) {
 				throw new Error(
 					`Failed to fetch podcast RSS URLs: ${response.status} ${response.statusText}`
@@ -53,7 +61,7 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 	try {
 		const response = await withBackoff(
 			async () => {
-				const response = await fetch(url);
+				const response = await fetch(url, { cache: 'no-store' });
 				if (!response.ok) {
 					throw new Error(
 						`Failed to fetch podcast from ${url}: ${response.status} ${response.statusText}`
@@ -89,7 +97,7 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			items: channel.item.map((item: any) => {
 				const episode: Episode = {
-					id: item.guid || item.enclosure?.url || item.link,
+					id: rssText(item.guid) || item.enclosure?.url || item.link,
 					title: item.title,
 					url: item.enclosure?.url || item.link,
 					duration: item['itunes:duration'],
@@ -114,113 +122,113 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 	}
 }
 
-// Cache invalidation time (10 minutes in milliseconds)
-const CACHE_INVALIDATION_TIME = 10 * 60 * 1000;
 // Limit how many RSS feeds are fetched/parsed at the same time to reduce peak
 // memory usage on low-RAM devices.
 const FETCH_CONCURRENCY = 10;
+const REFRESH_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+const LAST_REFRESH_KEY = 'podcasts-last-refresh';
+
+function readLastRefreshAt(): number {
+	if (typeof window === 'undefined') return 0;
+	const raw = localStorage.getItem(LAST_REFRESH_KEY);
+	const parsed = raw ? Number(raw) : 0;
+	return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function writeLastRefreshAt(timestamp: number) {
+	if (typeof window === 'undefined') return;
+	localStorage.setItem(LAST_REFRESH_KEY, String(timestamp));
+}
 
 function createPodcastsStore() {
 	const { subscribe, set, update } = writable<Podcast[]>([]);
+	let refreshInFlight = false;
+	let lastRefreshAt = readLastRefreshAt();
 
-	async function refresh() {
-		// Get cached podcasts
+	function hydrateFromCache() {
 		const cachedPodcasts = getUserData('cached-podcasts') as Podcast[];
-
-		// Immediately set cached podcasts to provide instant content
 		if (cachedPodcasts.length > 0) {
 			set(cachedPodcasts);
 		}
-
-		// Get all feed URLs
-		const feedUrls = await getPodcastRssUrls();
-
-		// Create a map of cached podcasts for quick lookup
-		const cachedPodcastMap = new Map<string, Podcast>();
-		cachedPodcasts.forEach((podcast) => {
-			if (podcast.rssUrl) cachedPodcastMap.set(podcast.rssUrl, podcast);
-		});
-
-		const fetchedPodcastMap = new Map<string, Podcast>();
-
-		// Create a throttled version of the update function
-		const throttledUpdate = throttleDebounce(
-			() => {
-				update((podcasts) => {
-					// Create a new array that will maintain the order from feedUrls
-					const orderedPodcasts: Podcast[] = [];
-
-					// Create a map of existing podcasts by ID for quick lookup
-					const existingPodcastsMap = new Map<string, Podcast>();
-					podcasts.forEach((podcast) => {
-						existingPodcastsMap.set(podcast.rssUrl, podcast);
-					});
-
-					// Process all fetched podcasts in the order they appear in feedUrls
-					for (let i = 0; i < feedUrls.length; i++) {
-						const url = feedUrls[i];
-						const podcast = fetchedPodcastMap.get(url) ?? existingPodcastsMap.get(url);
-
-						if (podcast) {
-							orderedPodcasts.push(podcast);
-						}
-					}
-
-					// Save to local storage with throttling
-					setUserData('cached-podcasts', orderedPodcasts.slice(0, 150));
-
-					return orderedPodcasts;
-				});
-			},
-			500, // Update UI at most every 500ms
-			false, // Leading call
-			true // Trailing call
-		);
-
-		// Process all feed URLs with limited concurrency to cap peak memory
-		let nextIndex = 0;
-		async function worker() {
-			while (nextIndex < feedUrls.length) {
-				const url = feedUrls[nextIndex++];
-				try {
-					// Check if we have a cached version and if it's still valid
-					const cachedPodcast = cachedPodcastMap.get(url);
-					const isCacheValid =
-						cachedPodcast &&
-						cachedPodcast.lastFetched &&
-						Date.now() - cachedPodcast.lastFetched < CACHE_INVALIDATION_TIME;
-
-					let podcast: Podcast | null = null;
-
-					if (isCacheValid) {
-						// Use cached version
-						podcast = cachedPodcast;
-					} else {
-						// No valid cache, fetch
-						podcast = await fetchPodcast(url);
-					}
-
-					if (podcast) {
-						// Add to processed podcasts
-						fetchedPodcastMap.set(url, podcast);
-						// Update the UI
-						throttledUpdate();
-					}
-				} catch (error) {
-					console.error(`Error processing podcast ${url}:`, error);
-				}
-			}
-		}
-
-		const workers = Array.from({ length: Math.min(FETCH_CONCURRENCY, feedUrls.length) }, () =>
-			worker()
-		);
-		await Promise.all(workers);
 	}
 
-	// Initial load
+	async function refresh(force = false) {
+		if (refreshInFlight) return;
+		if (!force && Date.now() - lastRefreshAt < REFRESH_INTERVAL_MS) return;
+
+		refreshInFlight = true;
+
+		try {
+			const feedUrls = await getPodcastRssUrls();
+
+			const fetchedPodcastMap = new Map<string, Podcast>();
+
+			const throttledUpdate = throttleDebounce(
+				() => {
+					update((podcasts) => {
+						const orderedPodcasts: Podcast[] = [];
+
+						const existingPodcastsMap = new Map<string, Podcast>();
+						podcasts.forEach((podcast) => {
+							existingPodcastsMap.set(podcast.rssUrl, podcast);
+						});
+
+						for (let i = 0; i < feedUrls.length; i++) {
+							const url = feedUrls[i];
+							const podcast = fetchedPodcastMap.get(url) ?? existingPodcastsMap.get(url);
+
+							if (podcast) {
+								orderedPodcasts.push(podcast);
+							}
+						}
+
+						setUserData('cached-podcasts', orderedPodcasts.slice(0, 150));
+
+						return orderedPodcasts;
+					});
+				},
+				500,
+				false,
+				true
+			);
+
+			let nextIndex = 0;
+			async function worker() {
+				while (nextIndex < feedUrls.length) {
+					const url = feedUrls[nextIndex++];
+					try {
+						const podcast = await fetchPodcast(url);
+
+						if (podcast) {
+							fetchedPodcastMap.set(url, podcast);
+							throttledUpdate();
+						}
+					} catch (error) {
+						console.error(`Error processing podcast ${url}:`, error);
+					}
+				}
+			}
+
+			const workers = Array.from({ length: Math.min(FETCH_CONCURRENCY, feedUrls.length) }, () =>
+				worker()
+			);
+			await Promise.all(workers);
+
+			if (fetchedPodcastMap.size > 0) {
+				lastRefreshAt = Date.now();
+				writeLastRefreshAt(lastRefreshAt);
+			}
+		} finally {
+			refreshInFlight = false;
+		}
+	}
+
 	if (typeof window !== 'undefined') {
+		hydrateFromCache();
 		refresh();
+		document.addEventListener('visibilitychange', () => {
+			if (document.visibilityState === 'visible') refresh();
+		});
 	}
 
 	return {

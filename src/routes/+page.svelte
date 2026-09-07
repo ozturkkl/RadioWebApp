@@ -69,8 +69,15 @@
 	$: archivePodcasts = isSearching ? searchHits.map((hit) => hit.podcast) : otherPodcasts;
 
 	$: if ($searchQuery !== lastSearchKey) {
+		const previousQuery = lastSearchKey;
 		lastSearchKey = $searchQuery;
 		expandedPodcasts = new Set();
+
+		const next = $searchQuery.trim();
+		const prev = previousQuery.trim();
+		if (next && next !== prev && selectedCategory !== ALL_CATEGORY) {
+			settings.updateSettings({ selectedCategory: ALL_CATEGORY });
+		}
 	}
 
 	$: if (typeof window !== 'undefined' && $searchQuery.trim()) {
