@@ -63,6 +63,7 @@ function readyStateIsAbleToPlay(readyState: number) {
 // Initialize audio only in browser environment
 let audio: HTMLAudioElement | undefined;
 let resetAudioInterval: NodeJS.Timeout | undefined;
+let resumeOnCanPlay: (() => void) | undefined;
 
 if (typeof window !== 'undefined') {
 	initAudio();
@@ -142,8 +143,10 @@ function initAudio() {
 	audio.addEventListener('error', () => {
 		playerStore.setErrored();
 	});
-	audio.addEventListener('abort', () => {
-		playerStore.setErrored();
+	window.addEventListener('online', () => {
+		if (get(playerStore).errored) {
+			resetAudio();
+		}
 	});
 
 	audio.addEventListener('ended', () => {
@@ -171,7 +174,7 @@ function toggleAudioWhenReady(value?: boolean, retries: number = 0) {
 				audio.play().catch((e) => {
 					if (e.name === 'NotAllowedError') {
 						playerStore.setMuted();
-					} else {
+					} else if (e.name !== 'AbortError') {
 						playerStore.setErrored();
 					}
 				});
@@ -182,20 +185,30 @@ function toggleAudioWhenReady(value?: boolean, retries: number = 0) {
 	}, 0);
 }
 function resetAudio() {
-	if (audio) {
-		if (audio.paused && get(playerStore).errored !== true) {
-			return;
-		}
-
-		const currentTime = audio.currentTime;
-		audio.load();
-		setTimeout(() => {
-			if (readyStateIsAbleToPlay(audio?.readyState ?? 0)) {
-				audio!.play();
-			}
-			audio!.currentTime = currentTime;
-		}, 0);
+	if (!audio) return;
+	if (audio.paused && get(playerStore).errored !== true) {
+		return;
 	}
+
+	const currentTime = audio.currentTime;
+	if (resumeOnCanPlay) {
+		audio.removeEventListener('canplay', resumeOnCanPlay);
+	}
+	resumeOnCanPlay = () => {
+		if (!audio || !resumeOnCanPlay) return;
+		audio.removeEventListener('canplay', resumeOnCanPlay);
+		resumeOnCanPlay = undefined;
+		if (Number.isFinite(audio.duration) && currentTime > 0 && currentTime < audio.duration) {
+			audio.currentTime = currentTime;
+		}
+		audio.play().catch((e) => {
+			if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') {
+				playerStore.setErrored();
+			}
+		});
+	};
+	audio.addEventListener('canplay', resumeOnCanPlay);
+	audio.load();
 }
 
 function createPlayerStore() {
@@ -231,6 +244,10 @@ function createPlayerStore() {
 
 		// Update source if needed
 		if (shouldUpdateSource) {
+			if (resumeOnCanPlay) {
+				audio.removeEventListener('canplay', resumeOnCanPlay);
+				resumeOnCanPlay = undefined;
+			}
 			if (state.type === 'radio') {
 				console.log('playing radio', state.currentRadio.streamUrl);
 				audio.src = state.currentRadio.streamUrl;
