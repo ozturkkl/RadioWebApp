@@ -4,7 +4,7 @@
 	import { cardStyles } from '$lib/components/RadioCard.svelte';
 	import FavoriteButton from '$lib/components/FavoriteButton.svelte';
 	import { formatTime, formatDate } from '$lib/util/time';
-	import { ArrowDownNarrowWide, ArrowUpWideNarrow, Info, Link } from 'lucide-svelte';
+	import { ArrowDownNarrowWide, ArrowUpWideNarrow, ExternalLink, Info, Link } from 'lucide-svelte';
 	import TouchableButton from '$lib/components/utility/TouchableButton.svelte';
 	import { fade } from 'svelte/transition';
 	import PodcastInfoModal from '$lib/components/modals/PodcastInfoModal.svelte';
@@ -147,134 +147,158 @@
 	}
 </script>
 
+{#snippet podcastHeading()}
+	<div class="{cardStyles.content.wrapper} w-full">
+		<img
+			src={podcast.imageUrl}
+			alt={`${podcast.title} podcast image`}
+			class="{cardStyles.content.image} {imageLoaded ? '' : 'invisible'} shrink-0"
+			loading="lazy"
+			decoding="async"
+			draggable="false"
+			on:load={() => (imageLoaded = true)}
+		/>
+		<div class="flex min-h-24 min-w-0 flex-1 items-center overflow-hidden">
+			<div class="flex min-w-0 items-center gap-2">
+				<h3
+					class="line-clamp-3 min-w-0 break-words text-lg font-bold leading-snug text-base-content"
+				>
+					{#if highlightQuery}
+						{#each splitHighlight(podcast.title, highlightQuery) as part}
+							{#if part.hit}<span class="text-primary">{part.text}</span>{:else}{part.text}{/if}
+						{/each}
+					{:else}
+						{podcast.title}
+					{/if}
+				</h3>
+				{#if badgeLabel}
+					<span
+						class="relative z-10 shrink-0 whitespace-nowrap rounded-md bg-primary/25 px-2 py-0.5 text-xs font-medium text-base-content"
+					>
+						{badgeLabel}
+					</span>
+				{/if}
+			</div>
+		</div>
+	</div>
+{/snippet}
+
 <div
-	class="podcast-card min-w-0 overflow-hidden {cardStyles.container} {!expanded ? cardStyles.hoverScale : ''}"
+	class="podcast-card min-w-0 overflow-hidden {cardStyles.container} {!expanded
+		? cardStyles.hoverScale
+		: ''}"
 	data-podcast-id={podcast.id}
 >
 	<FavoriteButton
 		isFavorite={$podcastFavorites[podcast.id]}
 		onClick={() => podcastFavorites.togglePodcast(podcast.id)}
 	/>
-	<div class="collapse collapse-arrow min-w-0 overflow-hidden rounded-lg">
-		<input
-			type="checkbox"
-			aria-label={`${podcast.title} podcast expand button`}
-			checked={expanded}
-			on:change={(e) => onExpand(podcast.id, e.currentTarget.checked)}
-		/>
-		<div class="collapse-title min-w-0 max-w-full overflow-hidden p-0 pr-8">
-			<div class="{cardStyles.content.wrapper} w-full">
-				<img
-					src={podcast.imageUrl}
-					alt={`${podcast.title} podcast image`}
-					class="{cardStyles.content.image} {imageLoaded ? '' : 'invisible'} shrink-0"
-					loading="lazy"
-					decoding="async"
-					draggable="false"
-					on:load={() => (imageLoaded = true)}
-				/>
-				<div class="flex min-h-24 min-w-0 flex-1 items-center overflow-hidden">
-					<div class="flex min-w-0 items-center gap-2">
-						<h3
-							class="min-w-0 flex-1 break-words text-lg font-bold leading-snug text-base-content line-clamp-3"
-						>
-							{#if highlightQuery}
-								{#each splitHighlight(podcast.title, highlightQuery) as part}
-									{#if part.hit}<span class="text-primary">{part.text}</span>{:else}{part.text}{/if}
-								{/each}
-							{:else}
-								{podcast.title}
-							{/if}
-						</h3>
-						{#if badgeLabel}
-							<span
-								class="relative z-10 shrink-0 whitespace-nowrap rounded-md bg-primary/25 px-2 py-0.5 text-xs font-medium text-base-content"
+	{#if podcast.externalUrl}
+		<a
+			href={podcast.externalUrl}
+			target="_blank"
+			rel="noopener noreferrer"
+			class="relative block min-w-0 max-w-full overflow-hidden rounded-lg pr-8"
+			aria-label={`${$t.podcast.openOriginalWebsite}: ${podcast.title}`}
+		>
+			{@render podcastHeading()}
+			<ExternalLink
+				class="podcast-external-link-icon pointer-events-none absolute h-5 w-5 text-primary"
+				aria-hidden="true"
+			/>
+		</a>
+	{:else}
+		<div class="collapse collapse-arrow min-w-0 overflow-hidden rounded-lg">
+			<input
+				type="checkbox"
+				aria-label={`${podcast.title} podcast expand button`}
+				checked={expanded}
+				on:change={(e) => onExpand(podcast.id, e.currentTarget.checked)}
+			/>
+			<div class="collapse-title min-w-0 max-w-full overflow-hidden p-0 pr-8">
+				{@render podcastHeading()}
+			</div>
+			<div class="collapse-content relative">
+				<div class="flex justify-end">
+					<TouchableButton
+						onClick={() => infoModal.open()}
+						circle={false}
+						ariaLabel={$t.podcast.showMoreInfo}
+						size="sm"
+					>
+						<Info class="h-5 w-5" />
+					</TouchableButton>
+					<TouchableButton
+						bind:el={shareTooltipAnchorEl}
+						onClick={sharePodcastLink}
+						circle={false}
+						ariaLabel={$t.player.sharePodcast}
+						size="sm"
+					>
+						<Link class="h-5 w-5" />
+					</TouchableButton>
+					<TouchableButton
+						onClick={reverseEpisodes}
+						circle={false}
+						ariaLabel={isReversed ? $t.podcast.showOldestFirst : $t.podcast.showNewestFirst}
+						size="sm"
+					>
+						<svelte:component this={isReversed ? ArrowUpWideNarrow : ArrowDownNarrowWide} />
+					</TouchableButton>
+				</div>
+				{#if expanded}
+					<div
+						transition:fade={{ duration: 200 }}
+						on:scroll={handleScroll}
+						class="stable-gutter -mx-3 flex max-h-80 flex-col gap-1 overflow-y-auto overflow-x-hidden border-t border-base-300 p-1 sm:max-h-96"
+					>
+						{#each visibleEpisodes as episode (episode.id)}
+							<button
+								data-episode-id={episode.id}
+								class={getEpisodeClasses(episode, activeEpisodeId)}
+								on:click={() => playerStore.playPodcast(podcast, episode)}
 							>
-								{badgeLabel}
-							</span>
+								<div class="grid grid-cols-[1fr_auto] gap-x-0 gap-y-2">
+									<span class="line-clamp-2 font-medium">
+										{#if highlightQuery}
+											{#each splitHighlight(episode.title, highlightQuery) as part}
+												{#if part.hit}<span class="font-semibold text-primary">{part.text}</span
+													>{:else}{part.text}{/if}
+											{/each}
+										{:else}
+											{episode.title}
+										{/if}
+									</span>
+									{#if episode.duration}
+										<div class="text-base-content-secondary text-right text-sm">
+											{formatTime(Number(episode.duration))}
+										</div>
+									{/if}
+									{#if episode.description}
+										<p class="text-base-content-secondary line-clamp-2 text-sm">
+											{clampText(episode.description, 100)}
+										</p>
+									{/if}
+									{#if episode.pubDate}
+										<div class="text-base-content-secondary text-right text-sm">
+											{formatDate(episode.pubDate)}
+										</div>
+									{/if}
+								</div>
+							</button>
+						{/each}
+						{#if visibleEpisodes.length < episodeSource.length}
+							<div class="text-base-content-secondary py-2 text-center text-sm">
+								{$t.home.scrollForMoreEpisodes}
+							</div>
 						{/if}
 					</div>
-				</div>
+				{/if}
 			</div>
 		</div>
-		<div class="collapse-content relative">
-			<div class="flex justify-end">
-				<TouchableButton
-					onClick={() => infoModal.open()}
-					circle={false}
-					ariaLabel={$t.podcast.showMoreInfo}
-					size="sm"
-				>
-					<Info class="h-5 w-5" />
-				</TouchableButton>
-				<TouchableButton
-					bind:el={shareTooltipAnchorEl}
-					onClick={sharePodcastLink}
-					circle={false}
-					ariaLabel={$t.player.sharePodcast}
-					size="sm"
-				>
-					<Link class="h-5 w-5" />
-				</TouchableButton>
-				<TouchableButton
-					onClick={reverseEpisodes}
-					circle={false}
-					ariaLabel={isReversed ? $t.podcast.showOldestFirst : $t.podcast.showNewestFirst}
-					size="sm"
-				>
-					<svelte:component this={isReversed ? ArrowUpWideNarrow : ArrowDownNarrowWide} />
-				</TouchableButton>
-			</div>
-			{#if expanded}
-				<div
-					transition:fade={{ duration: 200 }}
-					on:scroll={handleScroll}
-					class="stable-gutter -mx-3 flex max-h-80 flex-col gap-1 overflow-y-auto overflow-x-hidden border-t border-base-300 p-1 sm:max-h-96"
-				>
-					{#each visibleEpisodes as episode (episode.id)}
-						<button
-							data-episode-id={episode.id}
-							class={getEpisodeClasses(episode, activeEpisodeId)}
-							on:click={() => playerStore.playPodcast(podcast, episode)}
-						>
-							<div class="grid grid-cols-[1fr_auto] gap-x-0 gap-y-2">
-								<span class="line-clamp-2 font-medium">
-									{#if highlightQuery}
-										{#each splitHighlight(episode.title, highlightQuery) as part}
-											{#if part.hit}<span class="font-semibold text-primary">{part.text}</span
-												>{:else}{part.text}{/if}
-										{/each}
-									{:else}
-										{episode.title}
-									{/if}
-								</span>
-								{#if episode.duration}
-									<div class="text-base-content-secondary text-right text-sm">
-										{formatTime(Number(episode.duration))}
-									</div>
-								{/if}
-								{#if episode.description}
-									<p class="text-base-content-secondary line-clamp-2 text-sm">
-										{clampText(episode.description, 100)}
-									</p>
-								{/if}
-								{#if episode.pubDate}
-									<div class="text-base-content-secondary text-right text-sm">
-										{formatDate(episode.pubDate)}
-									</div>
-								{/if}
-							</div>
-						</button>
-					{/each}
-					{#if visibleEpisodes.length < episodeSource.length}
-						<div class="text-base-content-secondary py-2 text-center text-sm">
-							{$t.home.scrollForMoreEpisodes}
-						</div>
-					{/if}
-				</div>
-			{/if}
-		</div>
-	</div>
+	{/if}
 </div>
 
-<PodcastInfoModal bind:this={infoModal} {podcast} />
+{#if !podcast.externalUrl}
+	<PodcastInfoModal bind:this={infoModal} {podcast} />
+{/if}

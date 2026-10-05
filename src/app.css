@@ -66,6 +66,13 @@ textarea {
 	right: 1rem;
 }
 
+/* Center the 1.25rem icon on the 0.5rem chevron above, which is shifted up by its own height. */
+.podcast-external-link-icon {
+	top: calc(1.2rem - 0.5rem / 2);
+	right: calc(1rem + 0.5rem / 2 - 1.25rem / 2);
+	transform: translateY(-50%);
+}
+
 .divider {
 	height: unset;
 }

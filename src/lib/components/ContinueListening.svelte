@@ -111,7 +111,7 @@
 
 	$: {
 		const podcastItems = $podcasts
-			.filter((p) => $podcastProgress[p.id])
+			.filter((p) => !p.externalUrl && $podcastProgress[p.id])
 			.map((p) => ({
 				type: 'podcast' as const,
 				item: {

@@ -13,6 +13,7 @@ import {
     UserRound,
     BookCopy,
     Mail,
+    Twitter,
     Link as LinkIcon
 } from 'lucide-svelte';
 
@@ -29,6 +30,7 @@ export type IconLabel =
     | 'UserRound'
     | 'BookCopy'
     | 'Mail'
+    | 'Twitter'
     | 'Link';
 
 export function getIconComponent(name: IconLabel) {
@@ -57,6 +59,8 @@ export function getIconComponent(name: IconLabel) {
             return BookCopy;
         case 'Mail':
             return Mail;
+        case 'Twitter':
+            return Twitter;
         case 'Link':
             return LinkIcon;
         default:

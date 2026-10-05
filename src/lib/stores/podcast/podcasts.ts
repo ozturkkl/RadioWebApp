@@ -13,6 +13,7 @@ export interface Podcast {
 	items: Episode[];
 	categories: string[];
 	rssUrl: string;
+	externalUrl?: string;
 	lastFetched: number; // Timestamp when this podcast was last fetched
 }
 
@@ -32,6 +33,18 @@ function rssText(value: unknown): string | undefined {
 		return rssText((value as { '#text': unknown })['#text']);
 	}
 	return undefined;
+}
+
+function externalHttpUrl(value: unknown): string | undefined {
+	const text = rssText(value);
+	if (!text) return undefined;
+
+	try {
+		const url = new URL(text);
+		return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : undefined;
+	} catch {
+		return undefined;
+	}
 }
 
 export async function getPodcastRssUrls() {
@@ -83,8 +96,14 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 		}
 
 		const channel = parsed.rss.channel;
+		const externalUrlValue = channel['redirect:url'];
+		const externalUrl = externalHttpUrl(externalUrlValue);
+		if (externalUrlValue !== undefined && !externalUrl) {
+			console.error(`Skipping feed ${url}: Invalid external URL`);
+			return null;
+		}
 
-		if (!channel.item?.length) {
+		if (!externalUrl && !channel.item?.length) {
 			console.error(`Skipping feed ${url}: No episodes found`);
 			return null;
 		}
@@ -94,25 +113,28 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 			imageUrl: channel['itunes:image']?.href || channel.image?.url,
 			description: channel['itunes:summary'] || channel.description,
 			id: channel['podcast:guid'] || url, // Use URL as fallback ID
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			items: channel.item.map((item: any) => {
-				const episode: Episode = {
-					id: rssText(item.guid) || item.enclosure?.url || item.link,
-					title: item.title,
-					url: item.enclosure?.url || item.link,
-					duration: item['itunes:duration'],
-					image: item['itunes:image']?.href || item.image?.url,
-					description: item.description || item['itunes:summary'],
-					pubDate: item.pubDate
-				};
-				return episode;
-			}),
+			items: externalUrl
+				? []
+				: // eslint-disable-next-line @typescript-eslint/no-explicit-any
+					channel.item.map((item: any) => {
+						const episode: Episode = {
+							id: rssText(item.guid) || item.enclosure?.url || item.link,
+							title: item.title,
+							url: item.enclosure?.url || item.link,
+							duration: item['itunes:duration'],
+							image: item['itunes:image']?.href || item.image?.url,
+							description: item.description || item['itunes:summary'],
+							pubDate: item.pubDate
+						};
+						return episode;
+					}),
 			categories: Array.isArray(channel.category)
 				? channel.category
 				: channel.category
 					? [channel.category]
 					: [],
 			rssUrl: url,
+			externalUrl,
 			lastFetched: Date.now()
 		};
 		return podcast;
@@ -160,6 +182,13 @@ function createPodcastsStore() {
 
 		try {
 			const feedUrls = await getPodcastRssUrls();
+			if (feedUrls.length === 0) {
+				set([]);
+				setUserData('cached-podcasts', []);
+				lastRefreshAt = Date.now();
+				writeLastRefreshAt(lastRefreshAt);
+				return;
+			}
 
 			const fetchedPodcastMap = new Map<string, Podcast>();
 
