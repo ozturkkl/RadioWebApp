@@ -635,6 +635,7 @@ async function ensureVisibleById(id: string, timeoutMs = 4000) {
 	});
 }
 export async function autoplayLastContent() {
+	await podcasts.ready;
 	// Get the last played times for radios and podcasts
 	const lastPlayedRadio = Object.entries(get(radioProgress)).reduce(
 		(latest, [id, progress]) => {

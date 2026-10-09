@@ -1,7 +1,7 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { XMLParser } from 'fast-xml-parser';
 import { config } from '$lib/config';
-import { getUserData, setUserData } from '$lib/util/userData';
+import { indexedDbCache } from '$lib/util/indexedDbCache';
 import { withBackoff } from '$lib/util/backoff';
 import { throttleDebounce } from '$lib/util/throttleDebounce';
 
@@ -148,30 +148,50 @@ export async function fetchPodcast(url: string): Promise<Podcast | null> {
 // memory usage on low-RAM devices.
 const FETCH_CONCURRENCY = 10;
 const REFRESH_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
-const LAST_REFRESH_KEY = 'podcasts-last-refresh';
+const CACHE_KEY = 'podcasts';
 
-function readLastRefreshAt(): number {
-	if (typeof window === 'undefined') return 0;
-	const raw = localStorage.getItem(LAST_REFRESH_KEY);
-	const parsed = raw ? Number(raw) : 0;
-	return Number.isFinite(parsed) ? parsed : 0;
+// Timestamp lives with the data so a fresh timestamp can never point at a missing cache.
+interface PodcastCache {
+	podcasts: Podcast[];
+	refreshedAt: number;
 }
 
-function writeLastRefreshAt(timestamp: number) {
-	if (typeof window === 'undefined') return;
-	localStorage.setItem(LAST_REFRESH_KEY, String(timestamp));
+function orderPodcasts(
+	feedUrls: string[],
+	fetched: Map<string, Podcast>,
+	existing: Podcast[]
+): Podcast[] {
+	const existingByUrl = new Map(existing.map((podcast) => [podcast.rssUrl, podcast]));
+	const ordered: Podcast[] = [];
+	for (const url of feedUrls) {
+		const podcast = fetched.get(url) ?? existingByUrl.get(url);
+		if (podcast) ordered.push(podcast);
+	}
+	return ordered;
 }
 
 function createPodcastsStore() {
-	const { subscribe, set, update } = writable<Podcast[]>([]);
+	const store = writable<Podcast[]>([]);
+	const { subscribe, set } = store;
 	let refreshInFlight = false;
-	let lastRefreshAt = readLastRefreshAt();
+	let lastRefreshAt = 0;
 
-	function hydrateFromCache() {
-		const cachedPodcasts = getUserData('cached-podcasts') as Podcast[];
-		if (cachedPodcasts.length > 0) {
-			set(cachedPodcasts);
+	async function loadCache() {
+		try {
+			const cached = await indexedDbCache.read<PodcastCache>(CACHE_KEY);
+			if (!cached?.podcasts.length) return;
+			set(cached.podcasts);
+			lastRefreshAt = cached.refreshedAt;
+		} catch (error) {
+			console.error('Error reading podcast cache', error);
 		}
+	}
+
+	function saveCache(podcasts: Podcast[]) {
+		const cache: PodcastCache = { podcasts, refreshedAt: lastRefreshAt };
+		void indexedDbCache.write(CACHE_KEY, cache).catch((error) => {
+			console.error('Error writing podcast cache', error);
+		});
 	}
 
 	async function refresh(force = false) {
@@ -182,40 +202,10 @@ function createPodcastsStore() {
 
 		try {
 			const feedUrls = await getPodcastRssUrls();
-			if (feedUrls.length === 0) {
-				set([]);
-				setUserData('cached-podcasts', []);
-				lastRefreshAt = Date.now();
-				writeLastRefreshAt(lastRefreshAt);
-				return;
-			}
-
 			const fetchedPodcastMap = new Map<string, Podcast>();
 
 			const throttledUpdate = throttleDebounce(
-				() => {
-					update((podcasts) => {
-						const orderedPodcasts: Podcast[] = [];
-
-						const existingPodcastsMap = new Map<string, Podcast>();
-						podcasts.forEach((podcast) => {
-							existingPodcastsMap.set(podcast.rssUrl, podcast);
-						});
-
-						for (let i = 0; i < feedUrls.length; i++) {
-							const url = feedUrls[i];
-							const podcast = fetchedPodcastMap.get(url) ?? existingPodcastsMap.get(url);
-
-							if (podcast) {
-								orderedPodcasts.push(podcast);
-							}
-						}
-
-						setUserData('cached-podcasts', orderedPodcasts.slice(0, 150));
-
-						return orderedPodcasts;
-					});
-				},
+				() => set(orderPodcasts(feedUrls, fetchedPodcastMap, get(store))),
 				500,
 				false,
 				true
@@ -243,25 +233,33 @@ function createPodcastsStore() {
 			);
 			await Promise.all(workers);
 
-			if (fetchedPodcastMap.size > 0) {
+			const refreshed = orderPodcasts(feedUrls, fetchedPodcastMap, get(store));
+			set(refreshed);
+
+			// Skip saving when every feed failed, but do save an intentionally empty feed list.
+			if (fetchedPodcastMap.size > 0 || feedUrls.length === 0) {
 				lastRefreshAt = Date.now();
-				writeLastRefreshAt(lastRefreshAt);
+				saveCache(refreshed);
 			}
+		} catch (error) {
+			console.error('Error refreshing podcasts', error);
 		} finally {
 			refreshInFlight = false;
 		}
 	}
 
+	let ready = Promise.resolve();
 	if (typeof window !== 'undefined') {
-		hydrateFromCache();
-		refresh();
+		ready = loadCache().then(() => refresh());
 		document.addEventListener('visibilitychange', () => {
 			if (document.visibilityState === 'visible') refresh();
 		});
 	}
 
 	return {
-		subscribe
+		subscribe,
+		// Resolves once the initial cache load and feed refresh have finished.
+		ready
 	};
 }
 

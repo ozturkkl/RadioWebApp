@@ -1,8 +1,6 @@
 import type { PodcastProgress } from '$lib/stores/podcast/podcastProgress';
-import type { Podcast } from '$lib/stores/podcast/podcasts';
 import type { Settings } from '$lib/stores/settings';
 import type { RadioProgress } from '$lib/stores/radio/radioProgress';
-import type { Radio } from '$lib/stores/radio/radios';
 import { saveUserDataToGoogle } from '$lib/util/googleDriveHelpers';
 
 export interface UserData {
@@ -10,8 +8,6 @@ export interface UserData {
 	'favorite-podcasts': Record<string, boolean>;
 	'podcast-progress': PodcastProgress;
 	'radio-progress': RadioProgress;
-	'cached-podcasts': Podcast[];
-	'cached-radios': Radio[];
 	'app-settings': Settings;
 }
 
@@ -20,8 +16,6 @@ export const userDataDefaults: UserData = {
 	'favorite-podcasts': {},
 	'podcast-progress': {},
 	'radio-progress': {},
-	'cached-podcasts': [],
-	'cached-radios': [],
 	'app-settings': {
 		theme: 'system',
 		language: 'tr',
