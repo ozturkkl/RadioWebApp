@@ -6,24 +6,24 @@ and Google Drive sync of progress and favorites. Ships as a PWA/TWA, IOS, and An
 app.
 
 <p align="center">
-  <img src="demo/combined.png" alt="RadioWebApp on mobile — show list, player, and program details" width="800" />
+  <img src="demo/combined.png" alt="RadioWebApp on mobile - show list, player, and program details" width="800" />
 </p>
 
 ## Features
 
-- **Live radio** — stream playback, now-playing metadata, and a stream refresh
+- **Live radio** - stream playback, now-playing metadata, and a stream refresh
   when playback stalls
-- **Podcast archive** — RSS feeds parsed in the browser, cached locally, and
+- **Podcast archive** - RSS feeds parsed in the browser, cached locally, and
   refreshed in the background
-- **Player** — skip, speed, volume, autoplay next episode, resume last content,
+- **Player** - skip, speed, volume, autoplay next episode, resume last content,
   and Media Session lock-screen / headset controls
-- **Continue listening** — in-progress episodes and recently played stations
-- **Search** — Turkish-aware folding, exact vs similar matches, title and
+- **Continue listening** - in-progress episodes and recently played stations
+- **Search** - Turkish-aware folding, exact vs similar matches, title and
   episode hits
-- **Share links** — deep links to a station, episode, or timestamp
-- **Favorites, theme, language** — persisted locally; optional Google Drive
+- **Share links** - deep links to a station, episode, or timestamp
+- **Favorites, theme, language** - persisted locally; optional Google Drive
   `appDataFolder` sync across devices (English / Türkçe)
-- **Installable** — PWA on supported browsers, plus a Trusted Web Activity
+- **Installable** - PWA on supported browsers, plus a Trusted Web Activity
   wrapper for Android
 
 ## Stack
