@@ -1,6 +1,5 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { config } from '$lib/config';
-import { getUserData, setUserData } from '$lib/util/userData';
 import type { IconLabel } from '$lib/util/getIconComponent';
 
 export interface Radio {
@@ -20,20 +19,8 @@ export interface Radio {
 }
 
 function createRadiosStore() {
-	const { subscribe, set, update } = writable<Radio[]>([]);
-
-	function setCachedRadios(radios: Radio[]) {
-		// Strip out the trackInfo when caching
-		const cachedRadios = radios.map((radio) => ({
-			...radio,
-			trackInfo: {
-				cover: radio.image,
-				artist: '',
-				title: ''
-			}
-		}));
-		setUserData('cached-radios', cachedRadios);
-	}
+	const store = writable<Radio[]>([]);
+	const { subscribe, set, update } = store;
 
 	async function fetchFreshRadios(): Promise<Radio[]> {
 		return config.radios.map((radio) => ({
@@ -69,25 +56,15 @@ function createRadiosStore() {
 	}
 
 	async function refreshTrackInfo() {
-		update((radios) => {
-			radios.forEach(async (radio, index) => {
-				const updatedRadio = await updateTrackInfo(radio);
-				if (updatedRadio) {
-					radios[index] = updatedRadio;
-				}
-			});
-			return radios;
-		});
+		const updatedRadios = await Promise.all(get(store).map(updateTrackInfo));
+		const updatedById = new Map(
+			updatedRadios.filter((radio) => radio !== null).map((radio) => [radio.id, radio])
+		);
+		update((radios) => radios.map((radio) => updatedById.get(radio.id) ?? radio));
 	}
 
 	async function refresh() {
-		const cached = getUserData('cached-radios');
-		if (cached.length > 0) {
-			set(cached);
-		}
-		const freshData = await fetchFreshRadios();
-		setCachedRadios(freshData);
-		set(freshData);
+		set(await fetchFreshRadios());
 	}
 
 	// Start background updates immediately

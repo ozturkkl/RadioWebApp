@@ -60,6 +60,7 @@ export const tr: TranslationType = {
     linkCopyFailed: 'Bağlantı kopyalama başarısız oldu!'
   },
   podcast: {
+    openOriginalWebsite: 'Orijinal web sitesinde aç',
     showMoreInfo: 'Daha fazla bilgi göster',
     showNewestFirst: 'Önce en yenileri göster',
     showOldestFirst: 'Önce en eskileri göster',

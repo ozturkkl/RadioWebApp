@@ -59,6 +59,7 @@ export const en = {
 		linkCopyFailed: 'Failed to copy link to clipboard'
 	},
 	podcast: {
+		openOriginalWebsite: 'Open on original website',
 		showMoreInfo: 'Show more information',
 		showNewestFirst: 'Show newest first',
 		showOldestFirst: 'Show oldest first',

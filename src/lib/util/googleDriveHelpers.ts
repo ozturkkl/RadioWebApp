@@ -172,7 +172,6 @@ async function saveUserDataToGoogleImpl<K extends keyof UserData>(
 	fetcher: GoogleDriveFetcher
 ) {
 	try {
-		if (key === 'cached-podcasts' || key === 'cached-radios') return;
 		console.log(`Saving ${key} to Google Drive: ${JSON.stringify(data, null, 2)}`);
 
 		await fetcher.upsertFile(key, {

@@ -96,7 +96,7 @@
 			const podcast = get(podcasts).find((p) => p.id === sharedPodcastId);
 			if (podcast) {
 				const episode = podcast.items.find(
-					(e) => e.id === (sharedEpisodeId ?? podcast.items[0].id)
+					(e) => e.id === (sharedEpisodeId ?? podcast.items[0]?.id)
 				);
 				if (episode) {
 					playerStore.playPodcast(podcast, episode, sharedTimeSeconds);
